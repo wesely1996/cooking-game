@@ -1,10 +1,16 @@
 # Pass the Plate! (working title)
 
+[![CI](https://github.com/wesely1996/cooking-game/actions/workflows/ci.yml/badge.svg)](https://github.com/wesely1996/cooking-game/actions/workflows/ci.yml)
+[![Release](https://github.com/wesely1996/cooking-game/actions/workflows/release.yml/badge.svg)](https://github.com/wesely1996/cooking-game/releases)
+
 A cooperative 1–4 player Android cooking game. Each player owns part of the
 kitchen on their own phone. Players prepare ingredients with gesture mini-games
 and throw them to each other to serve customers around the world.
 
+- **Download:** [latest release](https://github.com/wesely1996/cooking-game/releases)
+  (Android APK, Windows, Linux, Web)
 - **Design and plan:** [docs/GAME_PLAN.md](docs/GAME_PLAN.md)
+- **Builds and releases:** [docs/RELEASING.md](docs/RELEASING.md) · [CHANGELOG.md](CHANGELOG.md)
 - **Engine:** Godot 4.7.2, GDScript, landscape, GL Compatibility renderer
 
 ## Status

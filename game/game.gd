@@ -26,6 +26,11 @@ func _ready() -> void:
 		levels[level.id] = level
 	progression = Progression.load_map()
 	_load()
+	var errors := db.validate()
+	print("Pass the Plate! %s: %d packs, %d levels, %d content errors" % [
+		ProjectSettings.get_setting("application/config/version"), db.pack_ids.size(), levels.size(), errors.size()])
+	for error in errors:
+		push_error(error)
 
 
 func level_order() -> Array[String]:

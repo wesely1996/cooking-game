@@ -1,0 +1,35 @@
+name: CI
+
+# Every push and pull request: run all tests, then build every platform.
+# The builds can be downloaded from the run's "builds" artifact.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  version:
+    name: Dev version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          base="$(sed -n 's/^config\/version="\(.*\)"/\1/p' project.godot)"
+          echo "version=${base%%-*}-dev.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: [test, version]
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ needs.version.outputs.version }}
+    secrets: inherit

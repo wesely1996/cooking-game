@@ -589,12 +589,19 @@ Each milestone ends with something playable or testable.
   average one, 3★ a good one. Bots don't spend time reading orders or talking, so
   **these numbers must be re-tuned with real players in M2.**
 
-### M2 – Single-player vertical slice (placeholder art)
+### M2 – Single-player vertical slice (placeholder art) ✅ (v0.1.0)
 - Landscape kitchen screen: order bar, sidebar, 5 counter slots, station tabs.
 - Gesture recognizers and the first mini-games: **chop, knead, roll, bake**.
 - Drag/flick interactions, combining, trash, serving.
 - One playable challenge: "Pizza only", solo.
 - **Goal: find out whether the moment-to-moment feel is fun.** Tune timings here.
+
+**M2 results:** every Italy level and arcade are playable solo, with tap or
+drag controls, all gesture mini-games (chop, slice, knead, roll, stir, crank),
+cooking timers with a perfect window, chef's tips on the first levels, comic
+bubbles, synthesized sounds and vibration. The art is generated SVG
+(`tools/art/generate_art.py`). CI/CD builds Android, Windows, Linux and Web
+on every push and publishes tagged releases (docs/RELEASING.md).
 
 ### M3 – Full action set & Italian pack
 - Stir, crank, slice, boil, pour mini-games.

@@ -1,0 +1,33 @@
+name: Test
+
+# Reusable: unit tests, bot simulations and the smoke test that drives the
+# real screens with taps, drags and swipes on a virtual display.
+on:
+  workflow_call:
+
+jobs:
+  test:
+    name: Tests and smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-godot
+
+      - name: Unit tests and bot simulations
+        run: tools/run_tests.sh
+
+      - name: Install virtual display
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri > /dev/null
+
+      - name: Smoke test (real screens, touch input, screenshots)
+        run: SCREENSHOT_DIR="$PWD/build/screenshots" tools/smoke_test.sh
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: build/screenshots
+          if-no-files-found: ignore

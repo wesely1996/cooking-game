@@ -1,0 +1,64 @@
+name: Set up Godot
+description: Downloads the Godot editor and, optionally, the export templates (both cached) and sets $GODOT.
+
+inputs:
+  version:
+    description: Godot release, e.g. 4.7.2-stable
+    default: 4.7.2-stable
+  templates:
+    description: Also install the export templates for Android, Windows, Linux and Web
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Cache Godot
+      id: cache-godot
+      uses: actions/cache@v4
+      with:
+        path: ~/godot
+        key: godot-${{ inputs.version }}-linux-x86_64
+
+    - name: Download Godot
+      if: steps.cache-godot.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/godot
+        curl -fsSL --retry 3 -o /tmp/godot.zip \
+          "https://github.com/godotengine/godot/releases/download/${{ inputs.version }}/Godot_v${{ inputs.version }}_linux.x86_64.zip"
+        unzip -q /tmp/godot.zip -d ~/godot
+        mv ~/godot/Godot_v${{ inputs.version }}_linux.x86_64 ~/godot/godot
+        rm /tmp/godot.zip
+
+    - name: Use Godot
+      shell: bash
+      run: |
+        echo "GODOT=$HOME/godot/godot" >> "$GITHUB_ENV"
+        "$HOME/godot/godot" --version
+
+    - name: Cache export templates
+      if: inputs.templates == 'true'
+      id: cache-templates
+      uses: actions/cache@v4
+      with:
+        path: ~/.local/share/godot/export_templates
+        key: godot-templates-${{ inputs.version }}-android-windows-linux-web
+
+    - name: Download export templates
+      if: inputs.templates == 'true' && steps.cache-templates.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        dir="$HOME/.local/share/godot/export_templates/$(echo '${{ inputs.version }}' | tr '-' '.')"
+        mkdir -p "$dir"
+        curl -fsSL --retry 3 -o /tmp/templates.tpz \
+          "https://github.com/godotengine/godot/releases/download/${{ inputs.version }}/Godot_v${{ inputs.version }}_export_templates.tpz"
+        # Only the templates this project exports, to keep the cache small.
+        unzip -q -j /tmp/templates.tpz -d "$dir" \
+          'templates/version.txt' 'templates/icudt_godot.dat' \
+          'templates/android_debug.apk' 'templates/android_release.apk' \
+          'templates/linux_debug.x86_64' 'templates/linux_release.x86_64' \
+          'templates/windows_debug_x86_64.exe' 'templates/windows_release_x86_64.exe' \
+          'templates/windows_debug_x86_64_console.exe' 'templates/windows_release_x86_64_console.exe' \
+          'templates/web_nothreads_debug.zip' 'templates/web_nothreads_release.zip'
+        rm /tmp/templates.tpz
+        ls -la "$dir"

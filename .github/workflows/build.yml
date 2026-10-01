@@ -1,0 +1,49 @@
+name: Build
+
+# Reusable: exports Android, Windows, Linux and Web builds for a version and
+# uploads them as the artifact "builds".
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version to stamp into the builds, e.g. 0.2.0 or 0.2.0-dev.17
+        required: true
+        type: string
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        required: false
+      ANDROID_KEYSTORE_ALIAS:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+
+jobs:
+  export:
+    name: Export builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          templates: "true"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Export all platforms
+        env:
+          VERSION: ${{ inputs.version }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: tools/export.sh android windows linux web
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: builds
+          path: build/release
+          if-no-files-found: error
