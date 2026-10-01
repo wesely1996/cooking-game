@@ -24,6 +24,10 @@ func _ready() -> void:
 	arcade.pressed.connect(func(): Game.start_level("arcade_italian"))
 	column.add_child(_centered(arcade))
 
+	var book := UiStyle.button("RECIPE BOOK", Color("#ffd1e8"), 30)
+	book.pressed.connect(func(): Game.open_recipe_book(Game.SCENE_MENU))
+	column.add_child(_centered(book))
+
 	var best := int(Game.best_arcade.get("arcade_italian", 0))
 	if best > 0:
 		column.add_child(UiStyle.text("Arcade best: %d" % best, 20, Color.WHITE))

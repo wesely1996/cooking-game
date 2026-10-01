@@ -18,6 +18,9 @@ func _ready() -> void:
 	var title := UiStyle.title("%s  ·  ★ %d" % [region.name.to_upper(), Game.progression.region_stars(0)], 56, Art.SUN)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
+	var book := UiStyle.button("RECIPES", Color("#ffd1e8"), 26)
+	book.pressed.connect(func(): Game.open_recipe_book(Game.SCENE_LEVEL_SELECT))
+	header.add_child(book)
 	var margin := MarginContainer.new()
 	for side in ["left", "right", "top"]:
 		margin.add_theme_constant_override("margin_" + side, 20)

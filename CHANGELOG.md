@@ -5,6 +5,25 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [0.2.0] - 2026-10-01
+
+### Added
+- **Recipe book** (from the title screen and the world map): step-by-step
+  instructions for every dish you have served, locked silhouettes for dishes
+  you haven't made yet (with the level where you'll find them), and "?" cards
+  for the cuisines still to come (Mexican, American, Spanish, Japanese,
+  French, Penguin Iceberg).
+- **NEW!** badge on tickets for dishes you have never made, and a big
+  "NEW DISH!" moment the first time you serve one.
+
+### Changed
+- **Tips and arrows now appear only while you make a dish for the first
+  time**, in any level, instead of on fixed levels.
+- **Star targets depend on the number of players and get harder each level.**
+  Solo: Pizza Night 70/140/200, Aperitivo 90/180/260, Pasta e Pizza
+  110/220/320, Full Trattoria 140/290/420. With 2, 3 and 4 players the
+  targets are about 1.35×, 1.65× and 1.9× higher.
+
 ## [0.1.0] - 2026-10-01
 
 The first playable build: solo play in Italy.

@@ -8,6 +8,8 @@ const TICKET_W := 168.0
 const TICKET_GAP := 12.0
 
 var shift: Shift
+## Optional func(dish: String) -> bool: shows a NEW! badge on the ticket.
+var is_new: Callable
 var _x := {}  # order uid -> current x, for the slide-in animation
 
 
@@ -65,6 +67,11 @@ func _draw_ticket(order: Dictionary, pos: Vector2) -> void:
 		var icon := Art.item(parts[i]) if shift.db.items.has(parts[i]) else Art.equipment(parts[i])
 		if icon:
 			draw_texture_rect(icon, Rect2(pos + Vector2(112 + (i % 2) * 26, 4 + (i / 2) * 26), Vector2(26, 26)), false)
+	if is_new.is_valid() and is_new.call(order.dish):
+		var badge := Rect2(pos + Vector2(-6, -8), Vector2(56, 24))
+		draw_rect(badge, Art.TOMATO)
+		draw_rect(badge, Art.INK, false, 3.0)
+		draw_string(Art.comic_font(), badge.position + Vector2(0, 19), "NEW!", HORIZONTAL_ALIGNMENT_CENTER, badge.size.x, 20, Color.WHITE)
 	# Patience bar.
 	if order.max_patience > 0.0:
 		var bar := Rect2(pos + Vector2(8, rect.size.y - 18), Vector2(TICKET_W - 16, 11))

@@ -23,6 +23,8 @@ const ANYWHERE := -1
 var max_orders := 2
 ## 1.0 = roughly an average human; higher is faster.
 var speed := 1.0
+## Optional func(order: Dictionary) -> bool: only plan for matching orders.
+var order_filter: Callable
 var actions_done := 0
 var actions_failed := 0
 
@@ -60,6 +62,8 @@ func plan(shift: Shift) -> Array[Dictionary]:
 	for order in shift.orders.orders:
 		if planned >= max_orders:
 			break
+		if order_filter.is_valid() and not order_filter.call(order):
+			continue
 		planned += 1
 		var loc := _ensure(order.dish, server, 0)
 		if not loc.is_empty():

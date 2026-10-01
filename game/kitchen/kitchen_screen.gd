@@ -62,8 +62,8 @@ var _end_timer := -1.0
 var _time := 0.0
 var _rng := RandomNumberGenerator.new()
 
-# Hints for new players: the bot's planner suggests the next step.
-var _hints_enabled := false
+# Hints while making a dish for the first time: the bot's planner suggests
+# the next step (with arrows) for orders of dishes not yet discovered.
 var _hint_bot := KitchenBot.new()
 var _hint_text := ""
 var _hint_points: Array[Vector2] = []
@@ -105,8 +105,9 @@ func _ready() -> void:
 	_ghost.z_index = 40
 	_fx_layer.add_child(_ghost)
 
-	_hints_enabled = bool(shift.level.data.get("hints", false))
 	_hint_bot.max_orders = 1
+	_hint_bot.order_filter = func(order: Dictionary) -> bool: return not Game.progression.is_discovered(order.dish)
+	_order_bar.is_new = func(dish: String) -> bool: return not Game.progression.is_discovered(dish)
 	resized.connect(_layout)
 	_layout()
 	_handle_events(shift.drain_events())
@@ -222,7 +223,7 @@ func _process(delta: float) -> void:
 	_handle_events(shift.drain_events())
 	_sync_views()
 	_hint_timer -= delta
-	if _hints_enabled and _hint_timer <= 0.0:
+	if _hint_timer <= 0.0:
 		_hint_timer = 0.25
 		_update_hint()
 	_dynamic.queue_redraw()
@@ -313,6 +314,11 @@ func _handle_events(events: Array[Dictionary]) -> void:
 				Sfx.play("coin")
 				Game.vibrate(30)
 				_bubble(_serve_rect.get_center() + Vector2(-20, -90), "+%d" % event.points, Art.SUN, 46)
+				if Game.discover(event.order.dish):
+					Sfx.play("cheer")
+					_bubble(size * 0.5 + Vector2(0, -40), "NEW DISH: %s!" % db.item_name(event.order.dish).to_upper(), Art.SUN, 44)
+					_hint_text = ""
+					_hint_points.clear()
 			"item_trashed":
 				if event.has("slot"):
 					_fly_away(int(event.item.uid), _trash_rect.get_center())
@@ -672,7 +678,7 @@ func _draw_hint(c: CanvasItem, pulse: float) -> void:
 		c.draw_line(start, tip, Art.TOMATO, 8.0, true)
 		c.draw_colored_polygon(PackedVector2Array([tip + dir * 18.0, tip + dir.orthogonal() * 14.0, tip - dir.orthogonal() * 14.0]), Art.TOMATO)
 	var font := Art.ui_font()
-	var text := "CHEF'S TIP: " + _hint_text
+	var text := "NEW DISH TIP: " + _hint_text
 	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x + 40.0
 	var rect := Rect2(Vector2(SIDEBAR_W + (size.x - SIDEBAR_W - 190.0 - width) * 0.5, size.y - 56), Vector2(width, 44))
 	c.draw_rect(rect, Art.PAPER)

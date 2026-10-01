@@ -7,6 +7,7 @@ const SCENE_MENU := "res://ui/main_menu.tscn"
 const SCENE_LEVEL_SELECT := "res://ui/level_select.tscn"
 const SCENE_KITCHEN := "res://game/kitchen/kitchen_screen.tscn"
 const SCENE_RESULTS := "res://ui/results.tscn"
+const SCENE_RECIPE_BOOK := "res://ui/recipe_book.tscn"
 
 var db: ContentDB
 var levels := {}  # id -> LevelDef
@@ -18,6 +19,10 @@ var player_count := 1
 var last_outcome := {}
 var last_stats := {}
 var best_arcade := {}  # level id -> best score
+## Off for automated runs (smoke test), so they never touch a player's save.
+var save_enabled := true
+## Where the recipe book returns to.
+var recipe_book_return := SCENE_MENU
 
 
 func _ready() -> void:
@@ -63,6 +68,28 @@ func finish_level(outcome: Dictionary, stats: Dictionary) -> void:
 	get_tree().change_scene_to_file(SCENE_RESULTS)
 
 
+## Records that a dish was served. Returns true the first time ever.
+func discover(dish: String) -> bool:
+	var is_new := progression.discover(dish)
+	if is_new:
+		save()
+	return is_new
+
+
+## The first story level whose menu has the dish, or null.
+func first_level_with(dish: String) -> LevelDef:
+	for id in level_order():
+		var level: LevelDef = levels.get(id)
+		if level and level.dish_ids().has(dish):
+			return level
+	return null
+
+
+func open_recipe_book(return_scene: String) -> void:
+	recipe_book_return = return_scene
+	goto(SCENE_RECIPE_BOOK)
+
+
 func goto(scene: String) -> void:
 	get_tree().change_scene_to_file(scene)
 
@@ -73,6 +100,8 @@ func vibrate(ms: int) -> void:
 
 
 func save() -> void:
+	if not save_enabled:
+		return
 	var data := {"progress": progression.to_dict(), "settings": settings, "best_arcade": best_arcade}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:

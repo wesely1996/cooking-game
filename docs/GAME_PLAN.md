@@ -603,6 +603,10 @@ bubbles, synthesized sounds and vibration. The art is generated SVG
 (`tools/art/generate_art.py`). CI/CD builds Android, Windows, Linux and Web
 on every push and publishes tagged releases (docs/RELEASING.md).
 
+**v0.2.0:** recipe book (known recipes step by step, locked dishes, "?" for
+future cuisines), tips only while making a dish for the first time, and star
+targets that depend on the player count and rise level by level.
+
 ### M3 – Full action set & Italian pack
 - Stir, crank, slice, boil, pour mini-games.
 - All three Italian dishes, three challenges, results screen, stars, simple progression.

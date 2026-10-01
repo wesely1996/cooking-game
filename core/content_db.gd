@@ -37,6 +37,7 @@ var processes := {}  # id -> {id, input, equipment, action, output, work, cook_t
 var assemblies := {}  # output id -> {output, base, parts (sorted), pack}
 var role_presets := {}  # name -> {"1": [role, ...], "2": [...], ...}
 var pack_ids: Array[String] = []
+var pack_names := {}  # pack id -> display name, e.g. "italian" -> "Italian"
 var load_errors: Array[String] = []
 
 var _producers := {}  # item id -> {"kind": "process"|"assembly", "id": String}
@@ -64,6 +65,7 @@ static func load_files(paths: Array) -> ContentDB:
 func add_pack(data: Dictionary, source: String = "") -> void:
 	var pack_id := str(data.get("id", source))
 	pack_ids.append(pack_id)
+	pack_names[pack_id] = str(data.get("name", pack_id))
 	var items_data: Dictionary = data.get("items", {})
 	for id in items_data:
 		if items.has(id):
@@ -288,6 +290,38 @@ func equipment_requirements(id: String) -> Array:
 	var list := result.keys()
 	list.sort()
 	return list
+
+
+## Step-by-step instructions for making an item from raw ingredients, in an
+## order that works (everything is made before it is used). Each step is
+## {"kind": "process", "process": id, "input", "equipment", "action",
+##  "output", "work", "cook_time"} or
+## {"kind": "assembly", "base", "parts", "output"}.
+## Used by the recipe book.
+func recipe_steps(id: String) -> Array[Dictionary]:
+	var steps: Array[Dictionary] = []
+	_collect_recipe(id, steps, {}, 0)
+	return steps
+
+
+func _collect_recipe(id: String, steps: Array[Dictionary], done: Dictionary, depth: int) -> void:
+	if depth > 32 or done.has(id):
+		return
+	var prod := producer(id)
+	if prod.is_empty():
+		return
+	for dep in dependencies(id):
+		_collect_recipe(dep, steps, done, depth + 1)
+	done[id] = true
+	if prod.kind == "process":
+		var proc: Dictionary = processes[prod.id]
+		steps.append({
+			"kind": "process", "process": proc.id, "input": proc.input, "equipment": proc.equipment,
+			"action": proc.action, "output": proc.output, "work": proc.work, "cook_time": proc.cook_time,
+		})
+	else:
+		var asm: Dictionary = assemblies[prod.id]
+		steps.append({"kind": "assembly", "base": asm.base, "parts": asm.parts.duplicate(), "output": asm.output})
 
 
 ## Seconds one competent cook needs to make an item from scratch, doing every
