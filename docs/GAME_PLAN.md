@@ -57,8 +57,21 @@ based on dishes served, tips, and how many customers left angry.
 - **Burning:** oven/pot items have a "perfect" window, then they burn (burnt items are trashed).
 - **Full counter:** you can't throw to a teammate whose counter slots are all full
   (their portrait shows a red ✕). This forces players to clear their space.
-- **Angry customers:** a lost customer costs score. Losing too many fails the level
-  (optional for easy levels).
+- **Angry customers:** a lost customer costs score.
+- **Normal levels can't be failed.** They always end with a 0–3★ rating. Only
+  **festival (horde)** and **competition (boss)** levels can be lost (see §5A.2).
+
+### 2.3 Throwing to anyone
+- **Every player can throw to every other player.** With 4 players, each screen has 3
+  teammate portraits on the right edge, plus the serving window for whoever owns it.
+- The extra choice is deliberate: players have to agree on who needs what. To keep it
+  readable:
+  - each portrait shows that player's role ("Dough", "Sauce", "Oven") and how many of
+    their slots are free
+  - when you pick up an item, the portraits of teammates who **can use it** glow; you
+    can still throw to anyone
+  - flicks resolve to the nearest portrait along the flick direction, and portraits
+    are spaced far apart so they're hard to mix up
 
 ---
 
@@ -251,26 +264,115 @@ is realistic.
 ## 5A. Game modes
 
 ### 5A.1 Story mode: "World Food Tour"
-- **Premise:** the players are a ragtag food-truck crew (later a flying food-ship)
-  touring the world to feed everyone. A light, comic-book storyline is told in short
-  comic-panel cutscenes between regions: a page or two of panels with speech bubbles,
-  skippable, in the same art style as the game.
-- **World map:** a stylized, hand-drawn globe/map. The crew's vehicle travels along a
-  route between **regions**, and each region is one cuisine pack:
-  Italy → Mexico → USA diner → Japan → … → imaginary detours (an iceberg with
-  penguins, a monster island, a pirate sea, outer space).
-- **Region structure:** each region is a cluster of 3–5 level nodes on the map (the
-  pack's challenges), ending with a **boss shift**: a special customer such as a food
-  critic, the Penguin King, or a hungry kraken, with a tougher combination of the
-  region's dishes.
-- **Progression:** stars from each level unlock the route onward. Optional bonus
-  nodes need a certain number of stars. New equipment and dishes are introduced one
+- **Premise:** four chefs who have never cooked together team up with one goal: to
+  become **the best chefs in the world**. They travel the world to learn each region's
+  cuisine from the locals, cook at its biggest food festival, and win its most famous
+  cooking competition. The imaginary regions (penguins, monsters, pirates, space) are
+  detours along the way. The story is told in short, skippable comic-panel cutscenes
+  between regions: a page or two of panels with speech bubbles, in the game's art style.
+- **The crew:** four chefs, one per player color, each with a simple personality for
+  the cutscenes, e.g. the hot-headed one, the calm perfectionist, the clumsy optimist
+  and the show-off. In solo play the player controls the whole crew. Names and designs
+  come later.
+- **World map:** a stylized, hand-drawn globe/map. The crew travels along a route
+  between **regions**, and each region is one cuisine pack:
+  Italy → Mexico → USA → Spain → Japan → France (the finale), with imaginary detours in
+  between (an iceberg with penguins, a monster island, a pirate sea, outer space).
+- **Region structure:** a region is a cluster of level nodes on the map:
+  1. 3–5 **normal levels** that introduce the region's dishes one at a time
+  2. 1 **festival (horde) level**, unlocked by stars
+  3. 1 **competition (boss) level** against a rival AI chef, unlocked by stars, which
+     opens the route to the next region when you win it
+- **Progression:** **stars unlock levels.** Each node needs a total number of stars
+  (e.g. the festival needs 6★ from the region, the competition 9★). Replaying levels for
+  more stars is how stuck players progress. New equipment and dishes are introduced one
   region at a time, so the tutorial continues naturally through the story.
 - **Co-op progress:** story progress is saved on each player's device. In
   multiplayer, the host's map is used, and every player who finishes a level
   gets credit for it.
-- **Rewards:** stars unlock regions; completing regions unlocks cosmetic chef outfits,
-  food-truck skins and portrait frames.
+- **Rewards:** completing regions unlocks cosmetic chef outfits, kitchen themes and
+  portrait frames (see §5A.5).
+
+### 5A.2 Level types
+
+| | Normal level | Festival (horde) level | Competition (boss) level |
+|---|---|---|---|
+| **Length** | 3–4 min | 6–8 min, in waves | 4–5 min, in rounds |
+| **Recipes** | 2–4 dishes of the region | 1–2 **simple** dishes (1–3 steps) | the region's signature dishes, the hardest combination |
+| **Customers** | normal queue | a **huge crowd**: many customers, short gaps, waves that build up | a **judges' table** with a fixed list of orders |
+| **Can you fail?** | No. Always ends with 0–3★ | **Yes.** A **crowd mood meter** drops when customers leave hungry; when it's empty, the festival is a flop | **Yes.** You lose if the rival AI chef finishes first or gets the higher score |
+| **Feel** | learning and mastering | an endurance grind: fast, repetitive, rhythmic | a tense race against an opponent you can see |
+
+**Festival (horde) levels**
+- Based on real food festivals in each region (see §5A.4). Lots of characters,
+  bunting and music in the background.
+- The crowd comes in **waves**, with a short breather between them. Each wave is bigger
+  and faster than the last.
+- Recipes are deliberately simple, e.g. "pizza slice", "taco", "ramen bowl". The
+  challenge is volume and stamina, not complexity.
+- The **crowd mood meter** goes up a little with every served customer and down
+  sharply with every lost one. When it's empty, the level fails. If you survive every
+  wave you clear the level, and stars are based on the final mood and the score.
+
+**Competition (boss) levels**
+- Based on real cooking competitions in each region (see §5A.4), with a fictional name,
+  a judging panel, and a host announcer in the cutscenes.
+- **The rival AI chef cooks the same dishes** at the same time. A rival panel on the
+  top bar shows the rival's portrait, which dish they are on, a progress bar per dish,
+  and how many dishes they have finished.
+- The judges' order list is the same for both kitchens. The rival is a simulation that
+  runs through the same recipe steps with its own timing. It doesn't need fake
+  gestures; it just steps through the recipe at a set pace.
+- **Rival personalities** make each boss different:
+  - *steady*: a constant pace, the baseline
+  - *show-off*: very fast but sometimes burns something and has to redo it
+  - *perfectionist*: slow start, speeds up near the end
+  - *chaotic*: unpredictable bursts
+- **Win condition:** finish the judges' list before the rival, or have the higher
+  **judges' score** when time runs out. The score counts dishes finished, perfect
+  cooks (taken out during the green window), and no burnt dishes.
+- **Difficulty scales with player count**, so that 1 player and 4 players get an
+  equally fair fight.
+- **Taunts:** the rival shouts comic speech bubbles ("Too slow!", "Is that burnt?!"),
+  and the crowd reacts when you overtake.
+
+### 5A.3 Arcade mode: high score
+- **Choose your cuisine:** the players pick any **unlocked** cuisine pack (real or
+  imaginary). Optionally there's a "Mixed" option with a random selection of dishes.
+- **Endless shift:** customers keep coming and the pace slowly increases (shorter
+  patience, more simultaneous orders, harder dishes rotated in). The run ends after
+  **3 angry customers** ("3 strikes").
+- **Score:** points per dish, tips for speed, and a **combo multiplier** for serving
+  without losing anyone.
+- **Leaderboards:** local high scores per cuisine and per player count (1/2/3/4). They
+  become online leaderboards once internet play exists.
+- Optional variant: **Timed Rush**, a fixed 5-minute score attack per cuisine.
+
+### 5A.4 Region plan with real-world references
+
+In-game events get **fictional names** inspired by the real ones, so we avoid trademark
+issues (e.g. Bocuse d'Or®, World Sushi Cup®, MasterChef®).
+
+| Region | Festival (horde) inspired by | Competition (boss) inspired by |
+|---|---|---|
+| **Italy** | Napoli Pizza Village: Naples' seafront pizza festival with 600k+ visitors → *"Festa della Pizza"* (pizza slices, simple pasta) | World Pizza Championship (Campionato Mondiale della Pizza), Parma → *"Gran Premio della Pizza"*; it even has a "fastest pizza maker" category |
+| **Mexico** | Feria Nacional del Mole, San Pedro Atocpan (every October) → *"Feria del Mole"* (tacos and simple mole plates) | No single famous competition, so a fictional Iron-Chef-style *"Copa del Taco"* |
+| **USA** | A Fourth-of-July cookout / state fair → *"County Fair"* (hot dogs, burgers) | Memphis in May World Championship Barbecue Cooking Contest → *"Smoke & Fire BBQ Championship"* (ribs, wings, sauce) |
+| **Spain** | La Tomatina–style street festival → *"Fiesta del Tomate"* (tapas) | International Valencian Paella Competition of Sueca (since 1961) → *"Copa de la Paella"* |
+| **Japan** | Tokyo Ramen Festa (Komazawa Olympic Park) → *"Ramen Matsuri"* | World Sushi Cup Japan, Tokyo → *"Sushi Grand Cup"* |
+| **France (finale)** | Lyon street-food festival → *"Fête de la Gastronomie"* | Bocuse d'Or and the World Pastry Cup (Coupe du Monde de la Pâtisserie), both at SIRHA in Lyon → *"Golden Toque World Final"*: the last boss, the best AI chef in the world |
+| **Penguin Iceberg** (imaginary) | *"Krill Carnival"*: a colony of hungry penguins | *"The Penguin King's Feast"*: the king's personal chef as the rival |
+| **Monster Island** (imaginary) | *"Monster Mash Night"* | *"Fright Chef"* |
+
+### 5A.5 Free-to-play model
+- The game is **free**, and **all gameplay content** is earned by playing (stars,
+  regions, arcade cuisines).
+- Possible later revenue, only **cosmetic**: chef outfits, kitchen themes, portrait
+  frames, throw-trail effects. No energy timers, no pay-to-win, no paid boosts.
+- Optional rewarded ads only (e.g. "watch an ad for a bonus cosmetic"), never forced
+  ads during a level.
+- Decided later, but the code keeps a clear separation between "unlocked by progress"
+  and "owned cosmetics" so a store can be added.
 
 ### 5A.2 Arcade mode: high score
 - **Choose your cuisine:** the players pick any **unlocked** cuisine pack (real or
@@ -284,7 +386,7 @@ is realistic.
   become online leaderboards once internet play exists.
 - Optional variant: **Timed Rush**, a fixed 5-minute score attack per cuisine.
 
-### 5A.3 Other entry points
+### 5A.6 Other entry points
 - **Quick Play:** replay any unlocked story level directly.
 - **Tutorial:** the first story level doubles as the tutorial.
 
@@ -314,11 +416,21 @@ is realistic.
   also helps color-blind players.
 
 ### 6.2 Art pipeline
-- Vector art in Inkscape or Krita, exported as PNG atlases at 2× resolution.
-- Shaders in Godot: ink outline, halftone shadow, "hit flash".
-- Placeholder art: flat-color shapes with outlines, good enough to playtest from day one.
-- If needed, buy or commission a character/food icon set later. The data-driven design
-  means art can be swapped in without code changes.
+**Phase 1 (now): generated art.** Claude makes the art:
+- Food items, equipment, UI and portraits are hand-written **SVG files** in a
+  consistent comic style: flat colors, thick dark outlines, a highlight and a shadow
+  tone. Godot imports SVG directly, and they scale cleanly to any screen.
+- A few effects are drawn in code: onomatopoeia bubbles, the patience bars, and
+  particles.
+- Shaders: ink outline, halftone shadow, "hit flash".
+- **Free assets** fill the gaps, but only clearly licensed ones (CC0 preferred: Kenney,
+  OpenGameArt CC0, freesound CC0 for audio). Every third-party file is listed in
+  `CREDITS.md` with its source and license.
+- Each item's art is chosen by its id in the data files (`art/items/<id>.svg`), so any
+  file can be replaced later without touching code.
+
+**Phase 2 (later):** replace the generated art with commissioned or hand-drawn art,
+starting with the most visible things: characters, customers, the hero dishes.
 
 ### 6.3 Audio
 - A short SFX per action (chop, squish, sizzle, whoosh, thwack, ding, angry grumble),
@@ -352,7 +464,7 @@ is realistic.
 
 ## 8. Technology choices
 
-### 8.1 Engine: **Godot 4 (latest stable 4.x), GDScript**
+### 8.1 Engine: **Godot 4.7.2 (stable), GDScript**
 Why Godot:
 - Free and open source, with no royalties or runtime fees.
 - Very strong 2D tooling: sprites, shaders, particles, tweens, animation, parallax.
@@ -451,7 +563,10 @@ Each milestone ends with something playable or testable.
 - Order system (spawning, patience, scoring, stars).
 - Kitchen state with intents and events.
 - Level validator.
-- Italian pack data: pizza, pasta, bruschetta.
+- Level types: normal (star rating), festival (waves and crowd mood meter), and
+  competition (rival AI chef simulation with personalities and a judges' score).
+- Italian pack data: pizza, pasta, bruschetta, plus the "Festa della Pizza" festival
+  and the "Gran Premio della Pizza" competition.
 - Unit tests and a "bot" simulation that plays a full shift headlessly.
 
 ### M2 – Single-player vertical slice (placeholder art)
@@ -484,7 +599,8 @@ Each milestone ends with something playable or testable.
 - **World map** screen with route, level nodes, region unlocks via stars, and save data.
 - **Comic-panel cutscene** player (data-driven: panels, speech bubbles, transitions).
 - First story arc: Italy (with tutorial) → Mexico → Penguin Iceberg (first imaginary
-  region), each with a boss shift.
+  region), each with a festival and a competition.
+- Rival chef presentation: rival panel, taunt bubbles, and a judges' results screen.
 - **Arcade mode:** cuisine picker, endless escalating shift, 3-strike rule, combo
   scoring, local high scores per cuisine and player count.
 - Mexican, Burger and Penguin packs; 3–5 challenges each.
@@ -528,24 +644,26 @@ Each milestone ends with something playable or testable.
 
 ---
 
-## 12. Open questions for the project owner
-1. **Engine:** OK with Godot 4 + GDScript? (Alternative: C# in Godot.)
-2. **Orientation:** landscape (recommended) or portrait?
-3. **Throw targets:** can anyone throw to anyone, or only to "neighbours" around a
-   virtual table (harder and more chaotic)?
-4. **Failure:** should challenges be failable (too many angry customers ends the
-   shift), or always finish with a star rating?
-5. **Story:** who is the crew, and what are they travelling in (food truck, flying
-   ship, train)? Is there a goal for the tour (a world cooking championship, finding
-   a legendary recipe)?
-6. **Monetization:** free, paid, or free with cosmetic chef skins? This affects
-   accounts and backend for online play.
-7. **Art:** will you or someone on the team draw the art, or should the plan assume
-   asset packs plus commissioned key art?
+## 12. Decisions made by the project owner
+| Question | Decision |
+|---|---|
+| Engine | **Godot 4 + GDScript** (pinned to Godot 4.7.2) |
+| Orientation | **Landscape** |
+| Throw targets | **Anyone can throw to anyone** (§2.3) |
+| Failure | Normal levels: **star rating only**. Festival (horde) and competition (boss) levels **can be failed** (§5A.2) |
+| Progression | **Stars unlock new levels** and regions (§5A.1) |
+| Story | **Four chefs** who want to become the best in the world, travelling the world to learn its cuisines (§5A.1) |
+| Boss levels | Competitions inspired by **real cooking contests**, against a **rival AI chef cooking the same dishes** (§5A.2, §5A.4) |
+| Horde levels | **Festivals**: huge crowds, longer, simpler recipes (§5A.2) |
+| Monetization | **Free to play**; cosmetic-only if anything (§5A.5) |
+| Art | **Claude generates the art** (SVG) for now, plus clearly licensed free assets; replaced later (§6.2) |
+
+Still open, not blocking: the chefs' names and looks, and the name of the game.
 
 ---
 
-## 13. Immediate next steps (once the plan is approved)
+## 13. Immediate next steps
 1. M0: create the Godot project skeleton, CI, Android export preset.
-2. M1: implement and test the content model and recipe engine with the Italian pack.
+2. M1: implement and test the content model, recipe engine, level types (normal,
+   festival, competition with rival AI) and the Italian pack.
 3. M2: build the solo "Pizza only" vertical slice to test the feel of the gestures.
