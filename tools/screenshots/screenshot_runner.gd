@@ -17,6 +17,9 @@ func _ready() -> void:
 		_out = args[0]
 	DirAccess.make_dir_recursive_absolute(_out)
 	Game.settings.sound = false
+	# Start from an empty save and never write the player's real one.
+	Game.save_enabled = false
+	Game.progression.load_save({})
 	# Let a dummy node be the "current scene" so scene changes don't free us.
 	await get_tree().process_frame
 	var dummy := Node.new()
@@ -34,11 +37,17 @@ func _run() -> void:
 	await _wait(0.4)
 	await _shot("02_level_select")
 
+	Game.open_recipe_book(Game.SCENE_MENU)
+	await _wait(0.4)
+	await _shot("02b_recipe_book_empty")
+
 	Game.start_level("italy_01")
 	await _wait(2.3)
 	var screen := get_tree().current_scene
 	var shift: Shift = screen.shift
 	await _shot("03_kitchen_start")
+	await _wait(2.5)
+	_check(not screen._hint_text.is_empty(), "a new dish shows tips")
 
 	# Real pointer input: tap a crate, then drag the food into the bin.
 	# (A headless run gets no GUI input, so this part needs a display.)
@@ -91,6 +100,10 @@ func _run() -> void:
 	shift.do_intent({"type": "serve", "player": 0, "slot": 0})
 	await _wait(0.3)
 	await _shot("09_served")
+	_check(Game.progression.is_discovered("pizza_margherita"), "serving a pizza discovers it")
+	shift.spawn_customer("pizza_margherita")
+	await _wait(0.6)
+	_check(screen._hint_text.is_empty(), "no tips for a dish you already made")
 	# A busy kitchen: the bot plays Full Trattoria for a while at 4x speed.
 	Game.start_level("italy_04")
 	await _wait(2.0)
@@ -107,6 +120,16 @@ func _run() -> void:
 	Game.finish_level({"type": "normal", "failed": false, "stars": 2, "score": 312}, {"served": 4, "lost": 1, "perfect": 2, "score": 312})
 	await _wait(1.6)
 	await _shot("11_results")
+	Game.open_recipe_book(Game.SCENE_MENU)
+	await _wait(0.4)
+	await _shot("12_recipe_book")
+	var book := get_tree().current_scene
+	book._show_dish("bruschetta")
+	await _wait(0.2)
+	await _shot("13_recipe_locked")
+	book._show_mystery({"cuisine": "Mexican", "region": "Mexico"})
+	await _wait(0.2)
+	await _shot("14_recipe_coming_soon")
 
 
 func _check_input(screen: Node, shift: Shift) -> void:

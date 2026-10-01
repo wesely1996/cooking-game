@@ -12,6 +12,7 @@ const DEFAULT_MAP_PATH := "res://data/story/world_map.json"
 var regions: Array = []
 var best_stars := {}  # level id -> int
 var won := {}  # level id -> true, for festivals and competitions that were won
+var discovered := {}  # dish id -> true, once the players have served it
 
 
 func _init(p_regions: Array = []) -> void:
@@ -30,6 +31,18 @@ func record(level_id: String, outcome: Dictionary) -> void:
 	best_stars[level_id] = maxi(int(best_stars.get(level_id, 0)), int(outcome.get("stars", 0)))
 	if outcome.get("type", "") in [LevelDef.TYPE_FESTIVAL, LevelDef.TYPE_COMPETITION]:
 		won[level_id] = true
+
+
+## Marks a dish as made. Returns true the first time.
+func discover(dish: String) -> bool:
+	if discovered.has(dish):
+		return false
+	discovered[dish] = true
+	return true
+
+
+func is_discovered(dish: String) -> bool:
+	return discovered.has(dish)
 
 
 func total_stars() -> int:
@@ -75,14 +88,17 @@ func unlocked_arcade_packs() -> Array[String]:
 
 
 func to_dict() -> Dictionary:
-	return {"best_stars": best_stars.duplicate(), "won": won.keys()}
+	return {"best_stars": best_stars.duplicate(), "won": won.keys(), "discovered": discovered.keys()}
 
 
 func load_save(data: Dictionary) -> void:
 	best_stars.clear()
 	won.clear()
+	discovered.clear()
 	var stars: Dictionary = data.get("best_stars", {})
 	for level_id in stars:
 		best_stars[level_id] = int(stars[level_id])
 	for level_id in data.get("won", []):
 		won[level_id] = true
+	for dish in data.get("discovered", []):
+		discovered[dish] = true

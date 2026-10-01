@@ -54,7 +54,9 @@ art/               fonts and the generated SVG pictures (tools/art/generate_art.
   side to roll, draw circles to stir.
 - **Ovens and pots cook on their own.** Take food out while the ring is green
   for a PERFECT bonus. Wait too long and it burns.
-- The first two levels show a **CHEF'S TIP** with the next step.
+- The first time you make a new dish, a **NEW DISH TIP** and arrows show
+  every step. After you've served it once, you're on your own, but the
+  **recipe book** remembers how.
 
 ## Running
 

@@ -32,8 +32,8 @@ if grep -qE "SCRIPT ERROR|Parse Error|^ERROR:" <<<"$output"; then
   echo "Errors were logged during the smoke test." >&2
   exit 1
 fi
-if ! grep -q "11_results" <<<"$output"; then
-  echo "The smoke test did not reach the results screen." >&2
+if ! grep -q "14_recipe_coming_soon" <<<"$output"; then
+  echo "The smoke test did not reach the end of the run." >&2
   exit 1
 fi
 echo "Smoke test passed."
