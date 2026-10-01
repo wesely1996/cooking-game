@@ -1,0 +1,14 @@
+# Godot
+.godot/
+/android/
+export_credentials.cfg
+
+# Builds
+/build/
+*.apk
+*.aab
+
+# Editors / OS
+.DS_Store
+.vscode/
+*.tmp

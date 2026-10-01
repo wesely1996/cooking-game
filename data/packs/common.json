@@ -1,0 +1,16 @@
+{
+  "id": "common",
+  "name": "Common kitchen",
+  "items": {
+    "burnt_food": {"name": "Burnt food", "kind": "waste"}
+  },
+  "equipment": {
+    "knife": {"name": "Knife", "kind": "tool"},
+    "mixing_bowl": {"name": "Mixing bowl", "kind": "tool"},
+    "rolling_pin": {"name": "Rolling pin", "kind": "tool"},
+    "sauce_pot": {"name": "Sauce pot", "kind": "appliance", "capacity": 1},
+    "boil_pot": {"name": "Boiling pot", "kind": "appliance", "capacity": 2},
+    "oven": {"name": "Oven", "kind": "appliance", "capacity": 2},
+    "serving_window": {"name": "Serving window", "kind": "pass"}
+  }
+}

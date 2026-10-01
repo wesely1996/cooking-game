@@ -1,0 +1,18 @@
+{
+  "regions": [
+    {
+      "id": "italy",
+      "name": "Italy",
+      "pack": "italian",
+      "boss": "italy_competition",
+      "levels": [
+        {"id": "italy_01", "stars_required": 0},
+        {"id": "italy_02", "stars_required": 2},
+        {"id": "italy_03", "stars_required": 4},
+        {"id": "italy_04", "stars_required": 6},
+        {"id": "italy_festival", "stars_required": 8},
+        {"id": "italy_competition", "stars_required": 10}
+      ]
+    }
+  ]
+}

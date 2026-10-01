@@ -1,0 +1,43 @@
+{
+  "id": "italy_festival",
+  "name": "Festa della Pizza",
+  "description": "Naples' seafront pizza festival. Thousands of hungry people, three waves, keep the crowd happy!",
+  "pack": "italian",
+  "type": "festival",
+  "dishes": [
+    {
+      "id": "pizza_slice",
+      "weight": 2
+    },
+    {
+      "id": "caprese_salad",
+      "weight": 1
+    }
+  ],
+  "roles": "festa",
+  "patience_multiplier": {"1": 1.3, "2": 1.15, "3": 1.05, "4": 1.0},
+  "mood": {
+    "start": 60,
+    "served": 4,
+    "lost": 15
+  },
+  "wave_break": 6,
+  "waves": [
+    {
+      "customers": {"1": 6, "2": 8, "3": 10, "4": 12},
+      "spawn_interval": {"1": 4.5, "2": 4.5, "3": 4, "4": 3.5},
+      "max_active": {"1": 3, "2": 3, "3": 4, "4": 4}
+    },
+    {
+      "customers": {"1": 8, "2": 10, "3": 12, "4": 14},
+      "spawn_interval": {"1": 4, "2": 4, "3": 3.5, "4": 3},
+      "max_active": {"1": 3, "2": 4, "3": 4, "4": 5}
+    },
+    {
+      "customers": {"1": 10, "2": 12, "3": 14, "4": 16},
+      "spawn_interval": {"1": 3.5, "2": 3.5, "3": 3, "4": 2.5},
+      "max_active": {"1": 4, "2": 4, "3": 5, "4": 5}
+    }
+  ],
+  "stars": [0, 60, 85]
+}

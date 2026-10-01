@@ -1,0 +1,23 @@
+{
+  "id": "italy_03",
+  "name": "Pasta e Pizza",
+  "description": "One flour, two doughs. Tomato sauce goes on the pizza and the pasta.",
+  "pack": "italian",
+  "type": "normal",
+  "dishes": [
+    {
+      "id": "pizza_margherita",
+      "weight": 1
+    },
+    {
+      "id": "pasta_pomodoro",
+      "weight": 1
+    }
+  ],
+  "roles": "trattoria",
+  "duration": 210,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 19, "2": 16, "3": 15, "4": 14},
+  "stars": {"1": [130, 350, 570], "2": [190, 550, 720], "3": [320, 740, 790], "4": [270, 720, 870]}
+}

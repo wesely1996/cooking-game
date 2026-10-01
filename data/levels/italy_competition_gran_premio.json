@@ -1,0 +1,17 @@
+{
+  "id": "italy_competition",
+  "name": "Gran Premio della Pizza",
+  "description": "Italy's great pizza championship. Bruno 'Il Fulmine' is fast, flashy... and burns things.",
+  "pack": "italian",
+  "type": "competition",
+  "dishes": ["pizza_margherita", "pasta_pomodoro", "bruschetta"],
+  "roles": "trattoria",
+  "judges_orders": ["pizza_margherita", "bruschetta", "pasta_pomodoro", "pizza_margherita", "pasta_pomodoro", "bruschetta", "pizza_margherita"],
+  "max_active": 2,
+  "time_limit": 360,
+  "rival": {
+    "name": "Bruno 'Il Fulmine'",
+    "personality": "show_off",
+    "speed": {"1": 0.7, "2": 1.0, "3": 1.3, "4": 1.5}
+  }
+}

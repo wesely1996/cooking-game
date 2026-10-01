@@ -1,0 +1,27 @@
+{
+  "id": "italy_04",
+  "name": "Full Trattoria",
+  "description": "The whole menu on a busy Saturday night.",
+  "pack": "italian",
+  "type": "normal",
+  "dishes": [
+    {
+      "id": "pizza_margherita",
+      "weight": 2
+    },
+    {
+      "id": "pasta_pomodoro",
+      "weight": 1.5
+    },
+    {
+      "id": "bruschetta",
+      "weight": 1
+    }
+  ],
+  "roles": "trattoria",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 4, "2": 4, "3": 5, "4": 5},
+  "spawn_interval": {"1": 17, "2": 14, "3": 13, "4": 12},
+  "stars": {"1": [150, 400, 790], "2": [230, 670, 1010], "3": [350, 950, 1130], "4": [330, 990, 1210]}
+}

@@ -50,7 +50,7 @@ based on dishes served, tips, and how many customers left angry.
   - small icons for the required ingredients/components (they tick off as they're added)
   - a **patience bar** under the customer: green → yellow → red, then they leave
 - Patience depends on the dish's complexity and the number of players (see §7).
-- Serving the wrong dish loses points and the ticket stays open.
+- Serving a dish nobody ordered doesn't count: it bounces back with a "NOPE!" bubble.
 - Fast serve: bonus tip. Combo: serve several in a row without losing a customer.
 
 ### 2.2 Failure states that keep tension
@@ -504,7 +504,7 @@ res://
   ui/                     # main menu, lobby, results, settings, world map, arcade picker
   story/                  # world map data, region/level nodes, comic cutscene scripts
   audio/
-  tests/                  # GUT unit tests + headless simulation
+  tests/                  # headless unit tests + bot simulations (own small runner)
 ```
 
 **Key principle:** game logic (`core/`) is separate from presentation and transport.
@@ -552,12 +552,15 @@ Mobile networks and NAT make direct peer-to-peer connections unreliable, so the 
 
 Each milestone ends with something playable or testable.
 
-### M0 – Project setup
-- Godot 4 project, folder structure, `.gitignore`, Android export preset.
-- GitHub Actions: run the headless test suite, and build a debug APK as an artifact.
-- GUT (Godot Unit Test) installed.
+### M0 – Project setup ✅
+- Godot 4.7.2 project, folder structure, `.gitignore`, placeholder start screen.
+- A small headless test runner (`tests/run_tests.gd`, `tools/run_tests.sh`), so no
+  test add-on is needed.
+- GitHub Actions runs the test suite on every push.
+- The Android export preset and debug-APK build in CI move to M2, when there is
+  something to play on a phone.
 
-### M1 – Core logic (headless, fully tested)
+### M1 – Core logic (headless, fully tested) ✅
 - Content DB plus JSON schema for ingredients, equipment, transformations, dishes, levels.
 - Recipe engine (valid actions and combinations, item states, burning).
 - Order system (spawning, patience, scoring, stars).
@@ -568,6 +571,23 @@ Each milestone ends with something playable or testable.
 - Italian pack data: pizza, pasta, bruschetta, plus the "Festa della Pizza" festival
   and the "Gran Premio della Pizza" competition.
 - Unit tests and a "bot" simulation that plays a full shift headlessly.
+
+**M1 results and notes**
+- All content is data: `data/packs/*.json` (items, equipment, processes, assemblies,
+  role presets), `data/levels/*.json`, and `data/story/world_map.json`.
+- An assembly keeps its base item and lists the parts added to it. An item counts as
+  the assembly it completes (e.g. pizza base + sauce + cheese = raw pizza margherita),
+  so "drop sauce onto the base" and "drop the base onto the sauce" both work.
+- Every player action is a plain Dictionary *intent* (`take`, `work`, `insert`,
+  `work_appliance`, `remove`, `combine`, `move`, `throw`, `serve`, `trash`,
+  `trash_appliance`), and every change is an *event* Dictionary. That is exactly
+  what the LAN and online layers will send.
+- `KitchenBot` plays any level through those intents. The tests check that bots can
+  finish every Italian level with 1, 2, 3 and 4 players.
+- `tools/balance_report.gd` runs bots at different speeds. The first spawn rates,
+  patience values and star thresholds come from it: 1★ is a slow bot team, 2★ an
+  average one, 3★ a good one. Bots don't spend time reading orders or talking, so
+  **these numbers must be re-tuned with real players in M2.**
 
 ### M2 – Single-player vertical slice (placeholder art)
 - Landscape kitchen screen: order bar, sidebar, 5 counter slots, station tabs.
@@ -620,7 +640,7 @@ Each milestone ends with something playable or testable.
 ---
 
 ## 10. Testing strategy
-- **Unit tests (GUT):** recipe engine, order system, scoring, level validator, protocol
+- **Unit tests:** recipe engine, order system, scoring, level validator, protocol
   serialization.
 - **Content tests:** every level is solvable for 1–4 players (validator run in CI).
 - **Headless simulation:** bots play full shifts, to catch soft-locks and to balance

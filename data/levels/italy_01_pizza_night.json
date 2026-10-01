@@ -1,0 +1,14 @@
+{
+  "id": "italy_01",
+  "name": "Pizza Night",
+  "description": "Your first shift in Naples. Knead, roll, sauce, bake. Just pizza!",
+  "pack": "italian",
+  "type": "normal",
+  "dishes": ["pizza_margherita"],
+  "roles": "trattoria",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 3, "3": 4, "4": 4},
+  "spawn_interval": {"1": 23, "2": 18, "3": 16, "4": 15},
+  "stars": {"1": [110, 280, 380], "2": [180, 410, 520], "3": [270, 560, 600], "4": [260, 630, 680]}
+}
