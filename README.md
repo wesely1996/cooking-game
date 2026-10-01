@@ -13,7 +13,9 @@ and throw them to each other to serve customers around the world.
 |---|---|
 | M0: project setup, test runner, CI | done (Android export comes with M2) |
 | M1: core game rules, Italian content, bots | done |
-| M2: playable solo vertical slice | next |
+| M2: playable solo kitchen (Italy levels, arcade) | done |
+| CI/CD: tests, smoke test, Android/desktop builds, releases | done |
+| M3: polish, more mini-games feel, real playtests | next |
 
 ## Project layout
 
@@ -32,8 +34,21 @@ data/
   story/           world map (regions, star requirements)
 tests/             headless tests (tests/unit/test_*.gd)
 tools/             test runner script, balancing report
-ui/                scenes (only a placeholder start screen so far)
+game/              the playable game: kitchen screen, mini-games, effects, sound
+ui/                menus: title, world map, results
+art/               fonts and the generated SVG pictures (tools/art/generate_art.py)
 ```
+
+## How to play (solo)
+
+- **Tap a crate** to take an ingredient (or drag it onto a counter spot).
+- **Tap food** to select it: everything it can go to glows. Then tap (or drag
+  the food onto) a tool, an appliance, other food, the serving window or the bin.
+- **Tools open a mini-game:** swipe down to chop, tap to knead, swipe side to
+  side to roll, draw circles to stir.
+- **Ovens and pots cook on their own.** Take food out while the ring is green
+  for a PERFECT bonus. Wait too long and it burns.
+- The first two levels show a **CHEF'S TIP** with the next step.
 
 ## Running
 
@@ -46,6 +61,10 @@ GODOT=/path/to/godot tools/run_tests.sh
 
 # only tests whose name contains "kitchen"
 GODOT=/path/to/godot tools/run_tests.sh kitchen
+
+# smoke test: runs the real screens with taps, drags and swipes (uses xvfb-run
+# when available, saving screenshots to build/screenshots)
+GODOT=/path/to/godot tools/smoke_test.sh
 
 # balancing: how bots of different speeds do on each level
 /path/to/godot --headless --path . --script res://tools/balance_report.gd -- italy_01

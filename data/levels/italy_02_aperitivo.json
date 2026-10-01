@@ -4,6 +4,7 @@
   "description": "Bruschetta joins the menu. The chopped tomatoes are wanted everywhere.",
   "pack": "italian",
   "type": "normal",
+  "hints": true,
   "dishes": [
     {
       "id": "pizza_margherita",

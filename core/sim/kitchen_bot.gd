@@ -33,23 +33,10 @@ var _kitchen: KitchenState
 
 
 func step(shift: Shift) -> void:
-	_kitchen = shift.kitchen
-	while _busy_until.size() < _kitchen.players.size():
+	while _busy_until.size() < shift.kitchen.players.size():
 		_busy_until.append(0.0)
-	_claimed.clear()
-	_actions.clear()
-	var server := _kitchen.pass_owner()
-	var planned := 0
-	for order in shift.orders.orders:
-		if planned >= max_orders:
-			break
-		planned += 1
-		var loc := _ensure(order.dish, server, 0)
-		if not loc.is_empty():
-			_add({"type": "serve", "player": server, "slot": loc.slot})
-	_plan_cleanup()
 	var acted := {}
-	for action in _actions:
+	for action in plan(shift):
 		var p: int = action.player
 		if acted.has(p) or shift.time < _busy_until[p]:
 			continue
@@ -60,6 +47,25 @@ func step(shift: Shift) -> void:
 			continue
 		acted[p] = true
 		_busy_until[p] = shift.time + ACTION_SECONDS[action.type] / speed
+
+
+## The useful next actions for every player, most urgent first, without
+## doing them. Also used for the hints shown to new players.
+func plan(shift: Shift) -> Array[Dictionary]:
+	_kitchen = shift.kitchen
+	_claimed.clear()
+	_actions = []
+	var server := _kitchen.pass_owner()
+	var planned := 0
+	for order in shift.orders.orders:
+		if planned >= max_orders:
+			break
+		planned += 1
+		var loc := _ensure(order.dish, server, 0)
+		if not loc.is_empty():
+			_add({"type": "serve", "player": server, "slot": loc.slot})
+	_plan_cleanup()
+	return _actions
 
 
 ## Runs a whole shift with the bot and returns the outcome.

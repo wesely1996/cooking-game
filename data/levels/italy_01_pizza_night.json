@@ -4,6 +4,7 @@
   "description": "Your first shift in Naples. Knead, roll, sauce, bake. Just pizza!",
   "pack": "italian",
   "type": "normal",
+  "hints": true,
   "dishes": ["pizza_margherita"],
   "roles": "trattoria",
   "duration": 180,

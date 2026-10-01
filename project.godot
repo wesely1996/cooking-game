@@ -7,8 +7,15 @@ config_version=5
 
 config/name="Pass the Plate!"
 config/description="Cooperative 1-4 player cooking game."
-run/main_scene="res://ui/main.tscn"
+config/version="0.1.0"
+run/main_scene="res://ui/main_menu.tscn"
+config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[autoload]
+
+Game="*res://game/game.gd"
+Sfx="*res://game/sfx.gd"
 
 [display]
 
@@ -18,12 +25,20 @@ window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=4
 
-[input_devices]
+[gui]
 
-pointing/emulate_touch_from_mouse=true
+theme/custom_font="res://art/fonts/Fredoka-SemiBold.ttf"
+
+[importer_defaults]
+
+texture={
+"mipmaps/generate": true,
+"svg/scale": 2.0
+}
 
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+textures/canvas_textures/default_texture_filter=3

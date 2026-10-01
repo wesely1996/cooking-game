@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<ellipse cx="64" cy="112" rx="52" ry="8" fill="#1d1a2f" fill-opacity="0.18"/>
+<ellipse cx="64" cy="68" rx="52" ry="40" fill="#d9913f" stroke="#1d1a2f" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="64" cy="66" rx="42" ry="31" fill="#e94b2c" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="50" cy="58" r="8" fill="#fff3cf" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="78" cy="60" r="8" fill="#fff3cf" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="64" cy="78" r="8" fill="#fff3cf" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="44" cy="78" r="8" fill="#fff3cf" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="84" cy="80" r="8" fill="#fff3cf" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M60.0,64.0 Q68.5,64.7 72.1,57.0 Q63.6,56.3 60.0,64.0 Z" fill="#3fae49" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="60.0" y1="64.0" x2="66.1" y2="60.5" stroke="#1d1a2f" stroke-width="2" stroke-opacity="0.6"/>
+<path d="M80.0,74.0 Q72.9,72.1 68.7,78.1 Q75.8,80.0 80.0,74.0 Z" fill="#3fae49" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="80.0" y1="74.0" x2="74.4" y2="76.1" stroke="#1d1a2f" stroke-width="2" stroke-opacity="0.6"/>
+</svg>
