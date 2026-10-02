@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<ellipse cx="64" cy="112" rx="46" ry="8" fill="#1d1a2f" fill-opacity="0.18"/>
+<path d="M24,60 q10,-16 20,0 t20,0 t20,0" stroke="#1d1a2f" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M30,68 q10,-16 20,0 t20,0 t20,0" stroke="#1d1a2f" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M36,76 q10,-16 20,0 t20,0 t20,0" stroke="#1d1a2f" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M42,60 q10,-16 20,0 t20,0 t20,0" stroke="#1d1a2f" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M48,68 q10,-16 20,0 t20,0 t20,0" stroke="#1d1a2f" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M54,76 q10,-16 20,0 t20,0 t20,0" stroke="#1d1a2f" stroke-width="8" fill="none" stroke-linecap="round"/>
+<path d="M24,60 q10,-16 20,0 t20,0 t20,0" stroke="#f8e28a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M30,68 q10,-16 20,0 t20,0 t20,0" stroke="#f8e28a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M36,76 q10,-16 20,0 t20,0 t20,0" stroke="#f8e28a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M42,60 q10,-16 20,0 t20,0 t20,0" stroke="#f8e28a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M48,68 q10,-16 20,0 t20,0 t20,0" stroke="#f8e28a" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M54,76 q10,-16 20,0 t20,0 t20,0" stroke="#f8e28a" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

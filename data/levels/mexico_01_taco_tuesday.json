@@ -1,0 +1,16 @@
+{
+  "id": "mexico_01",
+  "name": "Taco Tuesday",
+  "description": "Welcome to Mexico City! Press tortillas, sizzle the beef, chop a fresh salsa.",
+  "pack": "mexican",
+  "type": "normal",
+  "dishes": [
+    {"id": "beef_taco", "weight": 1}
+  ],
+  "roles": "taqueria",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 24, "2": 19, "3": 16, "4": 15},
+  "stars": {"1": [90, 190, 270], "2": [130, 260, 360], "3": [160, 310, 450], "4": [180, 360, 510]}
+}

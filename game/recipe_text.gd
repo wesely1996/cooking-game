@@ -10,10 +10,15 @@ const GESTURES := {
 	"roll": "swipe side to side ×%d",
 	"stir": "draw circles ×%d",
 	"crank": "draw circles ×%d",
+	"press": "tap ×%d",
+	"mash": "tap ×%d",
+	"grate": "swipe down ×%d",
 }
 const VERBS := {
 	"chop": "Chop", "slice": "Slice", "knead": "Knead", "roll": "Roll out",
 	"stir": "Stir", "crank": "Crank", "bake": "Bake", "boil": "Boil",
+	"press": "Press", "mash": "Mash", "grate": "Grate", "cook": "Cook", "sizzle": "Fry",
+	"grill": "Grill", "steam": "Steam",
 }
 
 

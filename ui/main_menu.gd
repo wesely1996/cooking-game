@@ -1,5 +1,5 @@
 extends Control
-## Title screen.
+## Title screen: Play, Profile, Recipe book, Settings.
 
 var _time := 0.0
 
@@ -8,40 +8,55 @@ func _ready() -> void:
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_theme_constant_override("separation", 12)
+	column.add_theme_constant_override("separation", 14)
 	add_child(column)
 
-	column.add_child(UiStyle.title("PASS THE PLATE!", 96, Art.SUN))
-	var tagline := UiStyle.title("A WORLD COOKING TOUR · 1–4 CHEFS", 30, Color.WHITE)
-	column.add_child(tagline)
-	column.add_child(_spacer(6))
+	column.add_child(UiStyle.title("PASS THE PLATE!", 104, Art.SUN))
+	column.add_child(UiStyle.title("A WORLD COOKING TOUR · 1–4 CHEFS", 30, Color.WHITE))
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0, 10)
+	column.add_child(spacer)
 
-	var story := UiStyle.button("WORLD TOUR", Art.SUN, 40)
-	story.pressed.connect(func(): Game.goto(Game.SCENE_LEVEL_SELECT))
-	column.add_child(_centered(story))
+	var play := UiStyle.button("PLAY", Art.SUN, 60)
+	play.custom_minimum_size = Vector2(360, 0)
+	play.name = "Play"
+	play.pressed.connect(func(): Game.goto(Game.SCENE_PLAY))
+	column.add_child(UiStyle.centered(play))
 
-	var friend := UiStyle.button("PLAY WITH A FRIEND (LAN)", Art.LEAF, 32)
-	friend.pressed.connect(func(): Game.goto(Game.SCENE_LOBBY))
-	column.add_child(_centered(friend))
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 16)
+	for entry in [["PROFILE", Color("#e3b7f0"), Game.SCENE_PROFILE], ["RECIPE BOOK", Color("#ffd1e8"), Game.SCENE_RECIPE_BOOK], ["SETTINGS", Art.PAPER, Game.SCENE_SETTINGS]]:
+		var button := UiStyle.button(entry[0], entry[1], 28)
+		button.name = str(entry[0]).replace(" ", "_")
+		var scene: String = entry[2]
+		button.pressed.connect(func():
+			if scene == Game.SCENE_RECIPE_BOOK:
+				Game.open_recipe_book(Game.SCENE_MENU)
+			else:
+				Game.goto(scene))
+		row.add_child(button)
+	column.add_child(row)
 
-	var arcade := UiStyle.button("ARCADE: ITALIAN", Color("#7fc8f8"), 32)
-	arcade.pressed.connect(func(): Game.start_level("arcade_italian"))
-	column.add_child(_centered(arcade))
-
-	var book := UiStyle.button("RECIPE BOOK", Color("#ffd1e8"), 30)
-	book.pressed.connect(func(): Game.open_recipe_book(Game.SCENE_MENU))
-	column.add_child(_centered(book))
-
-	var best := Game.best_arcade_score("arcade_italian", 1)
-	if best > 0:
-		column.add_child(UiStyle.text("Arcade best: %d" % best, 20, Color.WHITE))
-
-	var sound := UiStyle.button(_sound_label(), Art.PAPER, 22)
-	sound.pressed.connect(func():
-		Game.settings.sound = not Game.settings.sound
-		Game.save()
-		sound.text = _sound_label())
-	column.add_child(_centered(sound))
+	# The player's chef in the corner, as a shortcut to the profile.
+	var chip := Button.new()
+	chip.flat = true
+	chip.focus_mode = Control.FOCUS_NONE
+	chip.custom_minimum_size = Vector2(240, 110)
+	chip.position = Vector2(16, 12)
+	chip.pressed.connect(func(): Game.goto(Game.SCENE_PROFILE))
+	var portrait := ChefPortrait.new()
+	portrait.look = Game.profile.look
+	portrait.custom_minimum_size = Vector2(90, 100)
+	portrait.size = Vector2(90, 100)
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(portrait)
+	var name_label := UiStyle.title(Game.profile.name.to_upper(), 28, Color.WHITE)
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name_label.position = Vector2(96, 34)
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(name_label)
+	add_child(chip)
 
 	var version := UiStyle.text("v%s" % ProjectSettings.get_setting("application/config/version", "dev"), 16, Color(1, 1, 1, 0.8))
 	version.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -75,24 +90,9 @@ func _draw() -> void:
 		var a := _time * 0.15 + TAU * i / 16.0
 		var b := a + TAU / 32.0
 		draw_colored_polygon(PackedVector2Array([center, center + Vector2(cos(a), sin(a)) * 1400.0, center + Vector2(cos(b), sin(b)) * 1400.0]), Color(1, 1, 1, 0.07))
-	for i in 5:
-		var item := Art.item(["pizza_margherita", "tomato", "basil", "pasta_pomodoro", "mozzarella"][i])
+	var foods := ["pizza_margherita", "beef_taco", "salmon_nigiri", "guacamole", "miso_ramen"]
+	for i in foods.size():
+		var item := Art.item(foods[i])
 		if item:
 			var pos := Vector2(size.x * (0.08 + i * 0.21), size.y - 120 + sin(_time * 2.0 + i) * 10.0)
 			draw_texture_rect(item, Rect2(pos, Vector2(110, 110)), false)
-
-
-func _sound_label() -> String:
-	return "SOUND: ON" if Game.settings.sound else "SOUND: OFF"
-
-
-func _centered(control: Control) -> Control:
-	var box := CenterContainer.new()
-	box.add_child(control)
-	return box
-
-
-func _spacer(height: float) -> Control:
-	var c := Control.new()
-	c.custom_minimum_size = Vector2(0, height)
-	return c

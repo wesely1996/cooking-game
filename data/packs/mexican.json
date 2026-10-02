@@ -1,0 +1,106 @@
+{
+  "id": "mexican",
+  "name": "Mexican",
+  "items": {
+    "corn_flour": {"name": "Corn flour", "kind": "raw"},
+    "beef": {"name": "Beef", "kind": "raw"},
+    "onion": {"name": "Onion", "kind": "raw"},
+    "avocado": {"name": "Avocado", "kind": "raw"},
+    "cheese_block": {"name": "Cheese", "kind": "raw"},
+    "corn_cob": {"name": "Corn cob", "kind": "raw"},
+    "chili": {"name": "Chili", "kind": "raw"},
+    "chocolate": {"name": "Chocolate", "kind": "raw"},
+    "masa_mix": {"name": "Masa mix"},
+    "masa_dough": {"name": "Masa dough"},
+    "raw_tortilla": {"name": "Raw tortilla"},
+    "tortilla": {"name": "Tortilla"},
+    "chopped_beef": {"name": "Chopped beef"},
+    "cooked_beef": {"name": "Cooked beef"},
+    "chopped_onion": {"name": "Chopped onion"},
+    "salsa": {"name": "Salsa"},
+    "mashed_avocado": {"name": "Mashed avocado"},
+    "grated_cheese": {"name": "Grated cheese"},
+    "raw_quesadilla": {"name": "Raw quesadilla"},
+    "grilled_corn": {"name": "Grilled corn"},
+    "mole_mix": {"name": "Mole mix"},
+    "mole_sauce": {"name": "Mole sauce"},
+    "cooked_chicken": {"name": "Cooked chicken"},
+    "beef_taco": {"name": "Beef Taco", "kind": "dish", "price": 32, "patience": 75},
+    "guacamole": {"name": "Guacamole", "kind": "dish", "price": 18, "patience": 50},
+    "quesadilla": {"name": "Quesadilla", "kind": "dish", "price": 26, "patience": 60},
+    "elote": {"name": "Elote", "kind": "dish", "price": 10, "patience": 30},
+    "chicken_mole": {"name": "Chicken Mole", "kind": "dish", "price": 14, "patience": 35}
+  },
+  "equipment": {
+    "comal": {"name": "Comal", "kind": "appliance", "capacity": 2},
+    "tortilla_press": {"name": "Tortilla press", "kind": "tool"},
+    "molcajete": {"name": "Molcajete", "kind": "tool"},
+    "grater": {"name": "Grater", "kind": "tool"}
+  },
+  "processes": [
+    {"id": "knead_masa", "input": "masa_mix", "equipment": "mixing_bowl", "action": "knead", "work": 8, "output": "masa_dough"},
+    {"id": "press_tortilla", "input": "masa_dough", "equipment": "tortilla_press", "action": "press", "work": 3, "output": "raw_tortilla"},
+    {"id": "cook_tortilla", "input": "raw_tortilla", "equipment": "comal", "action": "cook", "cook_time": 3, "perfect_window": 3, "burn_time": 7, "output": "tortilla"},
+    {"id": "chop_beef", "input": "beef", "equipment": "knife", "action": "chop", "work": 5, "output": "chopped_beef"},
+    {"id": "cook_beef", "input": "chopped_beef", "equipment": "comal", "action": "sizzle", "cook_time": 5, "perfect_window": 4, "burn_time": 8, "output": "cooked_beef"},
+    {"id": "chop_onion", "input": "onion", "equipment": "knife", "action": "chop", "work": 4, "output": "chopped_onion"},
+    {"id": "mash_avocado", "input": "avocado", "equipment": "molcajete", "action": "mash", "work": 10, "output": "mashed_avocado"},
+    {"id": "grate_cheese", "input": "cheese_block", "equipment": "grater", "action": "grate", "work": 4, "output": "grated_cheese"},
+    {"id": "cook_quesadilla", "input": "raw_quesadilla", "equipment": "comal", "action": "cook", "cook_time": 4, "perfect_window": 3, "burn_time": 7, "output": "quesadilla"},
+    {"id": "grill_corn", "input": "corn_cob", "equipment": "comal", "action": "grill", "cook_time": 5, "perfect_window": 4, "burn_time": 8, "output": "grilled_corn"},
+    {"id": "stir_mole", "input": "mole_mix", "equipment": "sauce_pot", "action": "stir", "work": 4, "output": "mole_sauce"},
+    {"id": "cook_chicken", "input": "chicken", "equipment": "comal", "action": "sizzle", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "cooked_chicken"}
+  ],
+  "assemblies": [
+    {"output": "masa_mix", "base": "corn_flour", "parts": ["water"]},
+    {"output": "salsa", "base": "chopped_tomato", "parts": ["chopped_onion"]},
+    {"output": "beef_taco", "base": "tortilla", "parts": ["cooked_beef", "salsa"]},
+    {"output": "raw_quesadilla", "base": "tortilla", "parts": ["grated_cheese"]},
+    {"output": "guacamole", "base": "mashed_avocado", "parts": ["chopped_onion", "chopped_tomato"]},
+    {"output": "elote", "base": "grilled_corn", "parts": ["grated_cheese"]},
+    {"output": "mole_mix", "base": "chili", "parts": ["chocolate"]},
+    {"output": "chicken_mole", "base": "cooked_chicken", "parts": ["mole_sauce"]}
+  ],
+  "role_presets": {
+    "taqueria": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["corn_flour", "water", "beef", "cheese_block", "avocado", "tomato", "onion"], "equipment": ["mixing_bowl", "tortilla_press", "comal", "knife", "grater", "molcajete", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Tortillas & Comal", "crates": ["corn_flour", "water", "beef", "cheese_block", "avocado"], "equipment": ["mixing_bowl", "tortilla_press", "comal", "knife", "grater"]},
+        {"name": "Salsa & Pass", "crates": ["tomato", "onion"], "equipment": ["knife", "molcajete", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Tortillas", "crates": ["corn_flour", "water"], "equipment": ["mixing_bowl", "tortilla_press", "comal"]},
+        {"name": "Salsa", "crates": ["tomato", "onion", "avocado"], "equipment": ["knife", "molcajete"]},
+        {"name": "Grill & Pass", "crates": ["beef", "cheese_block"], "equipment": ["knife", "grater", "comal", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Tortillas", "crates": ["corn_flour", "water"], "equipment": ["mixing_bowl", "tortilla_press", "comal"]},
+        {"name": "Salsa", "crates": ["tomato", "onion"], "equipment": ["knife"]},
+        {"name": "Grill", "crates": ["beef", "cheese_block"], "equipment": ["knife", "grater", "comal"]},
+        {"name": "Guac & Pass", "crates": ["avocado"], "equipment": ["molcajete", "serving_window"]}
+      ]
+    },
+    "feria": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["corn_cob", "chicken", "chili", "chocolate", "cheese_block"], "equipment": ["comal", "sauce_pot", "grater", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Grill", "crates": ["corn_cob", "chicken"], "equipment": ["comal"]},
+        {"name": "Mole & Pass", "crates": ["chili", "chocolate", "cheese_block"], "equipment": ["sauce_pot", "grater", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Grill", "crates": ["corn_cob", "chicken"], "equipment": ["comal"]},
+        {"name": "Mole", "crates": ["chili", "chocolate"], "equipment": ["sauce_pot"]},
+        {"name": "Cheese & Pass", "crates": ["cheese_block"], "equipment": ["grater", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Corn", "crates": ["corn_cob"], "equipment": ["comal"]},
+        {"name": "Chicken", "crates": ["chicken"], "equipment": ["comal"]},
+        {"name": "Mole", "crates": ["chili", "chocolate"], "equipment": ["sauce_pot"]},
+        {"name": "Cheese & Pass", "crates": ["cheese_block"], "equipment": ["grater", "serving_window"]}
+      ]
+    }
+  }
+}

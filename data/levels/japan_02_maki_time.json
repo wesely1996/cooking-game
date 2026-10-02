@@ -1,0 +1,17 @@
+{
+  "id": "japan_02",
+  "name": "Maki Time",
+  "description": "Roll the rice and cucumber in nori with the sushi mat.",
+  "pack": "japanese",
+  "type": "normal",
+  "dishes": [
+    {"id": "salmon_nigiri", "weight": 1},
+    {"id": "cucumber_maki", "weight": 1}
+  ],
+  "roles": "sushi_bar",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 4, "2": 4, "3": 5, "4": 5},
+  "spawn_interval": {"1": 9, "2": 7, "3": 6, "4": 5},
+  "stars": {"1": [210, 420, 600], "2": [280, 570, 810], "3": [350, 690, 990], "4": [400, 800, 1140]}
+}

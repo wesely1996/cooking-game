@@ -25,6 +25,8 @@ enum Role { NONE, HOST, CLIENT }
 var role := Role.NONE
 var local_player := 0
 var client_peers: Array[int] = []  # host only: accepted clients
+## Every chef in the game: player index -> {"name", "look"} (see ChefLook).
+var profiles := {}
 ## Games announced on the network: game id -> {"address", "name", "version", "seen"}.
 var found_games := {}
 
@@ -59,6 +61,16 @@ func version() -> String:
 	return str(ProjectSettings.get_setting("application/config/version", "dev"))
 
 
+## This phone's chef, as shared with the other phone.
+func my_profile() -> Dictionary:
+	return {"name": Game.profile.name, "look": ChefLook.sanitize(Game.profile.look)}
+
+
+## A chef's name and look, e.g. for a teammate's portrait.
+func profile_of(player: int) -> Dictionary:
+	return profiles.get(player, {"name": "Chef %d" % (player + 1), "look": ChefLook.default_look()})
+
+
 func device_name() -> String:
 	var model := OS.get_model_name()
 	return model if model != "GenericDevice" and not model.is_empty() else "%s's kitchen" % OS.get_name()
@@ -75,6 +87,7 @@ func host_game() -> Error:
 	multiplayer.multiplayer_peer = peer
 	role = Role.HOST
 	local_player = 0
+	profiles = {0: my_profile()}
 	_game_id = "%08x" % randi()
 	_beacon = PacketPeerUDP.new()
 	_beacon.set_broadcast_enabled(true)
@@ -100,6 +113,7 @@ func leave() -> void:
 	role = Role.NONE
 	local_player = 0
 	client_peers.clear()
+	profiles.clear()
 	if _beacon:
 		_beacon.close()
 		_beacon = null
@@ -169,6 +183,7 @@ func _receive(bytes: PackedByteArray) -> void:
 			match str(message.get("t", "")):
 				"welcome":
 					local_player = int(message.get("player", 1))
+					profiles = {0: _clean_profile(message.get("host", {})), local_player: my_profile()}
 					joined.emit(local_player)
 				"reject":
 					var reason := str(message.get("reason", "The host refused the connection."))
@@ -191,8 +206,15 @@ func _on_hello(peer_id: int, message: Dictionary) -> void:
 				multiplayer.multiplayer_peer.disconnect_peer(peer_id))
 		return
 	client_peers.append(peer_id)
-	send(peer_id, {"t": "welcome", "player": client_peers.size()})
+	var player := client_peers.size()
+	profiles[player] = _clean_profile(message.get("profile", {}))
+	send(peer_id, {"t": "welcome", "player": player, "host": my_profile()})
 	peer_joined.emit(peer_id)
+
+
+static func _clean_profile(data: Variant) -> Dictionary:
+	var profile: Dictionary = data if data is Dictionary else {}
+	return {"name": PlayerProfile.clean_name(str(profile.get("name", ""))), "look": ChefLook.sanitize(profile.get("look", {}))}
 
 
 func _on_peer_connected(peer_id: int) -> void:
@@ -201,7 +223,7 @@ func _on_peer_connected(peer_id: int) -> void:
 
 
 func _on_connected_to_server() -> void:
-	send_to_host({"t": "hello", "protocol": PROTOCOL, "version": version(), "name": device_name()})
+	send_to_host({"t": "hello", "protocol": PROTOCOL, "version": version(), "name": device_name(), "profile": my_profile()})
 
 
 func _on_peer_disconnected(peer_id: int) -> void:
@@ -255,7 +277,7 @@ func has_found_address(address: String) -> bool:
 
 
 func _send_beacon() -> void:
-	var packet := JSON.stringify({"game": GAME_ID, "id": _game_id, "name": device_name(), "version": version(), "port": GAME_PORT}).to_utf8_buffer()
+	var packet := JSON.stringify({"game": GAME_ID, "id": _game_id, "name": "%s's kitchen" % Game.profile.name, "version": version(), "port": GAME_PORT}).to_utf8_buffer()
 	# The broadcast reaches other phones; loopback lets a second copy of the
 	# game on the same computer find it (handy for testing).
 	for address in ["255.255.255.255", "127.0.0.1"]:

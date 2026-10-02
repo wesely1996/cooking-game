@@ -3,15 +3,11 @@
   "name": "Italian",
   "items": {
     "flour": {"name": "Flour", "kind": "raw"},
-    "water": {"name": "Water", "kind": "raw"},
-    "egg": {"name": "Egg", "kind": "raw"},
-    "tomato": {"name": "Tomato", "kind": "raw"},
     "garlic": {"name": "Garlic", "kind": "raw"},
     "basil": {"name": "Basil", "kind": "raw"},
     "mozzarella": {"name": "Mozzarella", "kind": "raw"},
     "bread": {"name": "Bread", "kind": "raw"},
     "whole_pizza": {"name": "Whole pizza", "kind": "raw"},
-
     "pizza_dough_mix": {"name": "Pizza dough mix"},
     "pizza_dough": {"name": "Pizza dough"},
     "pizza_base": {"name": "Pizza base"},
@@ -19,13 +15,11 @@
     "pasta_dough": {"name": "Pasta dough"},
     "fresh_pasta": {"name": "Fresh pasta"},
     "cooked_pasta": {"name": "Cooked pasta"},
-    "chopped_tomato": {"name": "Chopped tomato"},
     "tomato_sauce": {"name": "Tomato sauce"},
     "chopped_garlic": {"name": "Chopped garlic"},
     "sliced_mozzarella": {"name": "Sliced mozzarella"},
     "toast": {"name": "Toast"},
     "raw_pizza_margherita": {"name": "Raw pizza margherita"},
-
     "pizza_margherita": {"name": "Pizza Margherita", "kind": "dish", "price": 30, "patience": 70},
     "pasta_pomodoro": {"name": "Pasta Pomodoro", "kind": "dish", "price": 26, "patience": 65},
     "bruschetta": {"name": "Bruschetta", "kind": "dish", "price": 20, "patience": 55},
@@ -41,7 +35,6 @@
     {"id": "knead_pasta_dough", "input": "pasta_dough_mix", "equipment": "mixing_bowl", "action": "knead", "work": 12, "output": "pasta_dough"},
     {"id": "crank_pasta", "input": "pasta_dough", "equipment": "pasta_maker", "action": "crank", "work": 2, "output": "fresh_pasta"},
     {"id": "boil_pasta", "input": "fresh_pasta", "equipment": "boil_pot", "action": "boil", "cook_time": 6, "perfect_window": 4, "burn_time": 10, "output": "cooked_pasta"},
-    {"id": "chop_tomato", "input": "tomato", "equipment": "knife", "action": "chop", "work": 5, "output": "chopped_tomato"},
     {"id": "stir_sauce", "input": "chopped_tomato", "equipment": "sauce_pot", "action": "stir", "work": 3, "output": "tomato_sauce"},
     {"id": "chop_garlic", "input": "garlic", "equipment": "knife", "action": "chop", "work": 4, "output": "chopped_garlic"},
     {"id": "slice_mozzarella", "input": "mozzarella", "equipment": "knife", "action": "slice", "work": 4, "output": "sliced_mozzarella"},
@@ -60,39 +53,27 @@
   "role_presets": {
     "trattoria": {
       "1": [
-        {"name": "Chef", "slots": 8,
-         "crates": ["flour", "water", "egg", "tomato", "garlic", "basil", "mozzarella", "bread"],
-         "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker", "knife", "sauce_pot", "boil_pot", "oven", "serving_window"]}
+        {"name": "Chef", "slots": 8, "crates": ["flour", "water", "egg", "tomato", "garlic", "basil", "mozzarella", "bread"], "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker", "knife", "sauce_pot", "boil_pot", "oven", "serving_window"]}
       ],
       "2": [
-        {"name": "Dough & Oven", "crates": ["flour", "water", "egg", "mozzarella", "bread"],
-         "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker", "knife", "boil_pot", "oven"]},
-        {"name": "Sauce & Pass", "crates": ["tomato", "garlic", "basil"],
-         "equipment": ["knife", "sauce_pot", "serving_window"]}
+        {"name": "Dough & Oven", "crates": ["flour", "water", "egg", "mozzarella", "bread"], "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker", "knife", "boil_pot", "oven"]},
+        {"name": "Sauce & Pass", "crates": ["tomato", "garlic", "basil"], "equipment": ["knife", "sauce_pot", "serving_window"]}
       ],
       "3": [
-        {"name": "Dough", "crates": ["flour", "water", "egg"],
-         "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker"]},
-        {"name": "Sauce", "crates": ["tomato", "garlic", "basil"],
-         "equipment": ["knife", "sauce_pot"]},
-        {"name": "Oven & Pass", "crates": ["mozzarella", "bread"],
-         "equipment": ["knife", "oven", "boil_pot", "serving_window"]}
+        {"name": "Dough", "crates": ["flour", "water", "egg"], "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker"]},
+        {"name": "Sauce", "crates": ["tomato", "garlic", "basil"], "equipment": ["knife", "sauce_pot"]},
+        {"name": "Oven & Pass", "crates": ["mozzarella", "bread"], "equipment": ["knife", "oven", "boil_pot", "serving_window"]}
       ],
       "4": [
-        {"name": "Dough", "crates": ["flour", "water", "egg"],
-         "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker"]},
-        {"name": "Sauce", "crates": ["tomato", "garlic"],
-         "equipment": ["knife", "sauce_pot"]},
-        {"name": "Oven", "crates": ["bread"],
-         "equipment": ["oven", "boil_pot"]},
-        {"name": "Cheese & Pass", "crates": ["mozzarella", "basil"],
-         "equipment": ["knife", "serving_window"]}
+        {"name": "Dough", "crates": ["flour", "water", "egg"], "equipment": ["mixing_bowl", "rolling_pin", "pasta_maker"]},
+        {"name": "Sauce", "crates": ["tomato", "garlic"], "equipment": ["knife", "sauce_pot"]},
+        {"name": "Oven", "crates": ["bread"], "equipment": ["oven", "boil_pot"]},
+        {"name": "Cheese & Pass", "crates": ["mozzarella", "basil"], "equipment": ["knife", "serving_window"]}
       ]
     },
     "festa": {
       "1": [
-        {"name": "Chef", "slots": 8, "crates": ["whole_pizza", "mozzarella", "tomato", "basil"],
-         "equipment": ["knife", "serving_window"]}
+        {"name": "Chef", "slots": 8, "crates": ["whole_pizza", "mozzarella", "tomato", "basil"], "equipment": ["knife", "serving_window"]}
       ],
       "2": [
         {"name": "Slicer", "crates": ["whole_pizza", "mozzarella"], "equipment": ["knife"]},

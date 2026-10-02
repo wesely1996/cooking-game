@@ -1,0 +1,20 @@
+{
+  "id": "arcade_mexican",
+  "name": "Arcade: Mexican",
+  "description": "Endless taqueria. Three angry customers and it's over.",
+  "pack": "mexican",
+  "type": "arcade",
+  "dishes": [
+    {"id": "beef_taco", "weight": 2},
+    {"id": "guacamole", "weight": 1},
+    {"id": "quesadilla", "weight": 1.5}
+  ],
+  "roles": "taqueria",
+  "first_spawn": 2,
+  "max_active": {"1": 2, "2": 3, "3": 3, "4": 4},
+  "spawn_interval": {"1": 29, "2": 23, "3": 20, "4": 19},
+  "escalate_every": 30,
+  "interval_factor": 0.93,
+  "patience_factor": 0.95,
+  "strikes": 3
+}

@@ -5,6 +5,40 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [0.4.0] - 2026-10-02
+
+### Added
+- **Two new cuisines, each with its own World Tour region:**
+  - **Mexico:** beef tacos, guacamole and quesadillas. New kitchen gear: a
+    comal griddle, a tortilla press (tap to press), a molcajete (tap to mash)
+    and a grater (swipe down). Four shifts, the *Feria del Mole* festival
+    (elote and chicken mole) and the *Copa del Taco* competition against
+    Doña Lupe, whose speed is unpredictable.
+  - **Japan:** salmon nigiri, cucumber maki and miso ramen, with a rice
+    cooker, a sushi mat and a grill. Four shifts, the *Natsu Matsuri*
+    festival (yakitori and miso soup) and the *Sushi Grand Cup* against Master
+    Kenji, who starts slowly and finishes fast.
+  - Arcade for both cuisines, and LAN play for all of it.
+- **Profile:** pick your name and how your chef looks (skin, hair, hair
+  colour, hat, apron, or "Surprise me!"). It shows your **favourite cuisine**
+  (the one you play most) and your **best cuisine** (highest average score),
+  plus shifts played, dishes served, stars, recipes and regions reached.
+  In LAN games your friend sees your name and chef on the teammate portrait.
+- **Settings:** sound, vibration, new-dish tips, easy mini-games (every
+  gesture counts double), reset progress, and credits.
+
+### Changed
+- **Cleaner menus:** the title screen has PLAY, PROFILE, RECIPE BOOK and
+  SETTINGS. PLAY leads to the World Tour, Play with a friend and Arcade (with
+  a cuisine picker).
+- The World Tour has a tab per region. A locked region says which
+  competition opens it.
+- The LAN host picks levels grouped by region, plus arcade per cuisine.
+- Water, tomatoes, eggs and chicken are shared basics that every cuisine can
+  use.
+- The kitchen sidebar switches to three smaller columns when a kitchen has
+  many crates (e.g. the solo sushi bar).
+
 ## [0.3.0] - 2026-10-02
 
 ### Added

@@ -17,8 +17,8 @@ const SWIPE_DISTANCE := 55.0
 const SIDE_DISTANCE := 70.0
 
 const ACTION_KINDS := {
-	"chop": KIND_SWIPE_DOWN, "slice": KIND_SWIPE_DOWN,
-	"knead": KIND_TAP,
+	"chop": KIND_SWIPE_DOWN, "slice": KIND_SWIPE_DOWN, "grate": KIND_SWIPE_DOWN,
+	"knead": KIND_TAP, "press": KIND_TAP, "mash": KIND_TAP,
 	"roll": KIND_SWIPE_SIDE,
 	"stir": KIND_CIRCLE, "crank": KIND_CIRCLE,
 }

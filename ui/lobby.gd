@@ -84,12 +84,23 @@ func _show(new_page: Page) -> void:
 				Net.leave()
 				_show(Page.CHOOSE))
 		Page.HOST_READY:
-			_add_title("CHEF 2 HAS JOINED!", 44)
-			_add_text("You are chef 1. Pick what to cook together:", 22)
-			_content.add_child(_level_row())
-			var arcade := _add_button("ARCADE: ITALIAN  ·  BEST %d" % Game.best_arcade_score("arcade_italian", PLAYERS), Color("#7fc8f8"), 30,
-				func(): Game.start_level("arcade_italian", PLAYERS))
-			arcade.name = "Arcade"
+			_add_title("%s HAS JOINED!" % str(Net.profile_of(1).name).to_upper(), 44)
+			_add_text("Pick what to cook together:", 22)
+			for i in Game.progression.regions.size():
+				if Game.progression.is_region_unlocked(i):
+					_add_title(str(Game.progression.regions[i].name).to_upper(), 30, Color.WHITE)
+					_content.add_child(_level_row(Game.progression.regions[i]))
+			_add_title("ARCADE", 30, Color.WHITE)
+			var arcade_row := HBoxContainer.new()
+			arcade_row.alignment = BoxContainer.ALIGNMENT_CENTER
+			arcade_row.add_theme_constant_override("separation", 12)
+			for pack in Game.progression.unlocked_arcade_packs():
+				var level_id := Game.arcade_level_id(pack)
+				var button := UiStyle.button("%s · BEST %d" % [Game.cuisine_name(pack).to_upper(), Game.best_arcade_score(level_id, PLAYERS)], Color("#7fc8f8"), 24)
+				button.name = "Arcade_" + pack
+				button.pressed.connect(func(): Game.start_level(level_id, PLAYERS))
+				arcade_row.add_child(button)
+			_content.add_child(arcade_row)
 		Page.JOIN:
 			Net.start_discovery()
 			_add_title("KITCHENS NEARBY", 40)
@@ -101,10 +112,8 @@ func _show(new_page: Page) -> void:
 			var row := HBoxContainer.new()
 			row.alignment = BoxContainer.ALIGNMENT_CENTER
 			row.add_theme_constant_override("separation", 12)
-			_ip_edit = LineEdit.new()
-			_ip_edit.placeholder_text = "192.168.1.23"
+			_ip_edit = UiStyle.line_edit("192.168.1.23", 28)
 			_ip_edit.custom_minimum_size = Vector2(300, 56)
-			_ip_edit.add_theme_font_size_override("font_size", 28)
 			_ip_edit.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER_DECIMAL
 			row.add_child(_ip_edit)
 			var join := UiStyle.button("JOIN", Art.SUN, 30)
@@ -118,7 +127,7 @@ func _show(new_page: Page) -> void:
 				_show(Page.JOIN))
 		Page.CLIENT_READY:
 			Net.stop_discovery()
-			_add_title("YOU'RE IN! YOU ARE CHEF 2", 44)
+			_add_title("YOU'RE IN %s'S KITCHEN!" % str(Net.profile_of(0).name).to_upper(), 44)
 			_add_text("Waiting for the host to pick a level...", 24)
 
 
@@ -151,10 +160,10 @@ func _refresh_games() -> void:
 		_games_box.add_child(box)
 
 
-func _level_row() -> Control:
+func _level_row(region: Dictionary) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
-	for id in Game.level_order():
+	for id in region.levels.map(func(entry): return entry.id):
 		var level: LevelDef = Game.levels[id]
 		var unlocked := Game.progression.is_level_unlocked(id)
 		var stars := int(Game.progression.best_stars.get(id, 0))

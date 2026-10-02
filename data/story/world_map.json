@@ -6,12 +6,94 @@
       "pack": "italian",
       "boss": "italy_competition",
       "levels": [
-        {"id": "italy_01", "stars_required": 0},
-        {"id": "italy_02", "stars_required": 2},
-        {"id": "italy_03", "stars_required": 4},
-        {"id": "italy_04", "stars_required": 6},
-        {"id": "italy_festival", "stars_required": 8},
-        {"id": "italy_competition", "stars_required": 10}
+        {
+          "id": "italy_01",
+          "stars_required": 0
+        },
+        {
+          "id": "italy_02",
+          "stars_required": 2
+        },
+        {
+          "id": "italy_03",
+          "stars_required": 4
+        },
+        {
+          "id": "italy_04",
+          "stars_required": 6
+        },
+        {
+          "id": "italy_festival",
+          "stars_required": 8
+        },
+        {
+          "id": "italy_competition",
+          "stars_required": 10
+        }
+      ]
+    },
+    {
+      "id": "mexico",
+      "name": "Mexico",
+      "pack": "mexican",
+      "boss": "mexico_competition",
+      "levels": [
+        {
+          "id": "mexico_01",
+          "stars_required": 0
+        },
+        {
+          "id": "mexico_02",
+          "stars_required": 2
+        },
+        {
+          "id": "mexico_03",
+          "stars_required": 4
+        },
+        {
+          "id": "mexico_04",
+          "stars_required": 6
+        },
+        {
+          "id": "mexico_festival",
+          "stars_required": 8
+        },
+        {
+          "id": "mexico_competition",
+          "stars_required": 10
+        }
+      ]
+    },
+    {
+      "id": "japan",
+      "name": "Japan",
+      "pack": "japanese",
+      "boss": "japan_competition",
+      "levels": [
+        {
+          "id": "japan_01",
+          "stars_required": 0
+        },
+        {
+          "id": "japan_02",
+          "stars_required": 2
+        },
+        {
+          "id": "japan_03",
+          "stars_required": 4
+        },
+        {
+          "id": "japan_04",
+          "stars_required": 6
+        },
+        {
+          "id": "japan_festival",
+          "stars_required": 8
+        },
+        {
+          "id": "japan_competition",
+          "stars_required": 10
+        }
       ]
     }
   ]

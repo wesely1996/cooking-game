@@ -57,29 +57,42 @@ func test_three_players_make_a_pizza_together() -> void:
 	assert_eq(shift.stats.perfect, 1)
 
 
+func _level_files(type: String) -> Array[String]:
+	var files: Array[String] = []
+	for path in DataFiles.list_files(LevelDef.DEFAULT_LEVEL_DIR, ".json"):
+		if LevelDef.load_file(path).type == type:
+			files.append(path.get_file())
+	return files
+
+
 func test_bots_finish_every_normal_level_with_every_player_count() -> void:
-	for file in ["italy_01_pizza_night.json", "italy_02_aperitivo.json", "italy_03_pasta_e_pizza.json", "italy_04_full_trattoria.json"]:
+	var files := _level_files(LevelDef.TYPE_NORMAL)
+	assert_true(files.size() >= 12, "three regions of shifts")
+	for file in files:
 		for players in [1, 2, 3, 4]:
 			var shift := _play(file, players)
 			assert_true(shift.finished, "%s %dp finished" % [file, players])
 			assert_true(shift.stats.served >= 2, "%s %dp served some dishes" % [file, players])
 
 
-func test_bots_play_the_festival() -> void:
-	for players in [1, 2, 3, 4]:
-		var shift := _play("italy_festival_festa_della_pizza.json", players)
-		assert_true(shift.finished)
-		assert_true(shift.stats.served >= 5, "%dp served some of the crowd" % players)
+func test_bots_play_every_festival() -> void:
+	for file in _level_files(LevelDef.TYPE_FESTIVAL):
+		for players in [1, 2, 3, 4]:
+			var shift := _play(file, players)
+			assert_true(shift.finished)
+			assert_true(shift.stats.served >= 5, "%s %dp served some of the crowd" % [file, players])
 
 
-func test_bots_play_the_competition() -> void:
-	for players in [1, 2, 3, 4]:
-		var shift := _play("italy_competition_gran_premio.json", players)
-		assert_true(shift.finished)
-		assert_true(shift.stats.served >= 1, "%dp served the judges" % players)
+func test_bots_play_every_competition() -> void:
+	for file in _level_files(LevelDef.TYPE_COMPETITION):
+		for players in [1, 2, 3, 4]:
+			var shift := _play(file, players)
+			assert_true(shift.finished)
+			assert_true(shift.stats.served >= 1, "%s %dp served the judges" % [file, players])
 
 
 func test_bots_play_arcade() -> void:
-	var shift := _play("arcade_italian.json", 2)
-	assert_true(shift.finished, "arcade eventually ends")
-	assert_true(shift.stats.served >= 3)
+	for file in _level_files(LevelDef.TYPE_ARCADE):
+		var shift := _play(file, 2)
+		assert_true(shift.finished, file + " eventually ends")
+		assert_true(shift.stats.served >= 3)

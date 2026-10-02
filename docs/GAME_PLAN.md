@@ -629,6 +629,13 @@ shared pause, disconnect handling. Throwing works by dragging food onto the
 teammate's portrait. Still to do for M4: 3–4 players (more portraits, a lobby
 for up to 3 guests) and reconnecting to a running game.
 
+**v0.4.0:** Mexico (taqueria + *Feria del Mole* + *Copa del Taco*) and Japan
+(sushi bar + *Natsu Matsuri* + *Sushi Grand Cup*) regions with arcade modes.
+For now Japan comes right after Mexico; USA and Spain will slot in between
+later. Also a profile (name, chef look, favourite cuisine = most played, best
+cuisine = highest average score), a settings screen, and a Play menu that
+holds the World Tour, LAN and arcade.
+
 ### M5 – Art & audio pass
 - Comic/anime art for kitchen, food items, characters and customers.
 - Outline and halftone shaders, parallax kitchen, throw arcs with shadows.

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<ellipse cx="64" cy="112" rx="40" ry="8" fill="#1d1a2f" fill-opacity="0.18"/>
+<rect x="36.5" y="76.5" width="15" height="15" rx="2" fill="#e7c6ef" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(5 44.0 84.0)"/>
+<rect x="54.5" y="68.5" width="15" height="15" rx="2" fill="#e7c6ef" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-13 62.0 76.0)"/>
+<rect x="74.5" y="78.5" width="15" height="15" rx="2" fill="#e7c6ef" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(7 82.0 86.0)"/>
+<rect x="46.5" y="92.5" width="15" height="15" rx="2" fill="#e7c6ef" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(3 54.0 100.0)"/>
+<rect x="66.5" y="94.5" width="15" height="15" rx="2" fill="#e7c6ef" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-1 74.0 102.0)"/>
+<rect x="58.5" y="52.5" width="15" height="15" rx="2" fill="#e7c6ef" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-3 66.0 60.0)"/>
+</svg>

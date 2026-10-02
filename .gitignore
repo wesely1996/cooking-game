@@ -12,3 +12,6 @@ export_credentials.cfg
 .DS_Store
 .vscode/
 *.tmp
+
+# Python
+__pycache__/
