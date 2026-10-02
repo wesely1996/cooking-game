@@ -620,6 +620,15 @@ targets that depend on the player count and rise level by level.
 - Role splits for 2/3/4 players with the validator passing.
 - Playtest on real phones on the same Wi-Fi.
 
+**v0.3.0 (M4, part 1):** 2-player LAN for story levels and arcade, as
+planned in §8.3–8.4: the host phone runs the rules (`core/net/host_session.gd`),
+the other phone mirrors it from snapshots sent 15× per second and sends its
+actions as intents (`core/net/client_session.gd`); ENet on port 24568, UDP
+discovery beacons on port 24569, manual IP as a fallback, version handshake,
+shared pause, disconnect handling. Throwing works by dragging food onto the
+teammate's portrait. Still to do for M4: 3–4 players (more portraits, a lobby
+for up to 3 guests) and reconnecting to a running game.
+
 ### M5 – Art & audio pass
 - Comic/anime art for kitchen, food items, characters and customers.
 - Outline and halftone shaders, parallax kitchen, throw arcs with shadows.

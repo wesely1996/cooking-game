@@ -5,6 +5,32 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [0.3.0] - 2026-10-02
+
+### Added
+- **2-player LAN play** for the story levels and arcade: **Play with a
+  friend** on the title screen. One phone hosts a kitchen, the other joins
+  it on the same Wi-Fi. Kitchens nearby appear by themselves, or type the
+  address shown on the host's phone.
+- Each chef owns half the kitchen (e.g. *Dough & Oven* and *Sauce & Pass*).
+  **Throw food** to your friend by dragging it onto their portrait, or tap the
+  food and then the portrait. Portraits glow when your friend can use the
+  food and show how much room their counter has.
+- "WHOOSH!" when you throw and "CATCH!" when food lands on your counter.
+- Pausing pauses the kitchen for both chefs. The host picks the level,
+  retries or goes back to the lobby; the friend follows. Both phones save
+  the stars and the new dishes.
+- If a phone leaves, the other one returns to the lobby with a message.
+- Arcade best scores are kept per player count.
+
+### Technical
+- The host runs the game rules and sends the friend's phone a snapshot of the
+  kitchen 15 times a second; the friend's taps are sent to the host as
+  actions, checked there, and answered. Both phones must run the same version.
+- A LAN test runs two copies of the game on one computer in CI: discovery,
+  joining, a pizza cooked across both kitchens with real drag gestures,
+  results, lobby, arcade and a disconnect.
+
 ## [0.2.0] - 2026-10-01
 
 ### Added

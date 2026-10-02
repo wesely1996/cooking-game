@@ -29,7 +29,10 @@ func _ready() -> void:
 	elif level.type == LevelDef.TYPE_ARCADE:
 		headline = "GAME OVER!"
 	column.add_child(UiStyle.title(headline, 80, Art.SUN))
-	column.add_child(UiStyle.title(level.name.to_upper(), 34, Color.WHITE))
+	var subtitle := level.name.to_upper()
+	if Game.player_count > 1:
+		subtitle += "  ·  %d CHEFS" % Game.player_count
+	column.add_child(UiStyle.title(subtitle, 34, Color.WHITE))
 	_star_area = Control.new()
 	_star_area.custom_minimum_size = Vector2(0, 130)
 	column.add_child(_star_area)
@@ -40,23 +43,35 @@ func _ready() -> void:
 	if outcome.has("mood"):
 		details += "\nCrowd mood %d%%" % int(outcome.mood)
 	if level.type == LevelDef.TYPE_ARCADE:
-		details += "\nBest %d" % int(Game.best_arcade.get(level.id, 0))
+		details += "\nBest %d" % Game.best_arcade_score(level.id, Game.player_count)
 	column.add_child(UiStyle.text(details, 24, Color.WHITE))
 
 	var buttons := HBoxContainer.new()
 	buttons.alignment = BoxContainer.ALIGNMENT_CENTER
 	buttons.add_theme_constant_override("separation", 20)
-	var retry := UiStyle.button("RETRY", Art.PAPER, 30)
-	retry.pressed.connect(func(): Game.start_level(level.id))
-	buttons.add_child(retry)
+	var players := Game.player_count
 	var next_id := Game.next_level_id(level.id)
-	if level.type != LevelDef.TYPE_ARCADE and not next_id.is_empty() and Game.progression.is_level_unlocked(next_id):
-		var next := UiStyle.button("NEXT ▶", Art.SUN, 30)
-		next.pressed.connect(func(): Game.start_level(next_id))
-		buttons.add_child(next)
-	var menu := UiStyle.button("MENU", Color("#7fc8f8"), 30)
-	menu.pressed.connect(func(): Game.goto(Game.SCENE_MENU if level.type == LevelDef.TYPE_ARCADE else Game.SCENE_LEVEL_SELECT))
-	buttons.add_child(menu)
+	var can_go_next := level.type != LevelDef.TYPE_ARCADE and not next_id.is_empty() and Game.progression.is_level_unlocked(next_id)
+	if Net.is_client():
+		column.add_child(UiStyle.text("Waiting for the host to pick what's next...", 24, Color.WHITE))
+		var leave := UiStyle.button("LEAVE", Art.PAPER, 30)
+		leave.pressed.connect(Game.leave_to_menu)
+		buttons.add_child(leave)
+	else:
+		var retry := UiStyle.button("RETRY", Art.PAPER, 30)
+		retry.pressed.connect(func(): Game.start_level(level.id, players))
+		buttons.add_child(retry)
+		if can_go_next:
+			var next := UiStyle.button("NEXT ▶", Art.SUN, 30)
+			next.pressed.connect(func(): Game.start_level(next_id, players))
+			buttons.add_child(next)
+		var menu := UiStyle.button("LOBBY" if Net.is_host() else "MENU", Color("#7fc8f8"), 30)
+		menu.pressed.connect(func():
+			if Net.is_host():
+				Game.back_to_lobby()
+			else:
+				Game.goto(Game.SCENE_MENU if level.type == LevelDef.TYPE_ARCADE else Game.SCENE_LEVEL_SELECT))
+		buttons.add_child(menu)
 	column.add_child(buttons)
 
 
@@ -71,7 +86,7 @@ func _process(delta: float) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		Game.goto(Game.SCENE_MENU)
+		Game.leave_to_menu()
 
 
 func _draw() -> void:

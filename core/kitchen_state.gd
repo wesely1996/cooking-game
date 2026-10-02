@@ -154,6 +154,35 @@ func snapshot() -> Dictionary:
 	return {"players": result}
 
 
+## Replaces the counters and appliances with a snapshot from the host (the
+## crates, tools and roles come from the level and never change).
+func load_snapshot(data: Dictionary) -> void:
+	var entries: Array = data.get("players", [])
+	for i in mini(entries.size(), players.size()):
+		var pk := players[i]
+		var entry: Dictionary = entries[i]
+		var slots: Array = entry.get("slots", [])
+		for s in pk.slots.size():
+			pk.slots[s] = KitchenItem.from_dict(slots[s]) if s < slots.size() and slots[s] is Dictionary else null
+		var appliances: Dictionary = entry.get("appliances", {})
+		for eq in pk.appliances:
+			var saved: Array = appliances.get(eq, [])
+			var current: Array = pk.appliances[eq]
+			for index in current.size():
+				current[index] = _appliance_slot_from(saved[index]) if index < saved.size() and saved[index] is Dictionary else null
+
+
+func _appliance_slot_from(data: Dictionary) -> ApplianceSlot:
+	var aslot := ApplianceSlot.new()
+	aslot.item = KitchenItem.from_dict(data.get("item", {}))
+	aslot.process = db.processes.get(str(data.get("process", "")), {})
+	aslot.progress = float(data.get("progress", 0.0))
+	aslot.done = bool(data.get("done", false))
+	aslot.since_ready = float(data.get("since_ready", 0.0))
+	aslot.burnt = bool(data.get("burnt", false))
+	return aslot
+
+
 # --- Intents -----------------------------------------------------------------
 
 ## Applies one player action. Returns {"ok": true} or {"ok": false, "error": code}.

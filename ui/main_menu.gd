@@ -8,17 +8,21 @@ func _ready() -> void:
 	var column := VBoxContainer.new()
 	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_theme_constant_override("separation", 18)
+	column.add_theme_constant_override("separation", 12)
 	add_child(column)
 
-	column.add_child(UiStyle.title("PASS THE PLATE!", 110, Art.SUN))
+	column.add_child(UiStyle.title("PASS THE PLATE!", 96, Art.SUN))
 	var tagline := UiStyle.title("A WORLD COOKING TOUR · 1–4 CHEFS", 30, Color.WHITE)
 	column.add_child(tagline)
-	column.add_child(_spacer(20))
+	column.add_child(_spacer(6))
 
 	var story := UiStyle.button("WORLD TOUR", Art.SUN, 40)
 	story.pressed.connect(func(): Game.goto(Game.SCENE_LEVEL_SELECT))
 	column.add_child(_centered(story))
+
+	var friend := UiStyle.button("PLAY WITH A FRIEND (LAN)", Art.LEAF, 32)
+	friend.pressed.connect(func(): Game.goto(Game.SCENE_LOBBY))
+	column.add_child(_centered(friend))
 
 	var arcade := UiStyle.button("ARCADE: ITALIAN", Color("#7fc8f8"), 32)
 	arcade.pressed.connect(func(): Game.start_level("arcade_italian"))
@@ -28,7 +32,7 @@ func _ready() -> void:
 	book.pressed.connect(func(): Game.open_recipe_book(Game.SCENE_MENU))
 	column.add_child(_centered(book))
 
-	var best := int(Game.best_arcade.get("arcade_italian", 0))
+	var best := Game.best_arcade_score("arcade_italian", 1)
 	if best > 0:
 		column.add_child(UiStyle.text("Arcade best: %d" % best, 20, Color.WHITE))
 
