@@ -27,6 +27,8 @@ func _ready() -> void:
 	Game.settings.sound = false
 	Game.save_enabled = false
 	Game.progression.load_save({})
+	Game.profile.name = "Nikola" if _role == "host" else "Maria"
+	Game.profile.look = {"skin": 1, "hair": 1, "hair_color": 3, "hat": 0, "apron": 0} if _role == "host" else {"skin": 3, "hair": 2, "hair_color": 0, "hat": 2, "apron": 2}
 	await get_tree().process_frame
 	var dummy := Node.new()
 	get_tree().root.add_child(dummy)
@@ -50,6 +52,7 @@ func _run_host() -> void:
 	_check(Net.is_host(), "hosting a kitchen")
 	await _shot("1_lobby_waiting")
 	_check(await _until(func(): return not Net.client_peers.is_empty()), "the friend joined")
+	_check(Net.profile_of(1).name == "Maria", "the host knows the friend's name")
 	await _wait(0.5)
 	await _shot("2_lobby_ready")
 
@@ -121,6 +124,7 @@ func _run_client() -> void:
 	await _shot("1_lobby_found")
 	lobby._join(address)
 	_check(await _until(func(): return Net.is_client() and Net.local_player == 1), "joined as chef 2")
+	_check(Net.profile_of(0).name == "Nikola" and int(Net.profile_of(0).look.hair) == 1, "the friend knows the host's name and chef")
 	await _wait(0.3)
 	await _shot("2_lobby_joined")
 

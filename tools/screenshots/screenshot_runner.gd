@@ -40,6 +40,40 @@ func _run() -> void:
 	Game.open_recipe_book(Game.SCENE_MENU)
 	await _wait(0.4)
 	await _shot("02b_recipe_book_empty")
+	Game.goto(Game.SCENE_MENU)
+	await _wait(0.4)
+	get_tree().current_scene.find_child("Play", true, false).pressed.emit()
+	await _wait(0.4)
+	_check(get_tree().current_scene.name == "PlayMenu", "PLAY opens the play menu")
+	await _shot("02c_play_menu")
+	get_tree().current_scene._show(1)
+	await _wait(0.3)
+	await _shot("02d_arcade_picker")
+	Game.profile.name = "Nikola"
+	Game.profile.look = {"skin": 1, "hair": 1, "hair_color": 3, "hat": 0, "apron": 1}
+	Game.profile.record("italian", 320, 180.0, 6)
+	Game.profile.record("italian", 280, 180.0, 5)
+	Game.profile.record("mexican", 410, 180.0, 7)
+	Game.goto(Game.SCENE_PROFILE)
+	await _wait(0.4)
+	await _shot("02e_profile")
+	var profile_screen := get_tree().current_scene
+	profile_screen._step("hat", 1)
+	_check(int(Game.profile.look.hat) == 1, "changing the hat updates the profile")
+	profile_screen._step("hat", -1)
+	Game.goto(Game.SCENE_SETTINGS)
+	await _wait(0.4)
+	await _shot("02f_settings")
+	var tips_toggle: Button = get_tree().current_scene.find_child("Toggle_tips", true, false)
+	tips_toggle.pressed.emit()
+	_check(not Game.settings.tips and tips_toggle.text == "OFF", "settings toggle turns tips off")
+	tips_toggle.pressed.emit()
+	_check(Game.settings.tips, "and back on")
+	Game.selected_region = 1
+	Game.goto(Game.SCENE_LEVEL_SELECT)
+	await _wait(0.4)
+	await _shot("02g_world_tour_mexico_locked")
+	Game.selected_region = 0
 
 	Game.start_level("italy_01")
 	await _wait(2.3)
@@ -116,6 +150,17 @@ func _run() -> void:
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
 	await _shot("10_busy_kitchen")
+	for level_id in ["mexico_04", "japan_04"]:
+		Game.start_level(level_id)
+		await _wait(2.0)
+		var cuisine_shift: Shift = get_tree().current_scene.shift
+		var cuisine_bot := KitchenBot.new()
+		Engine.time_scale = 4.0
+		while cuisine_shift.time < 40.0:
+			cuisine_bot.step(cuisine_shift)
+			await get_tree().process_frame
+		Engine.time_scale = 1.0
+		await _shot("10_" + level_id)
 	Game.current_level = Game.levels["italy_01"]
 	Game.finish_level({"type": "normal", "failed": false, "stars": 2, "score": 312}, {"served": 4, "lost": 1, "perfect": 2, "score": 312})
 	await _wait(1.6)

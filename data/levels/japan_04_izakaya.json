@@ -1,0 +1,18 @@
+{
+  "id": "japan_04",
+  "name": "Izakaya",
+  "description": "A full Japanese menu for a hungry crowd after work.",
+  "pack": "japanese",
+  "type": "normal",
+  "dishes": [
+    {"id": "miso_ramen", "weight": 1.5},
+    {"id": "salmon_nigiri", "weight": 1},
+    {"id": "cucumber_maki", "weight": 1}
+  ],
+  "roles": "sushi_bar",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 4, "2": 4, "3": 5, "4": 5},
+  "spawn_interval": {"1": 11, "2": 9, "3": 8, "4": 7},
+  "stars": {"1": [260, 520, 750], "2": [350, 710, 1010], "3": [430, 870, 1240], "4": [500, 1000, 1420]}
+}

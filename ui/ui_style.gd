@@ -70,3 +70,69 @@ static func draw_halftone(canvas: CanvasItem, rect: Rect2, base: Color, dots: Co
 		for col in cols:
 			var x := rect.position.x + col * spacing + (spacing * 0.5 if row % 2 else 0.0)
 			canvas.draw_circle(Vector2(x, y), radius, dots)
+
+
+## A screen header: a back button and a big title.
+static func header(title_text: String, on_back: Callable, title_size: int = 56) -> MarginContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 20)
+	var back := button("◀ BACK", Art.PAPER, 26)
+	back.pressed.connect(on_back)
+	row.add_child(back)
+	var label := title(title_text, title_size, Art.SUN)
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(label)
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(back.get_combined_minimum_size().x, 0)
+	row.add_child(spacer)
+	return margin(row, 18, 18, 14, 0)
+
+
+static func margin(control: Control, left: int, right: int, top: int, bottom: int) -> MarginContainer:
+	var container := MarginContainer.new()
+	container.size_flags_vertical = control.size_flags_vertical
+	container.size_flags_horizontal = control.size_flags_horizontal
+	container.add_theme_constant_override("margin_left", left)
+	container.add_theme_constant_override("margin_right", right)
+	container.add_theme_constant_override("margin_top", top)
+	container.add_theme_constant_override("margin_bottom", bottom)
+	container.add_child(control)
+	return container
+
+
+static func panel(color: Color = Art.PAPER) -> PanelContainer:
+	var p := PanelContainer.new()
+	p.add_theme_stylebox_override("panel", box(color))
+	return p
+
+
+static func centered(control: Control) -> CenterContainer:
+	var container := CenterContainer.new()
+	container.add_child(control)
+	return container
+
+
+static func left_text(value: String, font_size: int = 20, color: Color = Art.INK) -> Label:
+	var label := text(value, font_size, color)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	return label
+
+
+## A text field in the comic style (light paper, ink border).
+static func line_edit(placeholder: String, font_size: int = 26) -> LineEdit:
+	var edit := LineEdit.new()
+	edit.placeholder_text = placeholder
+	edit.add_theme_font_size_override("font_size", font_size)
+	edit.add_theme_color_override("font_color", Art.INK)
+	edit.add_theme_color_override("font_placeholder_color", Color(Art.INK, 0.4))
+	edit.add_theme_color_override("caret_color", Art.TOMATO)
+	var normal := box(Color.WHITE, 0)
+	normal.content_margin_top = 6
+	normal.content_margin_bottom = 6
+	edit.add_theme_stylebox_override("normal", normal)
+	var focus := box(Color("#fff6d6"), 0)
+	focus.border_color = Art.TOMATO
+	focus.content_margin_top = 6
+	focus.content_margin_bottom = 6
+	edit.add_theme_stylebox_override("focus", focus)
+	return edit

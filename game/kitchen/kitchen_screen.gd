@@ -18,9 +18,12 @@ const TAP_DISTANCE := 14.0
 const START_DELAY := 1.8
 const END_DELAY := 2.2
 
-const ACTION_SOUNDS := {"chop": "chop", "slice": "slice", "knead": "squish", "roll": "roll", "stir": "swirl", "crank": "swirl"}
+const ACTION_SOUNDS := {"chop": "chop", "slice": "slice", "knead": "squish", "roll": "roll", "stir": "swirl", "crank": "swirl",
+	"press": "thud", "mash": "squish", "grate": "slice"}
+const INSERT_WORDS := {"oven": "FWOOSH!", "comal": "SIZZLE!", "grill": "TSSSS!", "rice_cooker": "FLUMP!"}
 const ACTION_WORDS := {"chop": ["CHOP!", "CHAK!", "THUNK!"], "slice": ["SLICE!", "SHING!"], "knead": ["SQUISH!", "SQUASH!", "PAT!"],
-	"roll": ["ROLL!", "VRRM!"], "stir": ["SWIRL!", "BLOOP!"], "crank": ["CRANK!", "CLICK!"]}
+	"roll": ["ROLL!", "VRRM!"], "stir": ["SWIRL!", "BLOOP!"], "crank": ["CRANK!", "CLICK!"],
+	"press": ["PRESS!", "FLAT!", "KA-CHUNK!"], "mash": ["MASH!", "SMOOSH!", "SPLUT!"], "grate": ["GRATE!", "SHRED!", "SKRITCH!"]}
 
 var shift: Shift
 var db: ContentDB
@@ -48,6 +51,7 @@ var _slots: Array[Dictionary] = []  # {center, rect, scale}
 var _serve_rect := Rect2()
 var _trash_rect := Rect2()
 var _pause_rect := Rect2()
+var _crate_label_size := 15
 var _mates: Array[Dictionary] = []  # {player, rect}: teammates to throw to
 var _counter_top := PackedVector2Array()
 var _counter_front := PackedVector2Array()
@@ -166,15 +170,27 @@ func _layout() -> void:
 	_order_bar.size = Vector2(w, TOP_BAR_H)
 	_pause_rect = Rect2(w - 70, TOP_BAR_H + 10, 58, 58)
 
-	_crates.clear()
+	# Crates and tools in the sidebar: two big columns, or three smaller ones
+	# when a big kitchen (like the solo sushi bar) wouldn't fit.
 	var shown_crates := pk.crates.filter(func(c): return needed_crates.has(c))
-	for i in shown_crates.size():
-		var col := i % 2
-		var row := i / 2
-		_crates.append({"id": shown_crates[i], "rect": Rect2(14 + col * 108, TOP_BAR_H + 40 + row * 100, 98, 92)})
-	var tools_y := TOP_BAR_H + 40 + ceili(shown_crates.size() / 2.0) * 100 + 40
-	_tools.clear()
 	var shown_tools := pk.tools.filter(func(t): return needed_equipment.has(t))
+	var cols := 2
+	var cell := Vector2(98, 92)
+	var row_h := 100.0
+	var tool_rows := ceili(shown_tools.size() / 3.0)
+	if 40 + ceili(shown_crates.size() / 2.0) * row_h + 40 + tool_rows * 78 > h - TOP_BAR_H - 10:
+		cols = 3
+		cell = Vector2(68, 66)
+		row_h = 84.0
+	_crate_label_size = 15 if cols == 2 else 12
+	_crates.clear()
+	var col_w := (SIDEBAR_W - 20.0) / cols
+	for i in shown_crates.size():
+		var col := i % cols
+		var row := i / cols
+		_crates.append({"id": shown_crates[i], "rect": Rect2(10 + col * col_w + (col_w - cell.x) * 0.5, TOP_BAR_H + 40 + row * row_h, cell.x, cell.y)})
+	var tools_y := TOP_BAR_H + 40 + ceili(shown_crates.size() / float(cols)) * row_h + 34
+	_tools.clear()
 	for i in shown_tools.size():
 		_tools.append({"id": shown_tools[i], "rect": Rect2(10 + (i % 3) * 74, tools_y + (i / 3) * 78, 70, 70)})
 
@@ -243,7 +259,7 @@ func _process(delta: float) -> void:
 		elif _end_timer > 0.0:
 			_end_timer -= delta
 			if _end_timer <= 0.0:
-				Game.finish_level(shift.outcome, shift.stats.merged({"score": shift.score}))
+				Game.finish_level(shift.outcome, shift.stats.merged({"score": shift.score, "time": shift.time}))
 				return
 	_handle_events(_session.drain_events())
 	_check_work_done()
@@ -326,7 +342,7 @@ func _handle_events(events: Array[Dictionary]) -> void:
 			"appliance_inserted":
 				Sfx.play("whoosh")
 				var spot := _station_spot(event.equipment, event.index)
-				_bubble(spot + Vector2(0, -70), "FWOOSH!" if event.equipment == "oven" else "SPLOSH!", Art.SUN, 28)
+				_bubble(spot + Vector2(0, -70), INSERT_WORDS.get(event.equipment, "SPLOSH!"), Art.SUN, 28)
 			"cook_ready":
 				Sfx.play("ding", 0.0)
 				Game.vibrate(60)
@@ -592,7 +608,7 @@ func _pause_menu_click(pos: Vector2) -> void:
 		if Net.is_online():
 			Game.leave_to_menu()
 		else:
-			Game.goto(Game.SCENE_MENU if shift.level.type == LevelDef.TYPE_ARCADE else Game.SCENE_LEVEL_SELECT)
+			Game.goto(Game.SCENE_PLAY if shift.level.type == LevelDef.TYPE_ARCADE else Game.SCENE_LEVEL_SELECT)
 
 
 # --- Actions -----------------------------------------------------------------
@@ -657,6 +673,8 @@ func _start_work_on_appliance(eq: String, index: int) -> void:
 func _on_minigame_work(units: int) -> void:
 	if _work.is_empty():
 		return
+	if Game.settings.easy_minigames:
+		units *= 2  # every gesture counts double
 	var proc: Dictionary = _work.process
 	var ok := false
 	if _work.kind == "slot":
@@ -703,7 +721,7 @@ func _close_minigame() -> void:
 func _update_hint() -> void:
 	_hint_text = ""
 	_hint_points.clear()
-	if _start_timer > 0.0 or shift.finished or _minigame.visible:
+	if _start_timer > 0.0 or shift.finished or _minigame.visible or not Game.settings.tips:
 		return
 	for action in _hint_bot.plan(shift):
 		if action.player == _me:
@@ -863,30 +881,22 @@ func _mate_rect(player: int) -> Rect2:
 
 
 func _mate_name(player: int) -> String:
-	return "CHEF %d (%s)" % [player + 1, kitchen.players[player].role.to_upper()]
+	return "%s (%s)" % [str(Net.profile_of(player).name).to_upper(), kitchen.players[player].role.to_upper()]
 
 
 func _draw_mate(c: CanvasItem, mate: Dictionary) -> void:
 	var rect: Rect2 = mate.rect
 	var player: int = mate.player
+	var friend := Net.profile_of(player)
 	var color: Color = Art.PLAYER_COLORS[player % Art.PLAYER_COLORS.size()]
 	c.draw_rect(rect, color.lightened(0.55))
 	c.draw_rect(rect, Art.INK, false, 5.0)
-	# A chef face with a hat.
-	var face := rect.position + Vector2(40, 66)
-	c.draw_circle(face, 26, Color("#f6d2b0"))
-	c.draw_arc(face, 26, 0, TAU, 32, Art.INK, 3.0, true)
-	c.draw_rect(Rect2(face + Vector2(-20, -50), Vector2(40, 22)), Color.WHITE)
-	c.draw_rect(Rect2(face + Vector2(-20, -50), Vector2(40, 22)), Art.INK, false, 3.0)
-	c.draw_circle(face + Vector2(-9, -2), 3, Art.INK)
-	c.draw_circle(face + Vector2(9, -2), 3, Art.INK)
-	c.draw_arc(face + Vector2(0, 6), 9, 0.3, PI - 0.3, 12, Art.INK, 3.0, true)
-	c.draw_rect(Rect2(face + Vector2(-26, 22), Vector2(52, 8)), color)
-	var font := Art.comic_font()
-	c.draw_string(font, rect.position + Vector2(76, 30), "CHEF %d" % (player + 1), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 80, 24, Art.INK)
-	c.draw_string(Art.ui_font(), rect.position + Vector2(76, 52), kitchen.players[player].role, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 80, 13, Art.INK)
 	var free := kitchen.players[player].free_slot_count()
-	c.draw_string(Art.ui_font(), rect.position + Vector2(76, 74), "%d free" % free if free > 0 else "FULL!", HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 80, 14, Art.INK if free > 0 else Art.TOMATO)
+	ChefLook.draw(c, rect.position + Vector2(36, 54), 78.0, friend.look, 1.0 if free > 0 else 0.2)
+	var font := Art.comic_font()
+	c.draw_string(font, rect.position + Vector2(72, 30), str(friend.name).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 76, 22, Art.INK)
+	c.draw_string(Art.ui_font(), rect.position + Vector2(72, 52), kitchen.players[player].role, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 76, 12, Art.INK)
+	c.draw_string(Art.ui_font(), rect.position + Vector2(72, 74), "%d free" % free if free > 0 else "FULL!", HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 76, 14, Art.INK if free > 0 else Art.TOMATO)
 	c.draw_string(font, rect.position + Vector2(0, rect.size.y - 12), "THROW HERE ➜", HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, 20, Art.INK)
 
 
@@ -981,7 +991,7 @@ func _draw_bin_and_sidebar(c: CanvasItem, h: float) -> void:
 	c.draw_line(Vector2(SIDEBAR_W, TOP_BAR_H), Vector2(SIDEBAR_W, h), Art.INK, 6.0)
 	var title := "MY CRATES"
 	if kitchen.players.size() > 1:
-		title = "CHEF %d · %s" % [_me + 1, kitchen.players[_me].role.to_upper()]
+		title = "%s · %s" % [Game.profile.name.to_upper(), kitchen.players[_me].role.to_upper()]
 	_draw_label(c, title, Vector2(0, TOP_BAR_H + 30), SIDEBAR_W, 22, Art.PLAYER_COLORS[_me % Art.PLAYER_COLORS.size()].lightened(0.3) if kitchen.players.size() > 1 else Color.WHITE)
 	for crate in _crates:
 		var rect: Rect2 = crate.rect
@@ -990,8 +1000,9 @@ func _draw_bin_and_sidebar(c: CanvasItem, h: float) -> void:
 			c.draw_texture_rect(box, rect, false)
 		var icon := Art.item(crate.id)
 		if icon:
-			c.draw_texture_rect(icon, Rect2(rect.position + Vector2(14, 6), Vector2(70, 70)), false)
-		_draw_label(c, db.item_name(crate.id).to_upper(), Vector2(rect.position.x, rect.end.y + 2), rect.size.x, 15, Color.WHITE)
+			var side := rect.size.x * 0.72
+			c.draw_texture_rect(icon, Rect2(rect.position + Vector2((rect.size.x - side) * 0.5, rect.size.y * 0.06), Vector2(side, side)), false)
+		_draw_label(c, db.item_name(crate.id).to_upper(), Vector2(rect.position.x - 6, rect.end.y + 2), rect.size.x + 12, _crate_label_size, Color.WHITE)
 	if not _tools.is_empty():
 		_draw_label(c, "MY TOOLS", Vector2(0, _tools[0].rect.position.y - 10), SIDEBAR_W, 22, Color.WHITE)
 	for tool in _tools:

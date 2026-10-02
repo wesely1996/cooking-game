@@ -22,6 +22,7 @@ and throw them to each other to serve customers around the world.
 | M2: playable solo kitchen (Italy levels, arcade) | done |
 | CI/CD: tests, smoke test, Android/desktop builds, releases | done |
 | M4 (part 1): 2-player LAN for story and arcade | done (v0.3.0) |
+| Mexico and Japan regions, profile, settings, new menus | done (v0.4.0) |
 | M3: polish, real playtests · M4: 3–4 players | next |
 
 ## Project layout
@@ -48,13 +49,22 @@ ui/                menus: title, world map, lobby, recipe book, results
 art/               fonts and the generated SVG pictures (tools/art/generate_art.py)
 ```
 
+## Menus
+
+- **Play** → *World Tour* (Italy, Mexico, Japan: shifts, a festival and a
+  competition per region), *Play with a friend* (LAN) or *Arcade* (pick a
+  cuisine you have reached).
+- **Profile**: your name and chef, favourite and best cuisine, stats.
+- **Recipe book**: every dish you have served, step by step.
+- **Settings**: sound, vibration, tips, easy mini-games, reset progress.
+
 ## How to play (solo)
 
 - **Tap a crate** to take an ingredient (or drag it onto a counter spot).
 - **Tap food** to select it: everything it can go to glows. Then tap (or drag
   the food onto) a tool, an appliance, other food, the serving window or the bin.
-- **Tools open a mini-game:** swipe down to chop, tap to knead, swipe side to
-  side to roll, draw circles to stir.
+- **Tools open a mini-game:** swipe down to chop, slice or grate; tap to
+  knead, press or mash; swipe side to side to roll; draw circles to stir.
 - **Ovens and pots cook on their own.** Take food out while the ring is green
   for a PERFECT bonus. Wait too long and it burns.
 - **With a friend (LAN):** both phones on the same Wi-Fi → *Play with a

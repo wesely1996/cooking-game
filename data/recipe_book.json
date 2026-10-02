@@ -1,11 +1,25 @@
 {
   "comment": "Cuisines that are planned but not in the game yet. The recipe book shows a '?' card for each future dish.",
   "coming_soon": [
-    {"cuisine": "Mexican", "region": "Mexico", "dishes": 5},
-    {"cuisine": "American diner", "region": "USA", "dishes": 5},
-    {"cuisine": "Spanish", "region": "Spain", "dishes": 4},
-    {"cuisine": "Japanese", "region": "Japan", "dishes": 5},
-    {"cuisine": "French", "region": "France", "dishes": 4},
-    {"cuisine": "Penguin Iceberg", "region": "The Iceberg", "dishes": 3}
+    {
+      "cuisine": "American diner",
+      "region": "USA",
+      "dishes": 5
+    },
+    {
+      "cuisine": "Spanish",
+      "region": "Spain",
+      "dishes": 4
+    },
+    {
+      "cuisine": "French",
+      "region": "France",
+      "dishes": 4
+    },
+    {
+      "cuisine": "Penguin Iceberg",
+      "region": "The Iceberg",
+      "dishes": 3
+    }
   ]
 }

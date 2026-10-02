@@ -1,0 +1,20 @@
+{
+  "id": "arcade_japanese",
+  "name": "Arcade: Japanese",
+  "description": "Endless sushi bar. Three angry customers and it's over.",
+  "pack": "japanese",
+  "type": "arcade",
+  "dishes": [
+    {"id": "miso_ramen", "weight": 1.5},
+    {"id": "salmon_nigiri", "weight": 1},
+    {"id": "cucumber_maki", "weight": 1}
+  ],
+  "roles": "sushi_bar",
+  "first_spawn": 2,
+  "max_active": {"1": 2, "2": 3, "3": 3, "4": 4},
+  "spawn_interval": {"1": 23, "2": 19, "3": 16, "4": 15},
+  "escalate_every": 30,
+  "interval_factor": 0.93,
+  "patience_factor": 0.95,
+  "strikes": 3
+}

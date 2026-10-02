@@ -1,0 +1,18 @@
+{
+  "id": "mexico_04",
+  "name": "La Cantina",
+  "description": "The whole menu on a loud Friday night.",
+  "pack": "mexican",
+  "type": "normal",
+  "dishes": [
+    {"id": "beef_taco", "weight": 2},
+    {"id": "guacamole", "weight": 1},
+    {"id": "quesadilla", "weight": 1.5}
+  ],
+  "roles": "taqueria",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 18, "2": 14, "3": 13, "4": 12},
+  "stars": {"1": [160, 320, 460], "2": [220, 430, 620], "3": [270, 530, 760], "4": [310, 610, 870]}
+}

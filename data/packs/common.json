@@ -2,6 +2,11 @@
   "id": "common",
   "name": "Common kitchen",
   "items": {
+    "water": {"name": "Water", "kind": "raw"},
+    "tomato": {"name": "Tomato", "kind": "raw"},
+    "egg": {"name": "Egg", "kind": "raw"},
+    "chopped_tomato": {"name": "Chopped tomato"},
+    "chicken": {"name": "Chicken", "kind": "raw"},
     "burnt_food": {"name": "Burnt food", "kind": "waste"}
   },
   "equipment": {
@@ -12,5 +17,8 @@
     "boil_pot": {"name": "Boiling pot", "kind": "appliance", "capacity": 2},
     "oven": {"name": "Oven", "kind": "appliance", "capacity": 2},
     "serving_window": {"name": "Serving window", "kind": "pass"}
-  }
+  },
+  "processes": [
+    {"id": "chop_tomato", "input": "tomato", "equipment": "knife", "action": "chop", "work": 5, "output": "chopped_tomato"}
+  ]
 }

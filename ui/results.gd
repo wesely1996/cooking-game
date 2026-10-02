@@ -70,7 +70,7 @@ func _ready() -> void:
 			if Net.is_host():
 				Game.back_to_lobby()
 			else:
-				Game.goto(Game.SCENE_MENU if level.type == LevelDef.TYPE_ARCADE else Game.SCENE_LEVEL_SELECT))
+				Game.goto(Game.SCENE_PLAY if level.type == LevelDef.TYPE_ARCADE else Game.SCENE_LEVEL_SELECT))
 		buttons.add_child(menu)
 	column.add_child(buttons)
 

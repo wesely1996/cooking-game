@@ -1,0 +1,94 @@
+{
+  "id": "japanese",
+  "name": "Japanese",
+  "items": {
+    "rice": {"name": "Rice", "kind": "raw"},
+    "salmon": {"name": "Salmon", "kind": "raw"},
+    "nori": {"name": "Nori", "kind": "raw"},
+    "cucumber": {"name": "Cucumber", "kind": "raw"},
+    "ramen_noodles": {"name": "Ramen noodles", "kind": "raw"},
+    "miso_paste": {"name": "Miso paste", "kind": "raw"},
+    "green_onion": {"name": "Green onion", "kind": "raw"},
+    "cooked_rice": {"name": "Sushi rice"},
+    "sliced_salmon": {"name": "Sliced salmon"},
+    "cucumber_sticks": {"name": "Cucumber sticks"},
+    "raw_maki": {"name": "Unrolled maki"},
+    "cooked_noodles": {"name": "Cooked noodles"},
+    "miso_mix": {"name": "Miso mix"},
+    "miso_broth": {"name": "Miso broth"},
+    "chopped_green_onion": {"name": "Chopped green onion"},
+    "boiled_egg": {"name": "Boiled egg"},
+    "grilled_chicken": {"name": "Grilled chicken"},
+    "salmon_nigiri": {"name": "Salmon Nigiri", "kind": "dish", "price": 18, "patience": 45},
+    "cucumber_maki": {"name": "Cucumber Maki", "kind": "dish", "price": 22, "patience": 50},
+    "miso_ramen": {"name": "Miso Ramen", "kind": "dish", "price": 30, "patience": 70},
+    "yakitori": {"name": "Yakitori", "kind": "dish", "price": 10, "patience": 30},
+    "miso_soup": {"name": "Miso Soup", "kind": "dish", "price": 8, "patience": 25}
+  },
+  "equipment": {
+    "rice_cooker": {"name": "Rice cooker", "kind": "appliance", "capacity": 2},
+    "sushi_mat": {"name": "Sushi mat", "kind": "tool"},
+    "grill": {"name": "Grill", "kind": "appliance", "capacity": 2}
+  },
+  "processes": [
+    {"id": "cook_rice", "input": "rice", "equipment": "rice_cooker", "action": "steam", "cook_time": 6, "perfect_window": 5, "burn_time": 12, "output": "cooked_rice"},
+    {"id": "slice_salmon", "input": "salmon", "equipment": "knife", "action": "slice", "work": 4, "output": "sliced_salmon"},
+    {"id": "chop_cucumber", "input": "cucumber", "equipment": "knife", "action": "chop", "work": 4, "output": "cucumber_sticks"},
+    {"id": "roll_maki", "input": "raw_maki", "equipment": "sushi_mat", "action": "roll", "work": 3, "output": "cucumber_maki"},
+    {"id": "boil_noodles", "input": "ramen_noodles", "equipment": "boil_pot", "action": "boil", "cook_time": 5, "perfect_window": 4, "burn_time": 9, "output": "cooked_noodles"},
+    {"id": "stir_miso", "input": "miso_mix", "equipment": "sauce_pot", "action": "stir", "work": 3, "output": "miso_broth"},
+    {"id": "chop_green_onion", "input": "green_onion", "equipment": "knife", "action": "chop", "work": 3, "output": "chopped_green_onion"},
+    {"id": "boil_egg", "input": "egg", "equipment": "boil_pot", "action": "boil", "cook_time": 6, "perfect_window": 4, "burn_time": 10, "output": "boiled_egg"},
+    {"id": "grill_chicken", "input": "chicken", "equipment": "grill", "action": "grill", "cook_time": 5, "perfect_window": 4, "burn_time": 8, "output": "grilled_chicken"}
+  ],
+  "assemblies": [
+    {"output": "salmon_nigiri", "base": "cooked_rice", "parts": ["sliced_salmon"]},
+    {"output": "raw_maki", "base": "nori", "parts": ["cooked_rice", "cucumber_sticks"]},
+    {"output": "miso_mix", "base": "miso_paste", "parts": ["water"]},
+    {"output": "miso_ramen", "base": "cooked_noodles", "parts": ["miso_broth", "chopped_green_onion", "boiled_egg"]},
+    {"output": "yakitori", "base": "grilled_chicken", "parts": ["chopped_green_onion"]},
+    {"output": "miso_soup", "base": "miso_broth", "parts": ["chopped_green_onion"]}
+  ],
+  "role_presets": {
+    "sushi_bar": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["rice", "nori", "cucumber", "salmon", "egg", "ramen_noodles", "miso_paste", "water", "green_onion"], "equipment": ["rice_cooker", "knife", "sushi_mat", "boil_pot", "sauce_pot", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Rice & Rolls", "crates": ["rice", "nori", "cucumber", "salmon", "egg"], "equipment": ["rice_cooker", "knife", "sushi_mat"]},
+        {"name": "Ramen & Pass", "crates": ["ramen_noodles", "miso_paste", "water", "green_onion"], "equipment": ["boil_pot", "sauce_pot", "knife", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Rice", "crates": ["rice", "nori"], "equipment": ["rice_cooker", "sushi_mat"]},
+        {"name": "Fish & Veg", "crates": ["salmon", "cucumber", "green_onion"], "equipment": ["knife"]},
+        {"name": "Ramen & Pass", "crates": ["ramen_noodles", "miso_paste", "water", "egg"], "equipment": ["boil_pot", "sauce_pot", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Rice", "crates": ["rice", "nori"], "equipment": ["rice_cooker", "sushi_mat"]},
+        {"name": "Fish", "crates": ["salmon", "cucumber"], "equipment": ["knife"]},
+        {"name": "Broth", "crates": ["miso_paste", "water", "green_onion"], "equipment": ["sauce_pot", "knife"]},
+        {"name": "Noodles & Pass", "crates": ["ramen_noodles", "egg"], "equipment": ["boil_pot", "serving_window"]}
+      ]
+    },
+    "matsuri": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["chicken", "green_onion", "miso_paste", "water"], "equipment": ["grill", "knife", "sauce_pot", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Grill", "crates": ["chicken", "green_onion"], "equipment": ["grill", "knife"]},
+        {"name": "Broth & Pass", "crates": ["miso_paste", "water"], "equipment": ["sauce_pot", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Grill", "crates": ["chicken"], "equipment": ["grill"]},
+        {"name": "Onions", "crates": ["green_onion"], "equipment": ["knife"]},
+        {"name": "Broth & Pass", "crates": ["miso_paste", "water"], "equipment": ["sauce_pot", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Grill", "crates": ["chicken"], "equipment": ["grill"]},
+        {"name": "Onions", "crates": ["green_onion"], "equipment": ["knife"]},
+        {"name": "Broth", "crates": ["miso_paste", "water"], "equipment": ["sauce_pot"]},
+        {"name": "Grill & Pass", "crates": ["chicken"], "equipment": ["grill", "serving_window"]}
+      ]
+    }
+  }
+}

@@ -80,3 +80,23 @@ func test_validation_catches_broken_content() -> void:
 	assert_true(errors.contains("cycle"), "cycle")
 	assert_true(errors.contains("dish 'cheap_dish' needs a price"), "dish price")
 	assert_true(errors.contains("needs an appliance"), "passive on tool")
+
+
+func test_three_cuisines_with_their_own_dishes() -> void:
+	var db := ContentDB.load_dir()
+	for pack in ["italian", "mexican", "japanese"]:
+		var dishes := db.items.values().filter(func(item): return item.kind == ContentDB.KIND_DISH and item.pack == pack)
+		assert_true(dishes.size() >= 5, pack + " has at least 5 dishes")
+	assert_eq(db.effective_id("tortilla", ["cooked_beef", "salsa"]), "beef_taco")
+	assert_eq(db.effective_id("cooked_noodles", ["boiled_egg", "chopped_green_onion", "miso_broth"]), "miso_ramen")
+	assert_eq(db.process_for("chicken", "comal").get("output", ""), "cooked_chicken", "same chicken, Mexican comal")
+	assert_eq(db.process_for("chicken", "grill").get("output", ""), "grilled_chicken", "same chicken, Japanese grill")
+
+
+func test_every_item_and_equipment_has_a_picture() -> void:
+	var db := ContentDB.load_dir()
+	for id in db.items:
+		assert_true(ResourceLoader.exists("res://art/items/%s.svg" % id), "picture for " + id)
+	for id in db.equipment:
+		if db.equipment[id].kind != ContentDB.EQUIP_PASS:
+			assert_true(ResourceLoader.exists("res://art/equipment/%s.svg" % id), "picture for " + id)

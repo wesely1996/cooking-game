@@ -1,0 +1,16 @@
+{
+  "id": "japan_01",
+  "name": "Sushi Counter",
+  "description": "Tokyo! Steam the rice, slice the salmon, press it into nigiri.",
+  "pack": "japanese",
+  "type": "normal",
+  "dishes": [
+    {"id": "salmon_nigiri", "weight": 1}
+  ],
+  "roles": "sushi_bar",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 4, "2": 4, "3": 5, "4": 5},
+  "spawn_interval": {"1": 8, "2": 6, "3": 5, "4": 5},
+  "stars": {"1": [200, 390, 560], "2": [260, 530, 760], "3": [320, 650, 920], "4": [370, 740, 1060]}
+}

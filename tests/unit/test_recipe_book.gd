@@ -56,15 +56,17 @@ func test_star_thresholds_rise_with_levels_and_players() -> void:
 	var levels := {}
 	for level in LevelDef.load_dir():
 		levels[level.id] = level
-	var story := ["italy_01", "italy_02", "italy_03", "italy_04"]
 	assert_true(int(levels["italy_01"].value("stars", 1)[2]) >= 200, "solo Pizza Night needs 200+ for 3 stars")
-	for n in [1, 2, 3, 4]:
-		var previous := 0
+	for region in Progression.load_map().regions:
+		var story: Array = region.levels.map(func(e): return e.id).filter(func(id): return levels[id].type == LevelDef.TYPE_NORMAL)
+		assert_eq(story.size(), 4, region.id + " has four shifts")
+		for n in [1, 2, 3, 4]:
+			var previous := 0
+			for id in story:
+				var stars: Array = levels[id].value("stars", n)
+				assert_true(stars[0] < stars[1] and stars[1] < stars[2], "%s %dp thresholds go up" % [id, n])
+				assert_true(int(stars[2]) > previous, "%s %dp is harder than the level before" % [id, n])
+				previous = int(stars[2])
 		for id in story:
-			var stars: Array = levels[id].value("stars", n)
-			assert_true(stars[0] < stars[1] and stars[1] < stars[2], "%s %dp thresholds go up" % [id, n])
-			assert_true(int(stars[2]) > previous, "%s %dp is harder than the level before" % [id, n])
-			previous = int(stars[2])
-	for id in story:
-		for n in [2, 3, 4]:
-			assert_true(int(levels[id].value("stars", n)[2]) > int(levels[id].value("stars", n - 1)[2]), "%s: more players need more points" % id)
+			for n in [2, 3, 4]:
+				assert_true(int(levels[id].value("stars", n)[2]) > int(levels[id].value("stars", n - 1)[2]), "%s: more players need more points" % id)

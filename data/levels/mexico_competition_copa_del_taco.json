@@ -1,0 +1,17 @@
+{
+  "id": "mexico_competition",
+  "name": "Copa del Taco",
+  "description": "Mexico's taco cup. Doña Lupe cooks in wild bursts: sometimes slow, sometimes lightning fast.",
+  "pack": "mexican",
+  "type": "competition",
+  "dishes": ["beef_taco", "guacamole", "quesadilla"],
+  "roles": "taqueria",
+  "judges_orders": ["beef_taco", "guacamole", "quesadilla", "beef_taco", "quesadilla", "guacamole", "beef_taco"],
+  "max_active": 2,
+  "time_limit": 360,
+  "rival": {
+    "name": "Doña Lupe",
+    "personality": "chaotic",
+    "speed": {"1": 0.75, "2": 1.05, "3": 1.35, "4": 1.55}
+  }
+}

@@ -9,11 +9,17 @@ const SCENE_KITCHEN := "res://game/kitchen/kitchen_screen.tscn"
 const SCENE_RESULTS := "res://ui/results.tscn"
 const SCENE_RECIPE_BOOK := "res://ui/recipe_book.tscn"
 const SCENE_LOBBY := "res://ui/lobby.tscn"
+const SCENE_PLAY := "res://ui/play_menu.tscn"
+const SCENE_PROFILE := "res://ui/profile.tscn"
+const SCENE_SETTINGS := "res://ui/settings.tscn"
 
 var db: ContentDB
 var levels := {}  # id -> LevelDef
 var progression: Progression
-var settings := {"sound": true, "haptics": true}
+var settings := {"sound": true, "haptics": true, "tips": true, "easy_minigames": false}
+var profile := PlayerProfile.new()
+## The world-map region shown last, so the map reopens where you were.
+var selected_region := 0
 
 var current_level: LevelDef
 var player_count := 1
@@ -40,6 +46,8 @@ func _ready() -> void:
 		ProjectSettings.get_setting("application/config/version"), db.pack_ids.size(), levels.size(), errors.size()])
 	for error in errors:
 		push_error(error)
+	if profile.look.is_empty():
+		profile.look = ChefLook.default_look()
 	Net.message_received.connect(_on_net_message)
 	Net.disconnected.connect(_on_net_disconnected)
 
@@ -63,6 +71,9 @@ func next_level_id(level_id: String) -> String:
 func start_level(level_id: String, players: int = 1, seed: int = -1) -> void:
 	current_level = levels[level_id]
 	player_count = players
+	for i in progression.regions.size():
+		if progression.regions[i].levels.any(func(entry): return entry.id == level_id):
+			selected_region = i
 	shift_seed = seed if seed >= 0 else randi()
 	if Net.is_host():
 		Net.send_to_clients({"t": "start", "level": level_id, "seed": shift_seed, "players": players})
@@ -80,7 +91,36 @@ func back_to_lobby() -> void:
 func leave_to_menu() -> void:
 	Net.leave()
 	player_count = 1
-	goto(SCENE_MENU)
+	goto(SCENE_PLAY)
+
+
+## Wipes stars, dishes, arcade scores and stats. Name, look and settings stay.
+func reset_progress() -> void:
+	progression.load_save({})
+	best_arcade.clear()
+	profile.load_dict({"name": profile.name, "look": profile.look})
+	selected_region = 0
+	save()
+
+
+## The arcade level for a cuisine pack, e.g. "arcade_italian".
+func arcade_level_id(pack: String) -> String:
+	return "arcade_" + pack
+
+
+## A cuisine's display name, e.g. "Mexican".
+func cuisine_name(pack: String) -> String:
+	return str(db.pack_names.get(pack, pack.capitalize()))
+
+
+## A dish that represents the cuisine (the first dish of its first level).
+func cuisine_icon(pack: String) -> Texture2D:
+	for region in progression.regions:
+		if region.get("pack", "") == pack:
+			var level: LevelDef = levels.get(region.levels[0].id)
+			if level:
+				return Art.item(level.dish_ids()[0])
+	return null
 
 
 func arcade_key(level_id: String, players: int) -> String:
@@ -94,6 +134,7 @@ func best_arcade_score(level_id: String, players: int) -> int:
 func finish_level(outcome: Dictionary, stats: Dictionary) -> void:
 	last_outcome = outcome
 	last_stats = stats
+	profile.record(current_level.pack, int(outcome.get("score", 0)), float(stats.get("time", 0.0)), int(stats.get("served", 0)))
 	if current_level.type == LevelDef.TYPE_ARCADE:
 		var key := arcade_key(current_level.id, player_count)
 		best_arcade[key] = maxi(int(best_arcade.get(key, 0)), int(outcome.get("score", 0)))
@@ -137,7 +178,7 @@ func vibrate(ms: int) -> void:
 func save() -> void:
 	if not save_enabled:
 		return
-	var data := {"progress": progression.to_dict(), "settings": settings, "best_arcade": best_arcade}
+	var data := {"progress": progression.to_dict(), "settings": settings, "best_arcade": best_arcade, "profile": profile.to_dict()}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(data, "  "))
@@ -153,6 +194,7 @@ func _load() -> void:
 	var saved_settings: Dictionary = data.get("settings", {})
 	for key in settings:
 		settings[key] = bool(saved_settings.get(key, settings[key]))
+	profile.load_dict(data.get("profile", {}))
 	var arcade: Dictionary = data.get("best_arcade", {})
 	for key in arcade:
 		# Saves from v0.1/v0.2 had no player count: those were solo games.
