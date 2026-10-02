@@ -61,6 +61,23 @@ func tick(delta: float) -> void:
 		_complete_dish()
 
 
+const SYNC_FIELDS := ["name", "personality", "speed", "dishes", "index", "progress", "duration",
+	"current_burnt", "done_count", "perfect_count", "score", "finished"]
+
+
+func sync_state() -> Dictionary:
+	var data := {}
+	for field in SYNC_FIELDS:
+		data[field] = get(field)
+	return data
+
+
+func load_sync_state(data: Dictionary) -> void:
+	for field in SYNC_FIELDS:
+		if data.has(field):
+			set(field, data[field])
+
+
 func drain_events() -> Array[Dictionary]:
 	var events := _events
 	_events = []

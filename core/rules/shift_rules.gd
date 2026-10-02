@@ -49,6 +49,15 @@ func outcome(_shift: Shift) -> Dictionary:
 	return {}
 
 
+## What clients need to show this level type's status (mood, waves...).
+func sync_state() -> Dictionary:
+	return {}
+
+
+func load_sync_state(_data: Dictionary) -> void:
+	pass
+
+
 ## Price, plus a tip for speed, a bonus for perfect cooking, and the combo
 ## multiplier.
 static func serve_points(shift: Shift, order: Dictionary, item: KitchenItem, with_tip: bool, with_combo: bool) -> int:

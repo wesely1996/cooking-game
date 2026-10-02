@@ -1,7 +1,8 @@
 name: Test
 
-# Reusable: unit tests, bot simulations and the smoke test that drives the
-# real screens with taps, drags and swipes on a virtual display.
+# Reusable: unit tests, bot simulations, the smoke test that drives the real
+# screens with taps, drags and swipes on a virtual display, and the LAN test
+# where two copies of the game cook together over real sockets.
 on:
   workflow_call:
 
@@ -30,6 +31,9 @@ jobs:
 
       - name: Smoke test (real screens, touch input, screenshots)
         run: SCREENSHOT_DIR="$PWD/build/screenshots" tools/smoke_test.sh
+
+      - name: LAN test (two copies of the game play together)
+        run: SCREENSHOT_DIR="$PWD/build/screenshots/lan" tools/lan_test.sh
 
       - name: Upload screenshots
         if: always()

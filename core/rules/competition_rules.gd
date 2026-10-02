@@ -75,6 +75,16 @@ func outcome(shift: Shift) -> Dictionary:
 	}
 
 
+func sync_state() -> Dictionary:
+	return {"queue": queue.duplicate(), "total_orders": total_orders, "players_done": players_done}
+
+
+func load_sync_state(data: Dictionary) -> void:
+	queue = data.get("queue", queue).duplicate()
+	total_orders = int(data.get("total_orders", total_orders))
+	players_done = int(data.get("players_done", players_done))
+
+
 func _reveal(shift: Shift) -> void:
 	var max_active := int(shift.level.value("max_active", shift.player_count, 2))
 	while not queue.is_empty() and shift.orders.active_count() < max_active:

@@ -31,6 +31,8 @@ func _initialize() -> void:
 				continue
 			var test: TestCase = script.new()
 			test.call(test_name)
+			if test.has_method("after_each"):
+				test.call("after_each")
 			if test.assertions == 0:
 				test.failures.append("no assertions ran (did the test crash?)")
 			if test.failures.is_empty():

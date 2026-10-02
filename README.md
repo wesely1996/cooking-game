@@ -21,7 +21,8 @@ and throw them to each other to serve customers around the world.
 | M1: core game rules, Italian content, bots | done |
 | M2: playable solo kitchen (Italy levels, arcade) | done |
 | CI/CD: tests, smoke test, Android/desktop builds, releases | done |
-| M3: polish, more mini-games feel, real playtests | next |
+| M4 (part 1): 2-player LAN for story and arcade | done (v0.3.0) |
+| M3: polish, real playtests · M4: 3–4 players | next |
 
 ## Project layout
 
@@ -34,14 +35,16 @@ core/            game rules, no rendering (runs headless)
   rival_chef.gd    the AI chef in competitions
   level_def.gd, level_validator.gd, progression.gd
   sim/kitchen_bot.gd  bot that plays levels through the same intents as players
+  net/             LAN: state snapshots (shift_sync), host and client sessions
 data/
   packs/           cuisine packs (JSON): ingredients, recipes, role splits
   levels/          levels (JSON)
   story/           world map (regions, star requirements)
 tests/             headless tests (tests/unit/test_*.gd)
 tools/             test runner script, balancing report
-game/              the playable game: kitchen screen, mini-games, effects, sound
-ui/                menus: title, world map, results
+game/              the playable game: kitchen screen, mini-games, effects, sound,
+                   net/net.gd (ENet transport, handshake, LAN discovery)
+ui/                menus: title, world map, lobby, recipe book, results
 art/               fonts and the generated SVG pictures (tools/art/generate_art.py)
 ```
 
@@ -54,6 +57,10 @@ art/               fonts and the generated SVG pictures (tools/art/generate_art.
   side to roll, draw circles to stir.
 - **Ovens and pots cook on their own.** Take food out while the ring is green
   for a PERFECT bonus. Wait too long and it burns.
+- **With a friend (LAN):** both phones on the same Wi-Fi → *Play with a
+  friend*. One hosts, the other joins (the kitchen shows up by itself, or type
+  the host's address). Each of you owns half the kitchen: drag food onto your
+  friend's portrait to throw it to them.
 - The first time you make a new dish, a **NEW DISH TIP** and arrows show
   every step. After you've served it once, you're on your own, but the
   **recipe book** remembers how.
@@ -73,6 +80,10 @@ GODOT=/path/to/godot tools/run_tests.sh kitchen
 # smoke test: runs the real screens with taps, drags and swipes (uses xvfb-run
 # when available, saving screenshots to build/screenshots)
 GODOT=/path/to/godot tools/smoke_test.sh
+
+# LAN test: two copies of the game cook together over real sockets
+# (uses xvfb-run when available; screenshots in build/lan_screenshots)
+GODOT=/path/to/godot tools/lan_test.sh
 
 # balancing: how bots of different speeds do on each level
 /path/to/godot --headless --path . --script res://tools/balance_report.gd -- italy_01

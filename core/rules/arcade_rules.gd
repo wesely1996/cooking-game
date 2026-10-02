@@ -40,6 +40,14 @@ func is_finished(shift: Shift) -> bool:
 	return shift.stats.lost >= int(shift.level.value("strikes", shift.player_count, 3))
 
 
+func sync_state() -> Dictionary:
+	return {"level_up": level_up}
+
+
+func load_sync_state(data: Dictionary) -> void:
+	level_up = int(data.get("level_up", level_up))
+
+
 func outcome(shift: Shift) -> Dictionary:
 	return {
 		"type": LevelDef.TYPE_ARCADE,

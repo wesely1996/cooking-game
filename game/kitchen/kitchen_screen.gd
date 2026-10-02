@@ -3,15 +3,15 @@ extends Control
 ## left, appliances on the back wall, the counter with its slots in the
 ## middle, and the serving window on the right.
 ##
-## Everything happens through Shift.do_intent(), exactly like a networked
-## client will do later. Controls work with taps or drags:
+## Every action goes through a session: a HostSession runs the rules (solo,
+## or the host of a LAN game) and a ClientSession mirrors the host's shift
+## on the other phone. Controls work with taps or drags:
 ## - tap a crate to take an ingredient (or drag it onto a slot),
 ## - tap food to select it; the things it can go to glow,
 ## - then tap (or drag the food onto) a tool, an appliance, other food,
 ##   the serving window or the bin,
-## - tools open a gesture mini-game; ovens and pots cook on their own.
-
-const ME := 0  # the local player (solo for now; LAN play arrives in M4)
+## - tools open a gesture mini-game; ovens and pots cook on their own,
+## - in a LAN game, food dropped on a teammate's portrait is thrown to them.
 const TOP_BAR_H := 118.0
 const SIDEBAR_W := 236.0
 const TAP_DISTANCE := 14.0
@@ -25,6 +25,8 @@ const ACTION_WORDS := {"chop": ["CHOP!", "CHAK!", "THUNK!"], "slice": ["SLICE!",
 var shift: Shift
 var db: ContentDB
 var kitchen: KitchenState
+var _me := 0  # this phone's chef
+var _session  # HostSession or ClientSession
 
 var _backdrop: Control
 var _dynamic: Control
@@ -46,6 +48,7 @@ var _slots: Array[Dictionary] = []  # {center, rect, scale}
 var _serve_rect := Rect2()
 var _trash_rect := Rect2()
 var _pause_rect := Rect2()
+var _mates: Array[Dictionary] = []  # {player, rect}: teammates to throw to
 var _counter_top := PackedVector2Array()
 var _counter_front := PackedVector2Array()
 
@@ -56,7 +59,6 @@ var _dragging := false
 var _drag_view: ItemView
 var _selected_uid := 0
 var _work: Dictionary = {}  # what the open mini-game works on
-var _paused := false
 var _start_timer := START_DELAY
 var _end_timer := -1.0
 var _time := 0.0
@@ -72,8 +74,18 @@ var _hint_timer := 0.0
 
 func _ready() -> void:
 	db = Game.db
-	shift = Shift.new(db, Game.current_level, Game.player_count, randi())
+	shift = Shift.new(db, Game.current_level, Game.player_count, Game.shift_seed)
 	kitchen = shift.kitchen
+	if Net.is_client():
+		_me = Net.local_player
+		shift.drain_events()  # the mirror's own start-up events; the host sends the real ones
+		_session = ClientSession.new(shift, _me, Net.send_to_host)
+		_session.intent_answered.connect(_on_intent_answered)
+	else:
+		_session = HostSession.new(shift, Net.send if Net.is_host() else Callable())
+		for i in Net.client_peers.size():
+			_session.add_peer(Net.client_peers[i], i + 1)
+	Net.message_received.connect(_on_net_message)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
@@ -110,8 +122,15 @@ func _ready() -> void:
 	_order_bar.is_new = func(dish: String) -> bool: return not Game.progression.is_discovered(dish)
 	resized.connect(_layout)
 	_layout()
-	_handle_events(shift.drain_events())
+	_handle_events(_session.drain_events())
 	_bubble(size * 0.5, "READY?", Art.SUN, 64)
+
+
+func _on_net_message(peer_id: int, message: Dictionary) -> void:
+	if _session is ClientSession:
+		_session.on_message(message)
+	else:
+		_session.on_message(peer_id, message)
 
 
 func _layer_control() -> Control:
@@ -125,8 +144,8 @@ func _layer_control() -> Control:
 func _notification(what: int) -> void:
 	# Android back button, or the app going to the background: pause.
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
-		if shift and not shift.finished:
-			_paused = true
+		if _session and not shift.finished:
+			_session.set_paused(true)
 
 
 # --- Layout ------------------------------------------------------------------
@@ -134,7 +153,7 @@ func _notification(what: int) -> void:
 func _layout() -> void:
 	var w := size.x
 	var h := size.y
-	var pk := kitchen.players[ME]
+	var pk := kitchen.players[_me]
 	var needed_crates := {}
 	var needed_equipment := {}
 	for dish in shift.level.dish_ids():
@@ -159,8 +178,14 @@ func _layout() -> void:
 	for i in shown_tools.size():
 		_tools.append({"id": shown_tools[i], "rect": Rect2(10 + (i % 3) * 74, tools_y + (i / 3) * 78, 70, 70)})
 
-	_serve_rect = Rect2(w - 178, TOP_BAR_H + 80, 164, 190)
+	_serve_rect = Rect2(w - 178, TOP_BAR_H + 80, 164, 190) if pk.serves else Rect2()
 	_trash_rect = Rect2(w - 150, h - 150, 120, 130)
+	_mates.clear()
+	var mate_y := TOP_BAR_H + (290.0 if pk.serves else 80.0)
+	for p in kitchen.players.size():
+		if p != _me:
+			_mates.append({"player": p, "rect": Rect2(w - 178, mate_y, 164, 130)})
+			mate_y += 140.0
 
 	var area_left := SIDEBAR_W + 20.0
 	var area_right := w - 196.0
@@ -207,20 +232,21 @@ func _layout() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
-	if not _paused:
+	if not _session.paused:
 		if _start_timer > 0.0:
 			_start_timer -= delta
 			if _start_timer <= 0.0:
 				_bubble(size * 0.5, "COOK!", Art.TOMATO, 72)
 				Sfx.play("bell")
 		elif not shift.finished:
-			shift.tick(delta)
+			_session.tick(delta)
 		elif _end_timer > 0.0:
 			_end_timer -= delta
 			if _end_timer <= 0.0:
 				Game.finish_level(shift.outcome, shift.stats.merged({"score": shift.score}))
 				return
-	_handle_events(shift.drain_events())
+	_handle_events(_session.drain_events())
+	_check_work_done()
 	_sync_views()
 	_hint_timer -= delta
 	if _hint_timer <= 0.0:
@@ -232,7 +258,7 @@ func _process(delta: float) -> void:
 
 func _sync_views() -> void:
 	var seen := {}
-	var pk := kitchen.players[ME]
+	var pk := kitchen.players[_me]
 	for i in pk.slots.size():
 		var item: KitchenItem = pk.slots[i]
 		if item:
@@ -278,6 +304,12 @@ func _view_for(item: KitchenItem, fallback: Vector2) -> ItemView:
 
 func _handle_events(events: Array[Dictionary]) -> void:
 	for event in events:
+		if event.type == "item_thrown":
+			_on_item_thrown(event)
+			continue
+		# Other chefs' counters aren't on this screen.
+		if int(event.get("player", _me)) != _me:
+			continue
 		match event.type:
 			"item_added":
 				var crate := _crate_rect(event.item.type)
@@ -343,6 +375,19 @@ func _handle_events(events: Array[Dictionary]) -> void:
 				_end_shift()
 
 
+func _on_item_thrown(event: Dictionary) -> void:
+	var uid := int(event.item.uid)
+	if event.player == _me:
+		_fly_away(uid, _mate_rect(event.target).get_center())
+		Sfx.play("whoosh")
+		_bubble(_mate_rect(event.target).get_center() + Vector2(-40, -70), "WHOOSH!", Color.WHITE, 34)
+	elif event.target == _me:
+		_spawn_from[uid] = _mate_rect(event.player).get_center()
+		Sfx.play("thud")
+		Game.vibrate(40)
+		_bubble(_slots[event.target_slot].center + Vector2(0, -60), _pick(["THWACK!", "CATCH!", "PLOP!"]), Art.SUN, 36)
+
+
 func _end_shift() -> void:
 	_close_minigame()
 	_end_timer = END_DELAY
@@ -374,7 +419,7 @@ func _fly_away(uid: int, to: Vector2) -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	var pos: Vector2 = event.position if "position" in event else Vector2.ZERO
-	if _paused:
+	if _session.paused:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			_pause_menu_click(pos)
 		return
@@ -389,7 +434,7 @@ func _gui_input(event: InputEvent) -> void:
 			_press_pos = pos
 			_dragging = false
 			if _press.get("kind", "") == "pause":
-				_paused = true
+				_session.set_paused(true)
 				_press = {}
 		else:
 			_release(pos)
@@ -406,7 +451,7 @@ func _start_drag() -> void:
 	_dragging = true
 	match _press.kind:
 		"slot":
-			var item := kitchen.item_at(ME, _press.index)
+			var item := kitchen.item_at(_me, _press.index)
 			if item and _item_views.has(item.uid):
 				_drag_view = _item_views[item.uid]
 				_drag_view.held = true
@@ -441,12 +486,12 @@ func _release(pos: Vector2) -> void:
 		"slot":
 			_drop_item(press.index, target)
 		"crate":
-			if target.get("kind", "") == "slot" and kitchen.item_at(ME, target.index) == null:
+			if target.get("kind", "") == "slot" and kitchen.item_at(_me, target.index) == null:
 				_intent({"type": "take", "ingredient": press.id, "slot": target.index})
 			elif target.get("kind", "") == "crate":
 				_intent({"type": "take", "ingredient": press.id})
 		"tool":
-			if target.get("kind", "") == "slot" and kitchen.item_at(ME, target.index):
+			if target.get("kind", "") == "slot" and kitchen.item_at(_me, target.index):
 				_start_work_on_slot(target.index, press.id)
 	_selected_uid = 0 if press.kind == "slot" else _selected_uid
 
@@ -456,7 +501,7 @@ func _drop_item(from: int, target: Dictionary) -> void:
 		"slot":
 			if target.index == from:
 				return
-			if kitchen.item_at(ME, target.index) == null:
+			if kitchen.item_at(_me, target.index) == null:
 				_intent({"type": "move", "from": from, "to": target.index})
 			else:
 				_intent({"type": "combine", "from": from, "to": target.index}, true)
@@ -468,6 +513,8 @@ func _drop_item(from: int, target: Dictionary) -> void:
 			_intent({"type": "serve", "slot": from}, true)
 		"trash":
 			_intent({"type": "trash", "slot": from})
+		"mate":
+			_intent({"type": "throw", "slot": from, "target": target.player}, true)
 
 
 func _tap(press: Dictionary) -> void:
@@ -476,7 +523,7 @@ func _tap(press: Dictionary) -> void:
 		"crate":
 			_intent({"type": "take", "ingredient": press.id}, true)
 		"slot":
-			var item := kitchen.item_at(ME, press.index)
+			var item := kitchen.item_at(_me, press.index)
 			if item == null:
 				if selected_slot >= 0:
 					_intent({"type": "move", "from": selected_slot, "to": press.index})
@@ -503,6 +550,16 @@ func _tap(press: Dictionary) -> void:
 			if selected_slot >= 0:
 				_intent({"type": "trash", "slot": selected_slot})
 				_selected_uid = 0
+		"mate":
+			if selected_slot >= 0:
+				_intent({"type": "throw", "slot": selected_slot, "target": press.player}, true)
+				_selected_uid = 0
+			else:
+				_bubble(_press_center(press) + Vector2(-40, -60), "PICK FOOD TO THROW!", Color.WHITE, 22)
+
+
+func _press_center(press: Dictionary) -> Vector2:
+	return _mate_rect(press.player).get_center() if press.get("kind", "") == "mate" else _press_pos
 
 
 func _tap_station(press: Dictionary, selected_slot: int) -> void:
@@ -510,7 +567,7 @@ func _tap_station(press: Dictionary, selected_slot: int) -> void:
 		if _intent({"type": "insert", "slot": selected_slot, "equipment": press.id}, true):
 			_selected_uid = 0
 		return
-	var appliance: Array = kitchen.players[ME].appliances[press.id]
+	var appliance: Array = kitchen.players[_me].appliances[press.id]
 	var index: int = press.index
 	if appliance[index] == null:
 		index = appliance.find_custom(func(a): return a != null)
@@ -528,24 +585,39 @@ func _tap_station(press: Dictionary, selected_slot: int) -> void:
 func _pause_menu_click(pos: Vector2) -> void:
 	var buttons := _pause_buttons()
 	if buttons.resume.has_point(pos):
-		_paused = false
-	elif buttons.restart.has_point(pos):
-		Game.start_level(shift.level.id)
+		_session.set_paused(false)
+	elif buttons.has("restart") and buttons.restart.has_point(pos):
+		Game.start_level(shift.level.id, Game.player_count)
 	elif buttons.quit.has_point(pos):
-		Game.goto(Game.SCENE_LEVEL_SELECT)
+		if Net.is_online():
+			Game.leave_to_menu()
+		else:
+			Game.goto(Game.SCENE_MENU if shift.level.type == LevelDef.TYPE_ARCADE else Game.SCENE_LEVEL_SELECT)
 
 
 # --- Actions -----------------------------------------------------------------
 
 ## Sends an intent for the local player. On failure optionally shows "NOPE!".
+## On a client the answer comes later (see _on_intent_answered).
 func _intent(intent: Dictionary, nope_on_fail: bool = false) -> bool:
-	intent.player = ME
-	var result := shift.do_intent(intent)
+	var result: Dictionary = _session.do_intent(intent)
+	if result.get("pending", false):
+		intent["nope"] = nope_on_fail  # local note only: the intent was already sent
+		return true
 	if not result.ok and nope_on_fail:
-		Sfx.play("nope", 0.0)
-		Game.vibrate(80)
-		_bubble(get_local_mouse_position() + Vector2(0, -50), _nope_text(result.error), Color.WHITE, 28)
+		_nope(result.error)
 	return result.ok
+
+
+func _on_intent_answered(intent: Dictionary, result: Dictionary) -> void:
+	if not result.get("ok", false) and intent.get("nope", false):
+		_nope(str(result.get("error", "")))
+
+
+func _nope(error: String) -> void:
+	Sfx.play("nope", 0.0)
+	Game.vibrate(80)
+	_bubble(get_local_mouse_position() + Vector2(0, -50), _nope_text(error), Color.WHITE, 28)
 
 
 func _nope_text(error: String) -> String:
@@ -556,15 +628,17 @@ func _nope_text(error: String) -> String:
 			return "IT'S FULL!"
 		"no_matching_order":
 			return "NOBODY ORDERED THAT!"
+		"target_full":
+			return "THEIR COUNTER IS FULL!"
 	return "NOPE!"
 
 
 func _start_work_on_slot(slot: int, tool: String) -> void:
-	var item := kitchen.item_at(ME, slot)
+	var item := kitchen.item_at(_me, slot)
 	if item == null:
 		return
 	var proc := db.process_for(kitchen.effective_id(item), tool)
-	if proc.is_empty() or not kitchen.players[ME].tools.has(tool):
+	if proc.is_empty() or not kitchen.players[_me].tools.has(tool):
 		Sfx.play("nope", 0.0)
 		_bubble(_slots[slot].center + Vector2(0, -60), "NOPE!", Color.WHITE, 30)
 		return
@@ -575,7 +649,7 @@ func _start_work_on_slot(slot: int, tool: String) -> void:
 
 
 func _start_work_on_appliance(eq: String, index: int) -> void:
-	var aslot: KitchenState.ApplianceSlot = kitchen.players[ME].appliances[eq][index]
+	var aslot: KitchenState.ApplianceSlot = kitchen.players[_me].appliances[eq][index]
 	_work = {"kind": "appliance", "equipment": eq, "index": index, "uid": aslot.item.uid, "process": aslot.process}
 	_minigame.open(aslot.process.action, aslot.process.work, aslot.progress, Art.item(aslot.item.type), Art.equipment(eq))
 
@@ -596,17 +670,26 @@ func _on_minigame_work(units: int) -> void:
 	Game.vibrate(15)
 	var words: Array = ACTION_WORDS.get(proc.action, ["POW!"])
 	_bubble(_minigame.position + Vector2(_rng.randf_range(80, _minigame.size.x - 80), _rng.randf_range(90, 220)), _pick(words), Color.WHITE, 32)
+	# Count the gesture right away; on a client the host confirms a moment later.
+	_minigame.set_progress(minf(_minigame.done + units, proc.work))
+	_check_work_done()
+
+
+## Closes the mini-game once the food has turned into the next thing.
+func _check_work_done() -> void:
+	if _work.is_empty():
+		return
+	var proc: Dictionary = _work.process
 	var finished := false
 	if _work.kind == "slot":
-		var item := kitchen.item_at(ME, _work.slot)
+		var item := kitchen.item_at(_me, _work.slot)
 		finished = item == null or item.uid != _work.uid or item.type == proc.output
-		_minigame.set_progress(proc.work if finished else item.work)
 	else:
-		var aslot: KitchenState.ApplianceSlot = kitchen.players[ME].appliances[_work.equipment][_work.index]
-		finished = aslot == null or aslot.done
-		_minigame.set_progress(proc.work if finished else aslot.progress)
+		var aslot: KitchenState.ApplianceSlot = kitchen.players[_me].appliances[_work.equipment][_work.index]
+		finished = aslot == null or aslot.item.uid != _work.uid or aslot.done
 	if finished:
 		_work = {}
+		_minigame.set_progress(proc.work)
 		_minigame.finish()
 
 
@@ -623,15 +706,15 @@ func _update_hint() -> void:
 	if _start_timer > 0.0 or shift.finished or _minigame.visible:
 		return
 	for action in _hint_bot.plan(shift):
-		if action.player == ME:
+		if action.player == _me:
 			_describe(action)
 			return
 
 
 func _describe(action: Dictionary) -> void:
-	var pk := kitchen.players[ME]
+	var pk := kitchen.players[_me]
 	var item_name := func(slot: int) -> String:
-		var item := kitchen.item_at(ME, slot)
+		var item := kitchen.item_at(_me, slot)
 		if item == null:
 			return "food"
 		var id := kitchen.effective_id(item)
@@ -662,6 +745,9 @@ func _describe(action: Dictionary) -> void:
 		"trash", "trash_appliance":
 			_hint_text = "Throw that in the BIN"
 			_hint_points = [_trash_rect.get_center()]
+		"throw":
+			_hint_text = "Throw the %s to %s" % [item_name.call(action.slot), _mate_name(action.target)]
+			_hint_points = [_slots[action.slot].center, _mate_rect(action.target).get_center()]
 
 
 func _draw_hint(c: CanvasItem, pulse: float) -> void:
@@ -691,8 +777,11 @@ func _draw_hint(c: CanvasItem, pulse: float) -> void:
 func _hit(pos: Vector2) -> Dictionary:
 	if _pause_rect.has_point(pos):
 		return {"kind": "pause"}
-	if _serve_rect.has_point(pos):
+	if _serve_rect.has_area() and _serve_rect.has_point(pos):
 		return {"kind": "serve"}
+	for mate in _mates:
+		if mate.rect.has_point(pos):
+			return {"kind": "mate", "player": mate.player}
 	if _trash_rect.has_point(pos):
 		return {"kind": "trash"}
 	for station in _stations:
@@ -720,7 +809,7 @@ func _hit(pos: Vector2) -> Dictionary:
 func _selected_slot() -> int:
 	if _selected_uid == 0:
 		return -1
-	var slots := kitchen.players[ME].slots
+	var slots := kitchen.players[_me].slots
 	for i in slots.size():
 		if slots[i] and slots[i].uid == _selected_uid:
 			return i
@@ -728,18 +817,18 @@ func _selected_slot() -> int:
 
 
 func _can_combine(from: int, to: int) -> bool:
-	var a := kitchen.item_at(ME, from)
-	var b := kitchen.item_at(ME, to)
+	var a := kitchen.item_at(_me, from)
+	var b := kitchen.item_at(_me, to)
 	return a != null and b != null and db.combine(b.type, b.contents, a.type, a.contents).ok
 
 
 ## Where the selected (or dragged) item could go, for highlighting.
 func _valid_targets() -> Dictionary:
-	var targets := {"tools": [], "stations": [], "slots": [], "serve": false}
+	var targets := {"tools": [], "stations": [], "slots": [], "serve": false, "mates": []}
 	var from := _selected_slot()
 	if from < 0:
 		return targets
-	var item := kitchen.item_at(ME, from)
+	var item := kitchen.item_at(_me, from)
 	var effective := kitchen.effective_id(item)
 	for tool in _tools:
 		if not db.process_for(effective, tool.id).is_empty():
@@ -748,10 +837,57 @@ func _valid_targets() -> Dictionary:
 		if not db.process_for(effective, station.id).is_empty():
 			targets.stations.append(station.id)
 	for i in _slots.size():
-		if i != from and kitchen.item_at(ME, i) and _can_combine(from, i):
+		if i != from and kitchen.item_at(_me, i) and _can_combine(from, i):
 			targets.slots.append(i)
 	targets.serve = shift.orders.orders.any(func(o): return o.dish == effective)
+	for mate in _mates:
+		if _mate_can_use(mate.player, effective):
+			targets.mates.append(mate.player)
 	return targets
+
+
+## Whether a teammate has equipment for this food, or serves it.
+func _mate_can_use(player: int, effective: String) -> bool:
+	var pk := kitchen.players[player]
+	for eq in pk.tools + pk.appliances.keys():
+		if not db.process_for(effective, eq).is_empty():
+			return true
+	return pk.serves and shift.orders.orders.any(func(o): return o.dish == effective)
+
+
+func _mate_rect(player: int) -> Rect2:
+	for mate in _mates:
+		if mate.player == player:
+			return mate.rect
+	return Rect2(size.x - 178, TOP_BAR_H + 80, 164, 130)
+
+
+func _mate_name(player: int) -> String:
+	return "CHEF %d (%s)" % [player + 1, kitchen.players[player].role.to_upper()]
+
+
+func _draw_mate(c: CanvasItem, mate: Dictionary) -> void:
+	var rect: Rect2 = mate.rect
+	var player: int = mate.player
+	var color: Color = Art.PLAYER_COLORS[player % Art.PLAYER_COLORS.size()]
+	c.draw_rect(rect, color.lightened(0.55))
+	c.draw_rect(rect, Art.INK, false, 5.0)
+	# A chef face with a hat.
+	var face := rect.position + Vector2(40, 66)
+	c.draw_circle(face, 26, Color("#f6d2b0"))
+	c.draw_arc(face, 26, 0, TAU, 32, Art.INK, 3.0, true)
+	c.draw_rect(Rect2(face + Vector2(-20, -50), Vector2(40, 22)), Color.WHITE)
+	c.draw_rect(Rect2(face + Vector2(-20, -50), Vector2(40, 22)), Art.INK, false, 3.0)
+	c.draw_circle(face + Vector2(-9, -2), 3, Art.INK)
+	c.draw_circle(face + Vector2(9, -2), 3, Art.INK)
+	c.draw_arc(face + Vector2(0, 6), 9, 0.3, PI - 0.3, 12, Art.INK, 3.0, true)
+	c.draw_rect(Rect2(face + Vector2(-26, 22), Vector2(52, 8)), color)
+	var font := Art.comic_font()
+	c.draw_string(font, rect.position + Vector2(76, 30), "CHEF %d" % (player + 1), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 80, 24, Art.INK)
+	c.draw_string(Art.ui_font(), rect.position + Vector2(76, 52), kitchen.players[player].role, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 80, 13, Art.INK)
+	var free := kitchen.players[player].free_slot_count()
+	c.draw_string(Art.ui_font(), rect.position + Vector2(76, 74), "%d free" % free if free > 0 else "FULL!", HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 80, 14, Art.INK if free > 0 else Art.TOMATO)
+	c.draw_string(font, rect.position + Vector2(0, rect.size.y - 12), "THROW HERE ➜", HORIZONTAL_ALIGNMENT_CENTER, rect.size.x, 20, Art.INK)
 
 
 func _crate_rect(id: String) -> Rect2:
@@ -817,6 +953,12 @@ func _draw_backdrop() -> void:
 			c.draw_texture_rect(texture, Rect2(rect.position + Vector2((rect.size.x - side) * 0.5, 0), Vector2(side, side)), false)
 		_draw_label(c, db.equipment[station.id].name.to_upper(), Vector2(rect.position.x, rect.end.y - 8), rect.size.x, 16)
 	# Serving window.
+	if _serve_rect.has_area():
+		_draw_serving_window(c)
+	_draw_bin_and_sidebar(c, h)
+
+
+func _draw_serving_window(c: CanvasItem) -> void:
 	c.draw_rect(_serve_rect, Color("#7fc8f8"))
 	c.draw_rect(Rect2(_serve_rect.position, Vector2(_serve_rect.size.x, 40)), Art.TOMATO)
 	for i in 6:
@@ -826,6 +968,9 @@ func _draw_backdrop() -> void:
 	if bell:
 		c.draw_texture_rect(bell, Rect2(_serve_rect.position + Vector2(32, 60), Vector2(100, 100)), false)
 	_draw_label(c, "SERVE", Vector2(_serve_rect.position.x, _serve_rect.end.y - 8), _serve_rect.size.x, 24)
+
+
+func _draw_bin_and_sidebar(c: CanvasItem, h: float) -> void:
 	# Bin.
 	var bin := Art.equipment("trash")
 	if bin:
@@ -834,7 +979,10 @@ func _draw_backdrop() -> void:
 	# Sidebar.
 	c.draw_rect(Rect2(0, TOP_BAR_H, SIDEBAR_W, h - TOP_BAR_H), Color("#3a2f55"))
 	c.draw_line(Vector2(SIDEBAR_W, TOP_BAR_H), Vector2(SIDEBAR_W, h), Art.INK, 6.0)
-	_draw_label(c, "MY CRATES", Vector2(0, TOP_BAR_H + 30), SIDEBAR_W, 22, Color.WHITE)
+	var title := "MY CRATES"
+	if kitchen.players.size() > 1:
+		title = "CHEF %d · %s" % [_me + 1, kitchen.players[_me].role.to_upper()]
+	_draw_label(c, title, Vector2(0, TOP_BAR_H + 30), SIDEBAR_W, 22, Art.PLAYER_COLORS[_me % Art.PLAYER_COLORS.size()].lightened(0.3) if kitchen.players.size() > 1 else Color.WHITE)
 	for crate in _crates:
 		var rect: Rect2 = crate.rect
 		var box := Art.equipment("crate")
@@ -868,10 +1016,14 @@ func _draw_dynamic() -> void:
 			c.draw_rect(station.rect.grow(4), glow)
 	for i in targets.slots:
 		_draw_ellipse(c, _slots[i].center + Vector2(0, 30 * _slots[i].scale), Vector2(70, 26) * _slots[i].scale, glow, 0.0)
-	if targets.serve:
+	if targets.serve and _serve_rect.has_area():
 		c.draw_rect(_serve_rect.grow(8), glow)
+	for mate in _mates:
+		if targets.mates.has(mate.player):
+			c.draw_rect(mate.rect.grow(8), glow)
+		_draw_mate(c, mate)
 	# Appliance timers.
-	var pk := kitchen.players[ME]
+	var pk := kitchen.players[_me]
 	for station in _stations:
 		var appliance: Array = pk.appliances[station.id]
 		for index in appliance.size():
@@ -928,14 +1080,16 @@ func _draw_overlay() -> void:
 	var c := _overlay
 	if _dragging and _press.get("kind", "") == "slot":
 		var hint := _hit(get_local_mouse_position())
-		if hint.get("kind", "") in ["serve", "trash", "station", "tool"]:
+		if hint.get("kind", "") in ["serve", "trash", "station", "tool", "mate"]:
 			c.draw_arc(get_local_mouse_position(), 64, 0, TAU, 40, Art.SUN, 5.0, true)
-	if not _paused:
+	if not _session.paused:
 		return
 	c.draw_rect(Rect2(Vector2.ZERO, size), Color(Art.INK, 0.7))
 	var font := Art.comic_font()
 	c.draw_string_outline(font, Vector2(0, size.y * 0.3), "PAUSED", HORIZONTAL_ALIGNMENT_CENTER, size.x, 80, 12, Art.INK)
 	c.draw_string(font, Vector2(0, size.y * 0.3), "PAUSED", HORIZONTAL_ALIGNMENT_CENTER, size.x, 80, Art.SUN)
+	if Net.is_online():
+		c.draw_string(Art.ui_font(), Vector2(0, size.y * 0.3 + 36), "The kitchen is paused for both chefs.", HORIZONTAL_ALIGNMENT_CENTER, size.x, 22, Color.WHITE)
 	var buttons := _pause_buttons()
 	for key in buttons:
 		var rect: Rect2 = buttons[key]
@@ -947,11 +1101,11 @@ func _draw_overlay() -> void:
 func _pause_buttons() -> Dictionary:
 	var w := 300.0
 	var x := (size.x - w) * 0.5
-	return {
-		"resume": Rect2(x, size.y * 0.38, w, 70),
-		"restart": Rect2(x, size.y * 0.38 + 90, w, 70),
-		"quit": Rect2(x, size.y * 0.38 + 180, w, 70),
-	}
+	var buttons := {"resume": Rect2(x, size.y * 0.38, w, 70)}
+	if not Net.is_client():
+		buttons.restart = Rect2(x, size.y * 0.38 + 90, w, 70)
+	buttons.quit = Rect2(x, size.y * 0.38 + 180, w, 70)
+	return buttons
 
 
 func _draw_label(c: CanvasItem, text: String, pos: Vector2, width: float, font_size: int, color: Color = Art.INK, outline: bool = false) -> void:

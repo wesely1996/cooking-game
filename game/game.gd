@@ -8,6 +8,7 @@ const SCENE_LEVEL_SELECT := "res://ui/level_select.tscn"
 const SCENE_KITCHEN := "res://game/kitchen/kitchen_screen.tscn"
 const SCENE_RESULTS := "res://ui/results.tscn"
 const SCENE_RECIPE_BOOK := "res://ui/recipe_book.tscn"
+const SCENE_LOBBY := "res://ui/lobby.tscn"
 
 var db: ContentDB
 var levels := {}  # id -> LevelDef
@@ -18,7 +19,10 @@ var current_level: LevelDef
 var player_count := 1
 var last_outcome := {}
 var last_stats := {}
-var best_arcade := {}  # level id -> best score
+var best_arcade := {}  # "level id:<n>p" -> best score
+var shift_seed := 0
+## Shown once by the lobby, e.g. "Your friend left the kitchen."
+var lobby_message := ""
 ## Off for automated runs (smoke test), so they never touch a player's save.
 var save_enabled := true
 ## Where the recipe book returns to.
@@ -36,6 +40,8 @@ func _ready() -> void:
 		ProjectSettings.get_setting("application/config/version"), db.pack_ids.size(), levels.size(), errors.size()])
 	for error in errors:
 		push_error(error)
+	Net.message_received.connect(_on_net_message)
+	Net.disconnected.connect(_on_net_disconnected)
 
 
 func level_order() -> Array[String]:
@@ -52,16 +58,45 @@ func next_level_id(level_id: String) -> String:
 	return ids[index + 1] if index >= 0 and index + 1 < ids.size() else ""
 
 
-func start_level(level_id: String) -> void:
+## Starts a level. Solo by default; in a LAN game the host calls this with 2
+## players and every client follows when the "start" message arrives.
+func start_level(level_id: String, players: int = 1, seed: int = -1) -> void:
 	current_level = levels[level_id]
+	player_count = players
+	shift_seed = seed if seed >= 0 else randi()
+	if Net.is_host():
+		Net.send_to_clients({"t": "start", "level": level_id, "seed": shift_seed, "players": players})
 	get_tree().change_scene_to_file(SCENE_KITCHEN)
+
+
+## Host only: brings everybody back to the lobby after a level.
+func back_to_lobby() -> void:
+	if Net.is_host():
+		Net.send_to_clients({"t": "lobby"})
+	goto(SCENE_LOBBY)
+
+
+## Leaves a LAN game (if any) and goes to the title screen.
+func leave_to_menu() -> void:
+	Net.leave()
+	player_count = 1
+	goto(SCENE_MENU)
+
+
+func arcade_key(level_id: String, players: int) -> String:
+	return "%s:%dp" % [level_id, players]
+
+
+func best_arcade_score(level_id: String, players: int) -> int:
+	return int(best_arcade.get(arcade_key(level_id, players), 0))
 
 
 func finish_level(outcome: Dictionary, stats: Dictionary) -> void:
 	last_outcome = outcome
 	last_stats = stats
 	if current_level.type == LevelDef.TYPE_ARCADE:
-		best_arcade[current_level.id] = maxi(int(best_arcade.get(current_level.id, 0)), int(outcome.get("score", 0)))
+		var key := arcade_key(current_level.id, player_count)
+		best_arcade[key] = maxi(int(best_arcade.get(key, 0)), int(outcome.get("score", 0)))
 	else:
 		progression.record(current_level.id, outcome)
 	save()
@@ -120,4 +155,22 @@ func _load() -> void:
 		settings[key] = bool(saved_settings.get(key, settings[key]))
 	var arcade: Dictionary = data.get("best_arcade", {})
 	for key in arcade:
-		best_arcade[key] = int(arcade[key])
+		# Saves from v0.1/v0.2 had no player count: those were solo games.
+		best_arcade[key if ":" in key else arcade_key(key, 1)] = int(arcade[key])
+
+
+func _on_net_message(_peer_id: int, message: Dictionary) -> void:
+	if not Net.is_client():
+		return
+	match str(message.get("t", "")):
+		"start":
+			start_level(str(message.get("level", "")), int(message.get("players", 2)), int(message.get("seed", 0)))
+		"lobby":
+			goto(SCENE_LOBBY)
+
+
+func _on_net_disconnected(reason: String) -> void:
+	Net.leave()
+	player_count = 1
+	lobby_message = reason
+	goto(SCENE_LOBBY)

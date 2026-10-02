@@ -76,6 +76,18 @@ func outcome(shift: Shift) -> Dictionary:
 	}
 
 
+func sync_state() -> Dictionary:
+	return {"mood": mood, "wave": wave, "spawned_in_wave": spawned_in_wave, "on_break": on_break, "cleared": cleared}
+
+
+func load_sync_state(data: Dictionary) -> void:
+	mood = float(data.get("mood", mood))
+	wave = int(data.get("wave", wave))
+	spawned_in_wave = int(data.get("spawned_in_wave", spawned_in_wave))
+	on_break = bool(data.get("on_break", on_break))
+	cleared = bool(data.get("cleared", cleared))
+
+
 func _start_wave(shift: Shift, index: int) -> void:
 	wave = index
 	spawned_in_wave = 0
