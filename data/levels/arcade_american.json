@@ -1,0 +1,20 @@
+{
+  "id": "arcade_american",
+  "name": "Arcade: American",
+  "description": "Endless diner. Three angry customers and it's over.",
+  "pack": "american",
+  "type": "arcade",
+  "dishes": [
+    {"id": "cheeseburger", "weight": 2},
+    {"id": "fries", "weight": 1.5},
+    {"id": "milkshake", "weight": 1}
+  ],
+  "roles": "diner",
+  "first_spawn": 2,
+  "max_active": {"1": 2, "2": 3, "3": 3, "4": 4},
+  "spawn_interval": {"1": 26, "2": 21, "3": 18, "4": 17},
+  "escalate_every": 30,
+  "interval_factor": 0.93,
+  "patience_factor": 0.95,
+  "strikes": 3
+}

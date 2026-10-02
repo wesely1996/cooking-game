@@ -636,6 +636,19 @@ later. Also a profile (name, chef look, favourite cuisine = most played, best
 cuisine = highest average score), a settings screen, and a Play menu that
 holds the World Tour, LAN and arcade.
 
+**v0.5.0:** USA (diner + *County Fair* + *Smoke & Fire Championship*), Spain
+(tapas bar + *Fiesta del Tomate* + *Copa de la Paella*) and France (bistro +
+*Fête de la Gastronomie* + *Golden Toque World Final*, the last boss for now).
+The World Tour order is now Italy → Mexico → USA → Spain → Japan → France, as
+in §5A.4; a region with saved results stays open, so v0.4 players keep Japan.
+The new cuisines share bases with the old ones (cut potatoes make fries and
+the Spanish tortilla, fries plus hot sauce make patatas bravas, Italian tomato
+sauce goes into ratatouille, Mexican grated cheese tops the onion soup).
+Kitchen changes: food on the counter is 50% bigger (two rows when the counter
+is narrow), and mini-game work can be paused (LATER, or tap anywhere else) and
+resumed from a tool badge on the food; the progress travels with the food,
+even when it's thrown to a teammate.
+
 ### M5 – Art & audio pass
 - Comic/anime art for kitchen, food items, characters and customers.
 - Outline and halftone shaders, parallax kitchen, throw arcs with shadows.

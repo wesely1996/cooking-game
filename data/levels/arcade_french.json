@@ -1,0 +1,20 @@
+{
+  "id": "arcade_french",
+  "name": "Arcade: French",
+  "description": "Endless bistro. Three angry customers and it's over.",
+  "pack": "french",
+  "type": "arcade",
+  "dishes": [
+    {"id": "onion_soup", "weight": 1.5},
+    {"id": "ratatouille", "weight": 1},
+    {"id": "crepe", "weight": 1}
+  ],
+  "roles": "bistro",
+  "first_spawn": 2,
+  "max_active": {"1": 2, "2": 3, "3": 3, "4": 4},
+  "spawn_interval": {"1": 26, "2": 21, "3": 18, "4": 17},
+  "escalate_every": 30,
+  "interval_factor": 0.93,
+  "patience_factor": 0.95,
+  "strikes": 3
+}

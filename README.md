@@ -23,6 +23,7 @@ and throw them to each other to serve customers around the world.
 | CI/CD: tests, smoke test, Android/desktop builds, releases | done |
 | M4 (part 1): 2-player LAN for story and arcade | done (v0.3.0) |
 | Mexico and Japan regions, profile, settings, new menus | done (v0.4.0) |
+| USA, Spain and France regions, pausable work, bigger plates | done (v0.5.0) |
 | M3: polish, real playtests · M4: 3–4 players | next |
 
 ## Project layout
@@ -51,8 +52,8 @@ art/               fonts and the generated SVG pictures (tools/art/generate_art.
 
 ## Menus
 
-- **Play** → *World Tour* (Italy, Mexico, Japan: shifts, a festival and a
-  competition per region), *Play with a friend* (LAN) or *Arcade* (pick a
+- **Play** → *World Tour* (Italy, Mexico, USA, Spain, Japan, France: shifts,
+  a festival and a competition per region), *Play with a friend* (LAN) or *Arcade* (pick a
   cuisine you have reached).
 - **Profile**: your name and chef, favourite and best cuisine, stats.
 - **Recipe book**: every dish you have served, step by step.

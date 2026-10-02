@@ -150,7 +150,7 @@ func _run() -> void:
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
 	await _shot("10_busy_kitchen")
-	for level_id in ["mexico_04", "japan_04"]:
+	for level_id in ["usa_04", "spain_04", "france_04"]:
 		Game.start_level(level_id)
 		await _wait(2.0)
 		var cuisine_shift: Shift = get_tree().current_scene.shift
@@ -195,13 +195,33 @@ func _check_input(screen: Node, shift: Shift) -> void:
 	await _drag(screen._tool_rect("knife").get_center(), screen._slots[0].center)
 	_check(screen._minigame.visible, "dragging a tool onto food opens the mini-game")
 	var center: Vector2 = screen._minigame.position + screen._minigame.size * 0.5
-	for i in 5:
-		await _drag(center + Vector2(0, -90), center + Vector2(0, 40))
+	for i in 2:
+		await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
+	# Pause with LATER: the tomato keeps its two chops.
+	await _tap(screen._minigame.position + screen._minigame.close_rect().get_center())
+	_check(not screen._minigame.visible, "LATER closes the mini-game")
+	_check(shift.kitchen.item_at(0, 0).work == 2.0, "paused work keeps its progress")
+	await _wait(0.3)
+	await _shot("03b_paused_work")
+	# Resume from the tool badge on the food.
+	var view: ItemView = screen._item_views[shift.kitchen.item_at(0, 0).uid]
+	_check(view.resume_icon != null, "paused food shows a resume badge")
+	await _tap(view.resume_badge().center)
+	_check(screen._minigame.visible and screen._minigame.done == 2.0, "the badge resumes the work where it stopped")
+	await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
+	# Tapping the kitchen pauses too, and the tap still does its job.
+	await _tap(crate_pos)
+	_check(not screen._minigame.visible, "tapping outside pauses the work")
+	_check(shift.kitchen.item_at(0, 1) != null, "...and the tap still takes an ingredient")
+	await _tap(view.resume_badge().center)
+	for i in 2:
+		await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
 	var chopped := shift.kitchen.item_at(0, 0)
-	_check(chopped != null and chopped.type == "chopped_tomato", "five swipes down chop the tomato")
+	_check(chopped != null and chopped.type == "chopped_tomato", "five swipes down, with breaks, chop the tomato")
 	await _wait(0.8)
-	await _tap(screen._slots[0].center)
-	await _tap(screen._trash_rect.get_center())
+	for slot in [0, 1]:
+		await _tap(screen._slots[slot].center)
+		await _tap(screen._trash_rect.get_center())
 	await _wait(0.4)
 
 

@@ -1,0 +1,88 @@
+{
+  "id": "french",
+  "name": "French",
+  "items": {
+    "eggplant": {"name": "Eggplant", "kind": "raw"},
+    "zucchini": {"name": "Zucchini", "kind": "raw"},
+    "croissant_dough": {"name": "Croissant dough", "kind": "raw"},
+    "crepe_mix": {"name": "Crêpe mix"},
+    "crepe_batter": {"name": "Crêpe batter"},
+    "plain_crepe": {"name": "Plain crêpe"},
+    "chocolate_sauce": {"name": "Chocolate sauce"},
+    "caramelized_onion": {"name": "Caramelized onion"},
+    "raw_onion_soup": {"name": "Onion soup (to bake)"},
+    "chopped_eggplant": {"name": "Chopped eggplant"},
+    "sliced_zucchini": {"name": "Sliced zucchini"},
+    "ratatouille_mix": {"name": "Ratatouille (to bake)"},
+    "pain_perdu_mix": {"name": "Soaked bread"},
+    "crepe": {"name": "Chocolate Crêpe", "kind": "dish", "price": 20, "patience": 50},
+    "onion_soup": {"name": "French Onion Soup", "kind": "dish", "price": 34, "patience": 80},
+    "ratatouille": {"name": "Ratatouille", "kind": "dish", "price": 30, "patience": 70},
+    "croissant": {"name": "Croissant", "kind": "dish", "price": 8, "patience": 25},
+    "pain_perdu": {"name": "Pain Perdu", "kind": "dish", "price": 12, "patience": 35}
+  },
+  "equipment": {
+    "crepe_pan": {"name": "Crêpe pan", "kind": "appliance", "capacity": 2}
+  },
+  "processes": [
+    {"id": "whisk_crepe_batter", "input": "crepe_mix", "equipment": "mixing_bowl", "action": "whisk", "work": 5, "output": "crepe_batter"},
+    {"id": "cook_crepe", "input": "crepe_batter", "equipment": "crepe_pan", "action": "cook", "cook_time": 4, "perfect_window": 3, "burn_time": 7, "output": "plain_crepe"},
+    {"id": "melt_chocolate", "input": "chocolate", "equipment": "sauce_pot", "action": "stir", "work": 3, "output": "chocolate_sauce"},
+    {"id": "caramelize_onion", "input": "chopped_onion", "equipment": "sauce_pot", "action": "stir", "work": 4, "output": "caramelized_onion"},
+    {"id": "bake_onion_soup", "input": "raw_onion_soup", "equipment": "oven", "action": "bake", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "onion_soup"},
+    {"id": "chop_eggplant", "input": "eggplant", "equipment": "knife", "action": "chop", "work": 4, "output": "chopped_eggplant"},
+    {"id": "slice_zucchini", "input": "zucchini", "equipment": "knife", "action": "slice", "work": 4, "output": "sliced_zucchini"},
+    {"id": "bake_ratatouille", "input": "ratatouille_mix", "equipment": "oven", "action": "bake", "cook_time": 7, "perfect_window": 4, "burn_time": 10, "output": "ratatouille"},
+    {"id": "bake_croissant", "input": "croissant_dough", "equipment": "oven", "action": "bake", "cook_time": 5, "perfect_window": 4, "burn_time": 8, "output": "croissant"},
+    {"id": "fry_pain_perdu", "input": "pain_perdu_mix", "equipment": "frying_pan", "action": "fry", "cook_time": 5, "perfect_window": 4, "burn_time": 8, "output": "pain_perdu"}
+  ],
+  "assemblies": [
+    {"output": "crepe_mix", "base": "milk", "parts": ["egg", "flour"]},
+    {"output": "crepe", "base": "plain_crepe", "parts": ["chocolate_sauce"]},
+    {"output": "raw_onion_soup", "base": "caramelized_onion", "parts": ["toast", "grated_cheese"]},
+    {"output": "ratatouille_mix", "base": "chopped_eggplant", "parts": ["sliced_zucchini", "tomato_sauce"]},
+    {"output": "pain_perdu_mix", "base": "bread", "parts": ["beaten_egg"]}
+  ],
+  "role_presets": {
+    "bistro": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["milk", "egg", "flour", "chocolate", "onion", "bread", "cheese_block", "eggplant", "zucchini", "tomato"], "equipment": ["mixing_bowl", "crepe_pan", "sauce_pot", "knife", "oven", "grater", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Crêpes & Veg", "crates": ["milk", "egg", "flour", "onion", "tomato"], "equipment": ["mixing_bowl", "crepe_pan", "sauce_pot", "knife"]},
+        {"name": "Oven & Pass", "crates": ["bread", "cheese_block", "eggplant", "zucchini", "chocolate"], "equipment": ["knife", "grater", "sauce_pot", "oven", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Crêpes", "crates": ["milk", "egg", "flour"], "equipment": ["mixing_bowl", "crepe_pan"]},
+        {"name": "Sauces & Veg", "crates": ["chocolate", "onion", "eggplant", "zucchini", "tomato"], "equipment": ["knife", "sauce_pot"]},
+        {"name": "Oven & Pass", "crates": ["bread", "cheese_block"], "equipment": ["grater", "oven", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Crêpes", "crates": ["milk", "egg"], "equipment": ["mixing_bowl", "crepe_pan"]},
+        {"name": "Sauces", "crates": ["chocolate", "tomato", "onion"], "equipment": ["knife", "sauce_pot"]},
+        {"name": "Vegetables & Flour", "crates": ["eggplant", "zucchini", "flour"], "equipment": ["knife"]},
+        {"name": "Oven & Pass", "crates": ["bread", "cheese_block"], "equipment": ["grater", "oven", "serving_window"]}
+      ]
+    },
+    "fete": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["croissant_dough", "bread", "egg"], "equipment": ["oven", "mixing_bowl", "frying_pan", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Bakery & Eggs", "crates": ["croissant_dough", "egg"], "equipment": ["oven", "mixing_bowl"]},
+        {"name": "Pan & Pass", "crates": ["bread"], "equipment": ["frying_pan", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Bakery", "crates": ["croissant_dough"], "equipment": ["oven"]},
+        {"name": "Eggs", "crates": ["egg"], "equipment": ["mixing_bowl"]},
+        {"name": "Pan & Pass", "crates": ["bread"], "equipment": ["frying_pan", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Bakery", "crates": ["croissant_dough"], "equipment": ["oven"]},
+        {"name": "Second oven", "crates": ["croissant_dough"], "equipment": ["oven"]},
+        {"name": "Eggs", "crates": ["egg"], "equipment": ["mixing_bowl"]},
+        {"name": "Pan & Pass", "crates": ["bread"], "equipment": ["frying_pan", "serving_window"]}
+      ]
+    }
+  }
+}

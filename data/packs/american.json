@@ -1,0 +1,91 @@
+{
+  "id": "american",
+  "name": "American",
+  "items": {
+    "bun": {"name": "Burger bun", "kind": "raw"},
+    "potato": {"name": "Potato", "kind": "raw"},
+    "lettuce": {"name": "Lettuce", "kind": "raw"},
+    "ice_cream": {"name": "Ice cream", "kind": "raw"},
+    "milk": {"name": "Milk", "kind": "raw"},
+    "sausage": {"name": "Sausage", "kind": "raw"},
+    "raw_patty": {"name": "Raw patty"},
+    "cooked_patty": {"name": "Burger patty"},
+    "cheese_slice": {"name": "Cheese slice"},
+    "shredded_lettuce": {"name": "Shredded lettuce"},
+    "cut_potato": {"name": "Cut potatoes"},
+    "shake_mix": {"name": "Shake mix"},
+    "cooked_sausage": {"name": "Grilled sausage"},
+    "fried_chicken": {"name": "Fried chicken"},
+    "hot_sauce": {"name": "Hot sauce"},
+    "cheeseburger": {"name": "Cheeseburger", "kind": "dish", "price": 32, "patience": 75},
+    "fries": {"name": "Fries", "kind": "dish", "price": 10, "patience": 30},
+    "milkshake": {"name": "Milkshake", "kind": "dish", "price": 14, "patience": 40},
+    "hot_dog": {"name": "Hot Dog", "kind": "dish", "price": 12, "patience": 30},
+    "buffalo_wings": {"name": "Buffalo Wings", "kind": "dish", "price": 22, "patience": 50}
+  },
+  "equipment": {
+    "griddle": {"name": "Griddle", "kind": "appliance", "capacity": 2},
+    "fryer": {"name": "Deep fryer", "kind": "appliance", "capacity": 2},
+    "blender": {"name": "Blender", "kind": "tool"}
+  },
+  "processes": [
+    {"id": "shape_patty", "input": "beef", "equipment": "mixing_bowl", "action": "knead", "work": 6, "output": "raw_patty"},
+    {"id": "sizzle_patty", "input": "raw_patty", "equipment": "griddle", "action": "sizzle", "cook_time": 5, "perfect_window": 4, "burn_time": 8, "output": "cooked_patty"},
+    {"id": "slice_cheese", "input": "cheese_block", "equipment": "knife", "action": "slice", "work": 3, "output": "cheese_slice"},
+    {"id": "shred_lettuce", "input": "lettuce", "equipment": "knife", "action": "chop", "work": 3, "output": "shredded_lettuce"},
+    {"id": "cut_potato", "input": "potato", "equipment": "knife", "action": "slice", "work": 4, "output": "cut_potato"},
+    {"id": "fry_potato", "input": "cut_potato", "equipment": "fryer", "action": "fry", "cook_time": 5, "perfect_window": 4, "burn_time": 8, "output": "fries"},
+    {"id": "blend_shake", "input": "shake_mix", "equipment": "blender", "action": "blend", "work": 6, "output": "milkshake"},
+    {"id": "sizzle_sausage", "input": "sausage", "equipment": "griddle", "action": "sizzle", "cook_time": 4, "perfect_window": 4, "burn_time": 8, "output": "cooked_sausage"},
+    {"id": "fry_chicken", "input": "chicken", "equipment": "fryer", "action": "fry", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "fried_chicken"},
+    {"id": "blend_hot_sauce", "input": "chili", "equipment": "blender", "action": "blend", "work": 4, "output": "hot_sauce"}
+  ],
+  "assemblies": [
+    {"output": "cheeseburger", "base": "bun", "parts": ["cooked_patty", "cheese_slice", "shredded_lettuce"]},
+    {"output": "shake_mix", "base": "ice_cream", "parts": ["milk"]},
+    {"output": "hot_dog", "base": "bun", "parts": ["cooked_sausage"]},
+    {"output": "buffalo_wings", "base": "fried_chicken", "parts": ["hot_sauce"]}
+  ],
+  "role_presets": {
+    "diner": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["bun", "beef", "cheese_block", "lettuce", "potato", "ice_cream", "milk", "chicken", "chili"], "equipment": ["mixing_bowl", "griddle", "knife", "fryer", "blender", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Grill & Prep", "crates": ["bun", "beef", "cheese_block", "potato", "ice_cream", "chili"], "equipment": ["mixing_bowl", "griddle", "knife"]},
+        {"name": "Fryer & Pass", "crates": ["lettuce", "milk", "chicken"], "equipment": ["knife", "fryer", "blender", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Grill", "crates": ["beef", "bun"], "equipment": ["mixing_bowl", "griddle"]},
+        {"name": "Prep", "crates": ["cheese_block", "lettuce", "potato", "chili", "ice_cream"], "equipment": ["knife"]},
+        {"name": "Fryer & Pass", "crates": ["chicken", "milk"], "equipment": ["fryer", "blender", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Grill", "crates": ["beef"], "equipment": ["mixing_bowl", "griddle"]},
+        {"name": "Prep", "crates": ["cheese_block", "lettuce", "bun"], "equipment": ["knife"]},
+        {"name": "Fryer", "crates": ["potato", "chicken", "ice_cream"], "equipment": ["knife", "fryer"]},
+        {"name": "Shakes & Pass", "crates": ["milk", "chili"], "equipment": ["blender", "serving_window"]}
+      ]
+    },
+    "county_fair": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["bun", "sausage", "potato"], "equipment": ["griddle", "knife", "fryer", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Grill & Knife", "crates": ["sausage", "potato"], "equipment": ["griddle", "knife"]},
+        {"name": "Fryer & Pass", "crates": ["bun"], "equipment": ["fryer", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Sausages", "crates": ["sausage"], "equipment": ["griddle"]},
+        {"name": "Fries", "crates": ["potato"], "equipment": ["knife", "fryer"]},
+        {"name": "Buns & Pass", "crates": ["bun"], "equipment": ["serving_window"]}
+      ],
+      "4": [
+        {"name": "Sausages", "crates": ["sausage"], "equipment": ["griddle"]},
+        {"name": "Cutter", "crates": ["potato"], "equipment": ["knife"]},
+        {"name": "Fryer", "crates": ["potato"], "equipment": ["knife", "fryer"]},
+        {"name": "Buns & Pass", "crates": ["bun"], "equipment": ["serving_window"]}
+      ]
+    }
+  }
+}

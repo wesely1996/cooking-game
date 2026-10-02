@@ -3,8 +3,11 @@ extends Node2D
 ## Shows one KitchenItem: its picture, a shadow, the parts already added to it
 ## (for half-built assemblies) and a work progress ring. It glides towards
 ## `target` every frame, so moves and throws animate on their own.
+## Food with paused work shows a small tool badge: tapping it resumes the work.
 
 const SIZE := 92.0
+const RESUME_OFFSET := Vector2(34, 26)  # badge centre, before scaling
+const RESUME_RADIUS := 19.0
 
 var uid := 0
 var target := Vector2.ZERO
@@ -13,6 +16,7 @@ var held := false  # being dragged: follow the finger instead of the target
 var selected := false
 var progress := 0.0  # manual work progress 0..1 (0 = hide ring)
 var perfect := false
+var resume_icon: Texture2D  # tool of the paused work, or null
 
 var _type := ""
 var _parts: Array = []
@@ -57,6 +61,8 @@ func _process(delta: float) -> void:
 	else:
 		scale = Vector2(s, s)
 	z_index = 30 if held else 10
+	if resume_icon:
+		queue_redraw()
 
 
 func _draw() -> void:
@@ -84,6 +90,17 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO, half + 2.0, -PI / 2.0, -PI / 2.0 + TAU * progress, 40, Art.LEAF, 7.0, true)
 	if perfect:
 		_draw_star(Vector2(half * 0.75, -half * 0.75), 12.0)
+	if resume_icon:
+		var pulse := 1.0 + 0.08 * sin(Time.get_ticks_msec() / 160.0)
+		var r := RESUME_RADIUS * pulse
+		draw_circle(RESUME_OFFSET, r, Art.SUN)
+		draw_arc(RESUME_OFFSET, r, 0.0, TAU, 32, Art.INK, 3.0, true)
+		draw_texture_rect(resume_icon, Rect2(RESUME_OFFSET - Vector2(r, r) * 0.8, Vector2(r, r) * 1.6), false)
+
+
+## Where the resume badge is, in the parent's coordinates.
+func resume_badge() -> Dictionary:
+	return {"center": target + RESUME_OFFSET * display_scale, "radius": RESUME_RADIUS * display_scale * 1.3}
 
 
 func _draw_star(center: Vector2, radius: float) -> void:

@@ -1,0 +1,17 @@
+{
+  "id": "spain_03",
+  "name": "Paella Sunday",
+  "description": "Sunday in Valencia: a big pan of paella and cold gazpacho.",
+  "pack": "spanish",
+  "type": "normal",
+  "dishes": [
+    {"id": "paella", "weight": 1},
+    {"id": "gazpacho", "weight": 1}
+  ],
+  "roles": "tapas_bar",
+  "duration": 210,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 16, "2": 13, "3": 12, "4": 11},
+  "stars": {"1": [180, 350, 500], "2": [220, 450, 640], "3": [260, 520, 740], "4": [290, 570, 820]}
+}

@@ -11,19 +11,27 @@ extends Control
 ## - then tap (or drag the food onto) a tool, an appliance, other food,
 ##   the serving window or the bin,
 ## - tools open a gesture mini-game; ovens and pots cook on their own,
+## - work can be paused (LATER, or tap anywhere else) and resumed later from
+##   the tool badge on the food,
 ## - in a LAN game, food dropped on a teammate's portrait is thrown to them.
 const TOP_BAR_H := 118.0
 const SIDEBAR_W := 236.0
 const TAP_DISTANCE := 14.0
 const START_DELAY := 1.8
+## Food on the counter is drawn this much bigger than in appliances.
+const PLATE_ZOOM := 1.5
+## Narrowest space a counter slot needs before the counter uses two rows.
+const MIN_SLOT_SPACING := 185.0
 const END_DELAY := 2.2
 
 const ACTION_SOUNDS := {"chop": "chop", "slice": "slice", "knead": "squish", "roll": "roll", "stir": "swirl", "crank": "swirl",
-	"press": "thud", "mash": "squish", "grate": "slice"}
-const INSERT_WORDS := {"oven": "FWOOSH!", "comal": "SIZZLE!", "grill": "TSSSS!", "rice_cooker": "FLUMP!"}
+	"press": "thud", "mash": "squish", "grate": "slice", "whisk": "swirl", "blend": "swirl"}
+const INSERT_WORDS := {"oven": "FWOOSH!", "comal": "SIZZLE!", "grill": "TSSSS!", "rice_cooker": "FLUMP!",
+	"fryer": "BLUBBLUB!", "griddle": "TSSSS!", "frying_pan": "SIZZLE!", "paella_pan": "BLOP!", "crepe_pan": "SHHHH!"}
 const ACTION_WORDS := {"chop": ["CHOP!", "CHAK!", "THUNK!"], "slice": ["SLICE!", "SHING!"], "knead": ["SQUISH!", "SQUASH!", "PAT!"],
 	"roll": ["ROLL!", "VRRM!"], "stir": ["SWIRL!", "BLOOP!"], "crank": ["CRANK!", "CLICK!"],
-	"press": ["PRESS!", "FLAT!", "KA-CHUNK!"], "mash": ["MASH!", "SMOOSH!", "SPLUT!"], "grate": ["GRATE!", "SHRED!", "SKRITCH!"]}
+	"press": ["PRESS!", "FLAT!", "KA-CHUNK!"], "mash": ["MASH!", "SMOOSH!", "SPLUT!"], "grate": ["GRATE!", "SHRED!", "SKRITCH!"],
+	"whisk": ["WHISK!", "WHIRR!", "SWOOSH!"], "blend": ["BZZZZ!", "WHRRR!", "BLENDO!"]}
 
 var shift: Shift
 var db: ContentDB
@@ -110,6 +118,7 @@ func _ready() -> void:
 	_minigame.visible = false
 	_minigame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_minigame.work_done.connect(_on_minigame_work)
+	_minigame.paused.connect(_on_work_paused)
 	_minigame.closed.connect(func(): _work = {})
 	_minigame.z_index = 45
 	add_child(_minigame)
@@ -224,19 +233,21 @@ func _layout() -> void:
 
 	_slots.clear()
 	var slot_count := pk.slots.size()
-	var rows := 2 if slot_count > 5 else 1
+	var slot_left := SIDEBAR_W + 60.0
+	var slot_right := w - 200.0
+	var rows := 1 if (slot_right - slot_left) / maxf(slot_count, 1) >= MIN_SLOT_SPACING else 2
 	var per_row := ceili(float(slot_count) / rows)
-	var slot_left := SIDEBAR_W + 70.0
-	var slot_right := w - 210.0
 	for i in slot_count:
 		var row := i / per_row
 		var col := i % per_row
-		var y := (counter_y + h - 64) * 0.5 if rows == 1 else lerpf(counter_y + 62, h - 120, row)
+		var in_row := mini(per_row, slot_count - row * per_row)
+		var y := (counter_y + h - 64) * 0.5 + 10.0 if rows == 1 else lerpf(counter_y + 74, h - 146, row)
 		var depth := 0.86 if rows == 2 and row == 0 else 1.0
 		var inset := (1.0 - depth) * 60.0
-		var x := lerpf(slot_left + inset, slot_right - inset, (col + 0.5) / per_row)
+		var x := lerpf(slot_left + inset, slot_right - inset, (col + 0.5) / in_row)
 		var center := Vector2(x, y)
-		_slots.append({"center": center, "rect": Rect2(center - Vector2(62, 58) * depth, Vector2(124, 116) * depth), "scale": depth})
+		var s := depth * PLATE_ZOOM
+		_slots.append({"center": center, "rect": Rect2(center - Vector2(62, 58) * s, Vector2(124, 116) * s), "scale": s})
 
 	var mini_size := Vector2(minf(560.0, w - SIDEBAR_W - 80.0), 330.0)
 	_minigame.size = mini_size
@@ -285,6 +296,8 @@ func _sync_views() -> void:
 			view.display_scale = _slots[i].scale
 			view.selected = item.uid == _selected_uid
 			view.update_item(item)
+			var paused_tool := _paused_tool(item)
+			view.resume_icon = Art.equipment(paused_tool) if not paused_tool.is_empty() else null
 	for station in _stations:
 		var appliance: Array = pk.appliances[station.id]
 		for index in appliance.size():
@@ -297,6 +310,7 @@ func _sync_views() -> void:
 				view.selected = false
 				view.update_item(aslot.item)
 				view.progress = 0.0
+				view.resume_icon = null
 	for uid in _item_views.keys():
 		if not seen.has(uid):
 			_item_views[uid].queue_free()
@@ -334,11 +348,11 @@ func _handle_events(events: Array[Dictionary]) -> void:
 				Sfx.play("pop")
 			"items_combined":
 				Sfx.play("thud")
-				_bubble(_slots[event.to].center + Vector2(0, -50), _pick(["SPLAT!", "PLOP!", "TA-DA!"]), Color.WHITE, 30)
+				_bubble(_slots[event.to].center + Vector2(0, -70), _pick(["SPLAT!", "PLOP!", "TA-DA!"]), Color.WHITE, 30)
 			"item_processed":
 				Sfx.play("pop")
 				Game.vibrate(40)
-				_bubble(_slots[event.slot].center + Vector2(0, -60), "DONE!", Art.LEAF, 34)
+				_bubble(_slots[event.slot].center + Vector2(0, -80), "DONE!", Art.LEAF, 34)
 			"appliance_inserted":
 				Sfx.play("whoosh")
 				var spot := _station_spot(event.equipment, event.index)
@@ -354,7 +368,7 @@ func _handle_events(events: Array[Dictionary]) -> void:
 			"appliance_removed":
 				Sfx.play("pop")
 				if event.item.perfect:
-					_bubble(_slots[event.slot].center + Vector2(0, -60), "PERFECT!", Art.SUN, 36)
+					_bubble(_slots[event.slot].center + Vector2(0, -80), "PERFECT!", Art.SUN, 36)
 			"item_served":
 				_fly_away(int(event.item.uid), _serve_rect.get_center())
 				Sfx.play("bell", 0.0)
@@ -401,7 +415,7 @@ func _on_item_thrown(event: Dictionary) -> void:
 		_spawn_from[uid] = _mate_rect(event.player).get_center()
 		Sfx.play("thud")
 		Game.vibrate(40)
-		_bubble(_slots[event.target_slot].center + Vector2(0, -60), _pick(["THWACK!", "CATCH!", "PLOP!"]), Art.SUN, 36)
+		_bubble(_slots[event.target_slot].center + Vector2(0, -80), _pick(["THWACK!", "CATCH!", "PLOP!"]), Art.SUN, 36)
 
 
 func _end_shift() -> void:
@@ -440,8 +454,13 @@ func _gui_input(event: InputEvent) -> void:
 			_pause_menu_click(pos)
 		return
 	if _minigame.visible:
-		_minigame.handle_input(event, pos - _minigame.position)
-		return
+		var outside_tap: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT \
+			and not Rect2(_minigame.position, _minigame.size).has_point(pos)
+		if not outside_tap:
+			_minigame.handle_input(event, pos - _minigame.position)
+			return
+		# Tapping the kitchen pauses the work; the tap then does its usual job.
+		_minigame.pause()
 	if _start_timer > 0.0 or shift.finished:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -540,6 +559,9 @@ func _tap(press: Dictionary) -> void:
 			_intent({"type": "take", "ingredient": press.id}, true)
 		"slot":
 			var item := kitchen.item_at(_me, press.index)
+			if press.has("resume") and selected_slot < 0:
+				_start_work_on_slot(press.index, press.resume)
+				return
 			if item == null:
 				if selected_slot >= 0:
 					_intent({"type": "move", "from": selected_slot, "to": press.index})
@@ -656,7 +678,7 @@ func _start_work_on_slot(slot: int, tool: String) -> void:
 	var proc := db.process_for(kitchen.effective_id(item), tool)
 	if proc.is_empty() or not kitchen.players[_me].tools.has(tool):
 		Sfx.play("nope", 0.0)
-		_bubble(_slots[slot].center + Vector2(0, -60), "NOPE!", Color.WHITE, 30)
+		_bubble(_slots[slot].center + Vector2(0, -80), "NOPE!", Color.WHITE, 30)
 		return
 	_selected_uid = 0
 	var done := item.work if item.work_process == proc.id else 0.0
@@ -687,7 +709,7 @@ func _on_minigame_work(units: int) -> void:
 	Sfx.play(ACTION_SOUNDS.get(proc.action, "pop"))
 	Game.vibrate(15)
 	var words: Array = ACTION_WORDS.get(proc.action, ["POW!"])
-	_bubble(_minigame.position + Vector2(_rng.randf_range(80, _minigame.size.x - 80), _rng.randf_range(90, 220)), _pick(words), Color.WHITE, 32)
+	_bubble(_minigame.position + Vector2(_rng.randf_range(80, _minigame.size.x - 80), _rng.randf_range(125, 235)), _pick(words), Color.WHITE, 32)
 	# Count the gesture right away; on a client the host confirms a moment later.
 	_minigame.set_progress(minf(_minigame.done + units, proc.work))
 	_check_work_done()
@@ -714,6 +736,30 @@ func _check_work_done() -> void:
 func _close_minigame() -> void:
 	_work = {}
 	_minigame.visible = false
+
+
+## The mini-game was left early: the food keeps its progress for later.
+func _on_work_paused() -> void:
+	if _work.is_empty() or _minigame.done <= 0.0:
+		return
+	var at: Vector2 = _station_spot(_work.equipment, _work.index) if _work.kind == "appliance" else _slots[_work.slot].center
+	_bubble(at + Vector2(0, -80), "LATER!", Art.SKY, 30)
+	Sfx.play("pop", 0.2)
+
+
+## The tool whose work on this item was paused (and can be resumed here),
+## or "" when there's nothing to resume.
+func _paused_tool(item: KitchenItem) -> String:
+	if item.work <= 0.0 or item.work_process.is_empty():
+		return ""
+	if _minigame.visible and _work.get("uid", 0) == item.uid:
+		return ""
+	var proc: Dictionary = db.processes.get(item.work_process, {})
+	if proc.is_empty() or not kitchen.players[_me].tools.has(proc.equipment):
+		return ""
+	if db.process_for(kitchen.effective_id(item), proc.equipment).get("id", "") != proc.id:
+		return ""
+	return proc.equipment
 
 
 # --- Hints -------------------------------------------------------------------
@@ -810,6 +856,13 @@ func _hit(pos: Vector2) -> Dictionary:
 					best = i
 			return {"kind": "station", "id": station.id, "index": best}
 	var best_slot := -1
+	var pk_slots := kitchen.players[_me].slots
+	for i in _slots.size():
+		var item: KitchenItem = pk_slots[i]
+		if item and _item_views.has(item.uid) and _item_views[item.uid].resume_icon:
+			var badge: Dictionary = _item_views[item.uid].resume_badge()
+			if pos.distance_to(badge.center) <= badge.radius:
+				return {"kind": "slot", "index": i, "resume": _paused_tool(item)}
 	for i in _slots.size():
 		if _slots[i].rect.has_point(pos) and (best_slot < 0 or pos.distance_to(_slots[i].center) < pos.distance_to(_slots[best_slot].center)):
 			best_slot = i

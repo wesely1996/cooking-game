@@ -1,0 +1,13 @@
+{
+  "id": "spain_competition",
+  "name": "Copa de la Paella",
+  "description": "The paella cup of Sueca. Abuela Carmen has cooked paella for sixty years and never hurries.",
+  "pack": "spanish",
+  "type": "competition",
+  "dishes": ["paella", "tortilla_espanola", "gazpacho"],
+  "roles": "tapas_bar",
+  "judges_orders": ["paella", "tortilla_espanola", "gazpacho", "paella", "tortilla_espanola", "paella", "gazpacho"],
+  "max_active": 2,
+  "time_limit": 360,
+  "rival": {"name": "Abuela Carmen", "personality": "steady", "speed": {"1": 0.8, "2": 1.1, "3": 1.4, "4": 1.6}}
+}

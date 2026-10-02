@@ -5,6 +5,40 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [0.5.0] - 2026-10-02
+
+### Added
+- **Three new cuisines, each with its own World Tour region:**
+  - **USA:** cheeseburgers, fries and milkshakes, with a griddle, a deep fryer
+    and a blender (draw circles to blend). The *County Fair* festival (hot dogs
+    and fries) and the *Smoke & Fire Championship* against Big Earl, a grill
+    showman who sometimes burns things.
+  - **Spain:** tortilla española, patatas bravas, paella and gazpacho, with a
+    paella pan and a frying pan (whisk eggs with circles). The *Fiesta del
+    Tomate* festival (churros and gazpacho) and the *Copa de la Paella*
+    against Abuela Carmen.
+  - **France:** chocolate crêpes, French onion soup and ratatouille, with a
+    crêpe pan. The *Fête de la Gastronomie* festival (croissants and pain
+    perdu) and the *Golden Toque World Final* against Chef Céleste, the best
+    chef in the world.
+  - Arcade for all three, LAN play, 50 new food pictures and 6 new pieces of
+    kitchen gear.
+  - Recipes share ingredients across cuisines: cut potatoes become fries or go
+    into a tortilla, fries with hot sauce become patatas bravas, and Italian
+    tomato sauce goes into ratatouille.
+- **Pause work and finish it later:** leave a mini-game with the LATER button,
+  or just tap anywhere else in the kitchen (the tap still does its job). The
+  food keeps its progress ring and gets a tool badge: tap the badge to carry
+  on where you stopped. The progress stays with the food when you move it or
+  throw it to a teammate.
+
+### Changed
+- Food on the counter is **50% bigger**. When the counter is too narrow for
+  one row of big plates, it uses two rows.
+- The World Tour now goes Italy → Mexico → USA → Spain → Japan → France.
+  Regions you already have results in stay open, so a v0.4 save keeps Japan.
+- The arcade picker shows the cuisines in two rows.
+
 ## [0.4.0] - 2026-10-02
 
 ### Added

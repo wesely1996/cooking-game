@@ -59,10 +59,18 @@ func region_stars(region_index: int) -> int:
 	return total
 
 
+## A region opens when the previous region's competition is won. A region
+## the players already have results in stays open, even if new regions were
+## added before it in a later version of the map.
 func is_region_unlocked(region_index: int) -> bool:
 	if region_index <= 0:
 		return true
-	return won.has(regions[region_index - 1].get("boss", ""))
+	if won.has(regions[region_index - 1].get("boss", "")):
+		return true
+	for entry in regions[region_index].get("levels", []):
+		if best_stars.has(entry.id) or won.has(entry.id):
+			return true
+	return false
 
 
 func is_region_complete(region_index: int) -> bool:

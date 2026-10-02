@@ -1,0 +1,18 @@
+{
+  "id": "spain_04",
+  "name": "La Bodega",
+  "description": "Late dinner, Spanish style. Paella, tortilla and bravas until midnight.",
+  "pack": "spanish",
+  "type": "normal",
+  "dishes": [
+    {"id": "paella", "weight": 1.5},
+    {"id": "tortilla_espanola", "weight": 1},
+    {"id": "patatas_bravas", "weight": 1}
+  ],
+  "roles": "tapas_bar",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 15, "2": 12, "3": 11, "4": 10},
+  "stars": {"1": [210, 420, 600], "2": [280, 560, 800], "3": [330, 660, 940], "4": [370, 740, 1060]}
+}

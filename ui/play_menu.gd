@@ -42,11 +42,15 @@ func _show(page: Page) -> void:
 		Page.ARCADE:
 			_title.text = "ARCADE"
 			_content.add_child(UiStyle.title("PICK A CUISINE", 34, Color.WHITE))
-			var row := HBoxContainer.new()
-			row.add_theme_constant_override("separation", 18)
-			_content.add_child(row)
-			for i in Game.progression.regions.size():
-				row.add_child(_cuisine_card(i))
+			# Up to four cuisines in a row; more go on a grid of two rows.
+			var count := Game.progression.regions.size()
+			var grid := GridContainer.new()
+			grid.columns = count if count <= 4 else ceili(count / 2.0)
+			grid.add_theme_constant_override("h_separation", 18)
+			grid.add_theme_constant_override("v_separation", 14)
+			_content.add_child(UiStyle.centered(grid))
+			for i in count:
+				grid.add_child(_cuisine_card(i, Vector2(250, 260) if count <= 4 else Vector2(240, 190)))
 			_content.add_child(UiStyle.text("Win a region's competition in the World Tour to unlock the next cuisine.", 20, Color.WHITE))
 
 
@@ -60,13 +64,13 @@ func _add_choice(text: String, help: String, color: Color, action: Callable) -> 
 	_content.add_child(label)
 
 
-func _cuisine_card(region_index: int) -> Control:
+func _cuisine_card(region_index: int, card_size: Vector2) -> Control:
 	var region: Dictionary = Game.progression.regions[region_index]
 	var pack: String = region.get("pack", "")
 	var unlocked := Game.progression.is_region_unlocked(region_index)
 	var level_id := Game.arcade_level_id(pack)
 	var card := UiStyle.button("", Art.PAPER if unlocked else Color("#b9b2a4"), 24)
-	card.custom_minimum_size = Vector2(250, 260)
+	card.custom_minimum_size = card_size
 	card.disabled = not unlocked or not Game.levels.has(level_id)
 	card.name = "Arcade_" + pack
 	card.icon = Game.cuisine_icon(pack)
