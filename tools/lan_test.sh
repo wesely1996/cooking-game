@@ -10,7 +10,7 @@ GODOT="${GODOT:-godot}"
 cd "$(dirname "$0")/.."
 SCREENSHOT_DIR="${SCREENSHOT_DIR:-$PWD/build/lan_screenshots}"
 SCENE="res://tools/lan_test/lan_runner.tscn"
-LOGS="$(mktemp -d)"
+LOGS="${LAN_LOGS:-$(mktemp -d)}"
 mkdir -p "$SCREENSHOT_DIR"
 
 "$GODOT" --headless --path . --import >/dev/null 2>&1

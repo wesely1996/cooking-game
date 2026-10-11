@@ -62,8 +62,11 @@ func version() -> String:
 
 
 ## This phone's chef, as shared with the other phone.
+## What other phones learn about this chef: name, look, and the dishes made
+## so far (so the host knows who needs the new-dish prologue).
 func my_profile() -> Dictionary:
-	return {"name": Game.profile.name, "look": ChefLook.sanitize(Game.profile.look)}
+	return {"name": Game.profile.name, "look": ChefLook.sanitize(Game.profile.look),
+		"discovered": Game.progression.discovered.keys()}
 
 
 ## A chef's name and look, e.g. for a teammate's portrait.
@@ -214,7 +217,12 @@ func _on_hello(peer_id: int, message: Dictionary) -> void:
 
 static func _clean_profile(data: Variant) -> Dictionary:
 	var profile: Dictionary = data if data is Dictionary else {}
-	return {"name": PlayerProfile.clean_name(str(profile.get("name", ""))), "look": ChefLook.sanitize(profile.get("look", {}))}
+	var discovered: Array = []
+	var raw: Variant = profile.get("discovered", [])
+	for dish in (raw if raw is Array else []).slice(0, 500):
+		discovered.append(str(dish))
+	return {"name": PlayerProfile.clean_name(str(profile.get("name", ""))), "look": ChefLook.sanitize(profile.get("look", {})),
+		"discovered": discovered}
 
 
 func _on_peer_connected(peer_id: int) -> void:

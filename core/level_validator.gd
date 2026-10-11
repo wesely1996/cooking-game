@@ -1,12 +1,13 @@
 class_name LevelValidator
 extends RefCounted
 ## Checks that a level can actually be played with 1, 2, 3 and 4 players:
-## every dish can be made from the crates and equipment the roles own, exactly
-## one player serves, every player has something to do, and (with 2+
-## players) no single player can make a dish alone, so teamwork is needed.
+## every dish can be made from the crates and stations the roles own, exactly
+## one player serves, every player has something to do and somewhere to put
+## food down, and (with 2+ players) the server can't make a dish alone, so
+## teamwork is needed.
 
 const PLAYER_COUNTS := [1, 2, 3, 4]
-const MIN_SLOTS := 2
+const MIN_COUNTERS := 2
 
 
 static func validate(db: ContentDB, level: LevelDef) -> Array[String]:
@@ -67,54 +68,60 @@ static func _validate_roles(db: ContentDB, level: LevelDef, n: int, prefix: Stri
 		return [prefix + "needs %d roles, has %d" % [n, roles.size()]]
 	var pass_owners := 0
 	var all_crates := {}
-	var all_equipment := {}
+	var all_stations := {}
 	for role in roles:
-		if int(role.get("slots", KitchenState.DEFAULT_SLOTS)) < MIN_SLOTS:
-			errors.append(prefix + "role '%s' needs at least %d slots" % [role.get("name", "?"), MIN_SLOTS])
+		var role_stations: Dictionary = role.get("stations", {})
+		var counters := 0
 		for crate in role.get("crates", []):
 			if not db.is_raw(crate):
 				errors.append(prefix + "role '%s' has unknown crate '%s'" % [role.get("name", "?"), crate])
 			all_crates[crate] = true
-		for eq in role.get("equipment", []):
-			if not db.equipment.has(eq):
-				errors.append(prefix + "role '%s' has unknown equipment '%s'" % [role.get("name", "?"), eq])
-			elif db.equipment_kind(eq) == ContentDB.EQUIP_PASS:
-				pass_owners += 1
-			all_equipment[eq] = true
+		for st in role_stations:
+			if not db.stations.has(st):
+				errors.append(prefix + "role '%s' has unknown station '%s'" % [role.get("name", "?"), st])
+				continue
+			match db.station_kind(st):
+				ContentDB.STATION_PASS:
+					pass_owners += 1
+				ContentDB.STATION_COUNTER:
+					counters += int(role_stations[st])
+			all_stations[st] = true
+		if counters < MIN_COUNTERS:
+			errors.append(prefix + "role '%s' needs at least %d counter spots" % [role.get("name", "?"), MIN_COUNTERS])
 	if pass_owners != 1:
 		errors.append(prefix + "exactly one player must own the serving window (found %d)" % pass_owners)
 
 	var used_crates := {}
-	var used_equipment := {}
+	var used_stations := {}
 	for dish in level.dish_ids():
 		var raw := db.raw_requirements(dish)
-		var tools := db.equipment_requirements(dish)
+		var needed := db.station_requirements(dish)
 		for crate in raw:
 			used_crates[crate] = true
 			if not all_crates.has(crate):
 				errors.append(prefix + "nobody has the '%s' needed for '%s'" % [crate, dish])
-		for eq in tools:
-			used_equipment[eq] = true
-			if not all_equipment.has(eq):
-				errors.append(prefix + "nobody has the '%s' needed for '%s'" % [eq, dish])
+		for st in needed:
+			used_stations[st] = true
+			if not all_stations.has(st):
+				errors.append(prefix + "nobody has the '%s' needed for '%s'" % [st, dish])
 		if n >= 2:
 			for role in roles:
-				if _can_make_alone(db, role, raw, tools):
+				if _can_make_alone(db, role, raw, needed):
 					errors.append(prefix + "role '%s' can make '%s' alone" % [role.get("name", "?"), dish])
 
 	for role in roles:
 		var useful := false
 		for crate in role.get("crates", []):
 			useful = useful or used_crates.has(crate)
-		for eq in role.get("equipment", []):
-			useful = useful or used_equipment.has(eq) or db.equipment_kind(eq) == ContentDB.EQUIP_PASS
+		for st in role.get("stations", {}):
+			useful = useful or used_stations.has(st) or db.station_kind(st) == ContentDB.STATION_PASS
 		if not useful:
 			errors.append(prefix + "role '%s' has nothing to do" % role.get("name", "?"))
 	return errors
 
 
-static func _can_make_alone(db: ContentDB, role: Dictionary, raw: Array, tools: Array) -> bool:
+static func _can_make_alone(db: ContentDB, role: Dictionary, raw: Array, needed: Array) -> bool:
 	var crates: Array = role.get("crates", [])
-	var equipment: Array = role.get("equipment", [])
-	var serves := equipment.any(func(eq): return db.equipment_kind(eq) == ContentDB.EQUIP_PASS)
-	return serves and raw.all(func(c): return crates.has(c)) and tools.all(func(e): return equipment.has(e))
+	var role_stations: Dictionary = role.get("stations", {})
+	var serves := role_stations.keys().any(func(st): return db.station_kind(st) == ContentDB.STATION_PASS)
+	return serves and raw.all(func(c): return crates.has(c)) and needed.all(func(st): return role_stations.has(st))

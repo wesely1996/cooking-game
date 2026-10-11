@@ -71,6 +71,37 @@ func _ready() -> void:
 	version.offset_bottom = -8
 	add_child(version)
 
+	if Game.show_makeover_note:
+		_show_makeover_note()
+
+
+## Shown once after an old save was reset for the v0.6 kitchen.
+func _show_makeover_note() -> void:
+	var shade := ColorRect.new()
+	shade.color = Color(Art.INK, 0.75)
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.name = "MakeoverNote"
+	add_child(shade)
+	var panel := UiStyle.panel(Art.SUN)
+	panel.custom_minimum_size = Vector2(640, 0)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 12)
+	panel.add_child(column)
+	column.add_child(UiStyle.title("THE KITCHEN GOT A MAKEOVER!", 40, Color.WHITE))
+	var text := UiStyle.text("New recipes, new tools, a new kitchen. Your stars and dishes from the old kitchen " +
+		"don't fit any more, so the World Tour starts fresh. Your name and chef stayed!", 22)
+	text.custom_minimum_size = Vector2(580, 0)
+	column.add_child(text)
+	var ok := UiStyle.button("LET'S COOK!", Art.PAPER, 32)
+	ok.name = "MakeoverOk"
+	ok.pressed.connect(func():
+		Game.show_makeover_note = false
+		shade.queue_free())
+	column.add_child(UiStyle.centered(ok))
+	var center := UiStyle.centered(panel)
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.add_child(center)
+
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:

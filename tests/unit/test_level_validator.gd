@@ -25,15 +25,17 @@ func test_detects_missing_equipment_and_solo_dishes() -> void:
 		"duration": 100,
 		"stars": [1, 2, 3],
 		"roles": {
-			"1": [{"name": "Chef", "crates": ["bread", "tomato", "garlic", "basil"], "equipment": ["knife", "serving_window"]}],
+			"1": [{"name": "Chef", "crates": ["bread", "tomato", "basil", "plate"], "stations": {"counter": 3, "board": 1, "serving_window": 1}}],
 			"2": [
-				{"name": "Everything", "crates": ["bread", "tomato", "garlic", "basil"], "equipment": ["knife", "oven", "serving_window"]},
-				{"name": "Idle", "crates": ["egg"], "equipment": []},
+				{"name": "Everything", "crates": ["bread", "tomato", "basil", "plate"],
+					"stations": {"counter": 3, "board": 1, "grill": 1, "serving_window": 1}},
+				{"name": "Idle", "crates": ["flour"], "stations": {"counter": 1}},
 			],
 		},
 	})
 	var errors := "\n".join(LevelValidator.validate(db, level))
-	assert_true(errors.contains("nobody has the 'oven'"), "missing oven for 1 player")
+	assert_true(errors.contains("nobody has the 'grill'"), "missing grill for 1 player")
+	assert_true(errors.contains("'Idle' needs at least 2 counter spots"), "room to put food down")
 	assert_true(errors.contains("'Everything' can make 'bruschetta' alone"), "solo dish")
 	assert_true(errors.contains("'Idle' has nothing to do"), "idle role")
 	assert_true(errors.contains("3 player(s): needs 3 roles"), "missing roles")

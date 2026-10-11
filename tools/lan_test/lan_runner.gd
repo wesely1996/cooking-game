@@ -1,7 +1,10 @@
 extends Node
 ## End-to-end LAN test: two copies of the game on one computer, one hosting
-## and one joining over real ENet sockets. Together they cook a pizza across
-## both kitchens (throwing with real drag gestures), finish the level, go back
+## and one joining over real ENet sockets. Pizza is new to them, so the shift
+## starts with the pizza prologue, which they cook together across both
+## kitchens (throwing with real drag gestures): chef 1 kneads the dough and
+## chops tomatoes, chef 2 tops it with mozzarella and throws it back, chef 1
+## bakes it, chef 2 plates and serves it. Then they finish the level, go back
 ## to the lobby, start arcade, and check what happens when the host leaves.
 ##
 ##   godot --path . res://tools/lan_test/lan_runner.tscn -- host <screenshot dir>
@@ -27,6 +30,9 @@ func _ready() -> void:
 	Game.settings.sound = false
 	Game.save_enabled = false
 	Game.progression.load_save({})
+	# Only pizza is new to both chefs, so it's the one dish in the prologue.
+	for dish in ["caprese_salad", "pasta_pomodoro"]:
+		Game.progression.discover(dish)
 	Game.profile.name = "Nikola" if _role == "host" else "Maria"
 	Game.profile.look = {"skin": 1, "hair": 1, "hair_color": 3, "hat": 0, "apron": 0} if _role == "host" else {"skin": 3, "hair": 2, "hair_color": 0, "hat": 2, "apron": 2}
 	await get_tree().process_frame
@@ -42,7 +48,7 @@ func _ready() -> void:
 	get_tree().quit(0 if _failed == 0 else 1)
 
 
-# --- Host (chef 1: dough, cheese, oven) ----------------------------------------
+# --- Host (chef 1: pantry and stove) ----------------------------------------
 
 func _run_host() -> void:
 	Game.goto(Game.SCENE_LOBBY)
@@ -56,36 +62,37 @@ func _run_host() -> void:
 	await _wait(0.5)
 	await _shot("2_lobby_ready")
 
-	Game.start_level("italy_01", 2)
+	Game.start_level("italy_04", 2)
 	var screen := await _kitchen()
 	var shift: Shift = screen.shift
 	var k := shift.kitchen
-	_check(screen._mates.size() == 1, "one teammate portrait")
-	# Pizza base with mozzarella on it.
-	for intent in [{"type": "take", "ingredient": "flour"}, {"type": "take", "ingredient": "water"}, {"type": "combine", "from": 1, "to": 0}]:
-		screen._intent(intent)
-	for i in 12:
-		screen._intent({"type": "work", "slot": 0, "equipment": "mixing_bowl"})
-	for i in 3:
-		screen._intent({"type": "work", "slot": 0, "equipment": "rolling_pin"})
-	screen._intent({"type": "take", "ingredient": "mozzarella"})
+	_check(screen._mates.size() == 1, "one teammate panel")
+	_check(shift.in_prologue() and shift.prologue == (["pizza_margherita"] as Array[String]), "the shift starts with the pizza prologue")
+	var bowl: int = screen.station_of("bowl")
+	var board: int = screen.station_of("board")
+	var oven: int = screen.station_of("oven")
+	screen._intent({"type": "take", "ingredient": "flour", "station": bowl})
+	screen._intent({"type": "take", "ingredient": "water", "station": bowl})
+	for i in 8:
+		screen._intent({"type": "work", "station": bowl})
+	screen._intent({"type": "take", "ingredient": "tomato", "station": board})
 	for i in 4:
-		screen._intent({"type": "work", "slot": 1, "equipment": "knife"})
-	screen._intent({"type": "combine", "from": 1, "to": 0})
-	_check(k.item_at(0, 0).contents == ["sliced_mozzarella"], "pizza base with cheese")
+		screen._intent({"type": "work", "station": board})
+	_check(k.item_at(0, bowl).type == "dough" and k.item_at(0, board).type == "chopped_tomato", "dough and chopped tomato ready")
 	await _wait(0.5)
-	await _shot("3_kitchen_base_ready")
-	# Throw it with a real drag onto the teammate's portrait.
-	await _drag(screen._slots[0].center, screen._mates[0].rect.get_center())
-	_check(k.item_at(0, 0) == null and _find(k, 1, "pizza_base") >= 0, "drag to the portrait throws the base to chef 2")
-	# Chef 2 adds sauce and throws the raw pizza back.
+	await _shot("3_kitchen_dough_ready")
+	# Throw the dough with a real drag onto the teammate's panel.
+	await _drag(screen.station_center(bowl), screen.mate_center(1))
+	_check(k.item_at(0, bowl) == null and _find(k, 1, "dough") >= 0, "drag to the teammate throws the dough to chef 2")
+	screen._intent({"type": "throw", "station": board, "target": 1})
+	# Chef 2 tops it and throws the raw pizza back: into the oven.
 	_check(await _until(func(): return _find(k, 0, "raw_pizza_margherita") >= 0), "the raw pizza comes back")
-	screen._intent({"type": "insert", "slot": _find(k, 0, "raw_pizza_margherita"), "equipment": "oven"})
-	_check(await _until(func(): return k.players[0].appliances.oven[0] != null and k.players[0].appliances.oven[0].done), "the pizza bakes")
+	await _drag(screen.station_center(_find(k, 0, "raw_pizza_margherita")), screen.station_center(oven))
+	_check(await _until(func(): return k.station(0, oven).done), "the pizza bakes")
 	await _shot("4_kitchen_baked")
-	screen._intent({"type": "remove", "equipment": "oven", "index": 0})
-	screen._intent({"type": "throw", "slot": _find(k, 0, "pizza_margherita"), "target": 1})
-	_check(await _until(func(): return shift.stats.served >= 1), "chef 2 serves the pizza")
+	screen._intent({"type": "throw", "station": oven, "target": 1})
+	_check(await _until(func(): return not shift.in_prologue()), "chef 2 serves it, and the real shift starts")
+	_check(await _until(func(): return Game.progression.is_discovered("pizza_margherita")), "the host learned pizza")
 	await _wait(0.6)
 	await _shot("5_kitchen_served")
 
@@ -94,12 +101,12 @@ func _run_host() -> void:
 	_check(await _until(func(): return _scene_is("Results")), "results screen")
 	await _wait(1.5)
 	await _shot("6_results")
-	_check(Game.progression.is_discovered("pizza_margherita"), "the host discovered the dish")
 	Game.back_to_lobby()
 	await _wait(1.0)
 	Game.start_level("arcade_italian", 2)
 	screen = await _kitchen()
 	_check(screen.shift.level.type == LevelDef.TYPE_ARCADE, "arcade together")
+	_check(screen.shift.prologue == (["bruschetta"] as Array[String]), "only bruschetta is still new to the team")
 	await _wait(3.0)
 	await _shot("7_arcade")
 	# Wait until the client has checked arcade, then leave.
@@ -108,7 +115,7 @@ func _run_host() -> void:
 	await _wait(1.0)
 
 
-# --- Client (chef 2: tomatoes, sauce, serving) --------------------------------
+# --- Client (chef 2: toppings and the pass) ---------------------------------
 
 func _run_client() -> void:
 	await _wait(1.0)
@@ -132,41 +139,39 @@ func _run_client() -> void:
 	var shift: Shift = screen.shift
 	var k := shift.kitchen
 	_check(screen._me == 1 and screen._session is ClientSession, "the client plays chef 2")
-	# Tomato sauce.
-	screen._intent({"type": "take", "ingredient": "tomato"})
-	_check(await _until(func(): return _find(k, 1, "tomato") >= 0), "took a tomato (confirmed by the host)")
-	var tomato := _find(k, 1, "tomato")
-	for i in 5:
-		screen._intent({"type": "work", "slot": tomato, "equipment": "knife"})
-	_check(await _until(func(): return _find(k, 1, "chopped_tomato") >= 0), "chopped it")
-	screen._intent({"type": "insert", "slot": _find(k, 1, "chopped_tomato"), "equipment": "sauce_pot"})
-	_check(await _until(func(): return k.players[1].appliances.sauce_pot[0] != null), "into the pot")
-	for i in 3:
-		screen._intent({"type": "work_appliance", "equipment": "sauce_pot", "index": 0})
-	_check(await _until(func(): return k.players[1].appliances.sauce_pot[0].done), "stirred into sauce")
-	screen._intent({"type": "remove", "equipment": "sauce_pot", "index": 0})
-	_check(await _until(func(): return _find(k, 1, "tomato_sauce") >= 0), "sauce on the counter")
-	# The host throws the base; put the sauce on it and throw it back.
-	_check(await _until(func(): return _find(k, 1, "pizza_base") >= 0), "caught the pizza base")
+	_check(shift.in_prologue(), "the client is in the prologue too")
+	var board: int = screen.station_of("board")
+	# The dough and the chopped tomato arrive: tomato onto the dough.
+	_check(await _until(func(): return _find(k, 1, "dough") >= 0 and _find(k, 1, "chopped_tomato") >= 0), "caught the dough and the tomato")
 	await _wait(0.4)
 	await _shot("3_kitchen_caught")
-	screen._intent({"type": "combine", "from": _find(k, 1, "tomato_sauce"), "to": _find(k, 1, "pizza_base")})
+	screen._intent({"type": "move", "from": _find(k, 1, "chopped_tomato"), "to": _find(k, 1, "dough")})
+	screen._intent({"type": "take", "ingredient": "mozzarella", "station": board})
+	_check(await _until(func(): return k.item_at(1, board) != null), "mozzarella on the board (confirmed by the host)")
+	for i in 3:
+		screen._intent({"type": "work", "station": board})
+	_check(await _until(func(): return _find(k, 1, "sliced_mozzarella") >= 0), "sliced it")
+	screen._intent({"type": "move", "from": board, "to": _find(k, 1, "dough")})
 	_check(await _until(func(): return _find(k, 1, "raw_pizza_margherita") >= 0), "raw pizza assembled")
 	var raw := _find(k, 1, "raw_pizza_margherita")
-	await _drag(screen._slots[raw].center, screen._mates[0].rect.get_center())
+	await _drag(screen.station_center(raw), screen.mate_center(0))
 	_check(await _until(func(): return _find(k, 1, "raw_pizza_margherita") < 0), "threw the raw pizza back with a drag")
-	# The baked pizza comes back: serve it with a real drag to the window.
-	_check(await _until(func(): return _find(k, 1, "pizza_margherita") >= 0), "the baked pizza arrives")
+	# The baked pizza comes back: plate it and serve it with a real drag.
+	_check(await _until(func(): return _find(k, 1, "whole_pizza") >= 0), "the baked pizza arrives")
+	screen._intent({"type": "take", "ingredient": "plate"})
+	_check(await _until(func(): return _find(k, 1, "plate") >= 0), "a plate")
+	screen._intent({"type": "move", "from": _find(k, 1, "whole_pizza"), "to": _find(k, 1, "plate")})
+	_check(await _until(func(): return _find(k, 1, "pizza_margherita") >= 0), "pizza on the plate")
 	await _wait(0.3)
-	await _drag(screen._slots[_find(k, 1, "pizza_margherita")].center, screen._serve_rect.get_center())
-	_check(await _until(func(): return shift.stats.served >= 1), "served it")
+	await _drag(screen.station_center(_find(k, 1, "pizza_margherita")), screen.station_center(k.players[1].pass_station(k.db)))
+	_check(await _until(func(): return not shift.in_prologue()), "served it: the real shift starts")
+	_check(await _until(func(): return Game.progression.is_discovered("pizza_margherita")), "the client learned pizza too")
 	await _wait(0.6)
 	await _shot("5_kitchen_served")
 
 	_check(await _until(func(): return _scene_is("Results")), "results screen")
 	await _wait(1.5)
 	await _shot("6_results")
-	_check(Game.progression.is_discovered("pizza_margherita"), "the client discovered the dish too")
 	_check(await _until(func(): return _scene_is("Lobby")), "back in the lobby with the host")
 	screen = await _kitchen()
 	_check(screen.shift.level.type == LevelDef.TYPE_ARCADE, "arcade together")
@@ -193,10 +198,10 @@ func _scene_is(scene_name: String) -> bool:
 
 
 func _find(k: KitchenState, player: int, type: String) -> int:
-	var slots := k.players[player].slots
-	for i in slots.size():
-		if slots[i] and (slots[i].type == type or k.effective_id(slots[i]) == type):
-			return i
+	for st in k.players[player].stations:
+		var item := st.item()
+		if item and (item.type == type or k.effective_id(item) == type):
+			return st.index
 	return -1
 
 

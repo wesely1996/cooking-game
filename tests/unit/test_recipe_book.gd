@@ -10,7 +10,7 @@ func test_recipe_steps_come_in_a_working_order() -> void:
 		var steps := db.recipe_steps(dish)
 		assert_true(not steps.is_empty(), dish + " has steps")
 		for step in steps:
-			var needs: Array = [step.input] if step.kind == "process" else [step.base] + step.parts
+			var needs: Array = step.inputs if step.kind == "recipe" else [step.base] + step.parts
 			for need in needs:
 				assert_true(made.has(need), "%s: '%s' is made before it is used" % [dish, need])
 			made[step.output] = true
@@ -20,11 +20,12 @@ func test_recipe_steps_come_in_a_working_order() -> void:
 func test_pizza_instructions() -> void:
 	var db := ContentDB.load_dir()
 	var lines := RecipeText.instructions(db, "pizza_margherita")
-	assert_eq(lines.size(), 9, "8 steps + serve")
-	assert_eq(lines[0], "Put the WATER on the FLOUR → Pizza dough mix")
-	assert_true(lines[1].begins_with("Knead the PIZZA DOUGH MIX with the MIXING BOWL (tap ×12)"))
-	assert_true(lines.any(func(l): return l.begins_with("Put the CHOPPED TOMATO in the SAUCE POT and stir it (draw circles ×3)")))
-	assert_true(lines[7].begins_with("Bake the RAW PIZZA MARGHERITA in the OVEN for 8 s"))
+	assert_eq(lines.size(), 7, "6 steps + serve")
+	assert_eq(lines[0], "Put the FLOUR and WATER in the MIXING BOWL and knead (tap ×8) → Dough")
+	assert_eq(lines[1], "Chop the TOMATO on the CHOPPING BOARD (swipe down ×4) → Chopped tomato")
+	assert_true(lines.has("Put the CHOPPED TOMATO and SLICED MOZZARELLA on the DOUGH → Raw pizza"))
+	assert_true(lines[4].begins_with("Bake the RAW PIZZA in the OVEN for 8 s"))
+	assert_eq(lines[5], "Put the BAKED PIZZA on the PLATE → Pizza Margherita")
 	assert_eq(lines.back(), "Serve the PIZZA MARGHERITA at the SERVING WINDOW!")
 
 
@@ -49,14 +50,15 @@ func test_hint_bot_only_plans_for_matching_orders() -> void:
 	shift.spawn_customer("bruschetta")
 	var plan := bot.plan(shift)
 	assert_true(not plan.is_empty())
-	assert_eq(plan[0].ingredient, "bread", "bruschetta starts with bread")
+	assert_true(plan.any(func(a): return a.type == "take" and a.ingredient == "bread" and a.get("station", -1) >= 0),
+		"bruschetta: bread straight onto the board")
 
 
 func test_star_thresholds_rise_with_levels_and_players() -> void:
 	var levels := {}
 	for level in LevelDef.load_dir():
 		levels[level.id] = level
-	assert_true(int(levels["italy_01"].value("stars", 1)[2]) >= 200, "solo Pizza Night needs 200+ for 3 stars")
+	assert_true(int(levels["italy_01"].value("stars", 1)[2]) >= 200, "the first solo shift needs 200+ for 3 stars")
 	for region in Progression.load_map().regions:
 		var story: Array = region.levels.map(func(e): return e.id).filter(func(id): return levels[id].type == LevelDef.TYPE_NORMAL)
 		assert_eq(story.size(), 4, region.id + " has four shifts")

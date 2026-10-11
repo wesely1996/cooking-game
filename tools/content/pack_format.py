@@ -1,5 +1,5 @@
 """Writes cuisine pack JSON in the repository's readable layout: one item,
-process or assembly per line, role presets indented. Used by content scripts."""
+station, recipe or assembly per line, role presets indented. Used by content scripts."""
 import json
 
 
@@ -9,14 +9,14 @@ def dumps(pack):
     for ki, key in enumerate(keys):
         value = pack[key]
         comma = "," if ki < len(keys) - 1 else ""
-        if key in ("items", "equipment") and isinstance(value, dict):
+        if key in ("items", "equipment", "stations") and isinstance(value, dict):
             out.append(f'  "{key}": {{')
             names = list(value.keys())
             for i, name in enumerate(names):
                 c = "," if i < len(names) - 1 else ""
                 out.append(f'    {json.dumps(name)}: {json.dumps(value[name], ensure_ascii=False)}{c}')
             out.append("  }" + comma)
-        elif key in ("processes", "assemblies") and isinstance(value, list):
+        elif key in ("processes", "recipes", "assemblies") and isinstance(value, list):
             out.append(f'  "{key}": [')
             for i, entry in enumerate(value):
                 c = "," if i < len(value) - 1 else ""

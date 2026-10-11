@@ -684,11 +684,36 @@ V05_EQUIPMENT = {
                       shine(36, 66, 10, 3, -10)),
 }
 
+# --- v0.6 shared kitchen (2D stand-ins until the 3D models arrive) -----------
+
+V06_ITEMS = {
+    "plate": svg(shadow(rx=54, cy=108), plate(cy=72, rx=56, ry=28)),
+    "sliced_bread": svg(shadow(rx=50), '\n'.join(rect(16 + i * 26, 40 + (i % 2) * 6, 30, 52, "#e9c38a", 10, 4, rot=-12) for i in range(4)),
+                        '\n'.join(rect(21 + i * 26, 46 + (i % 2) * 6, 20, 40, "#f8e6c4", 7, 2, rot=-12) for i in range(4))),
+}
+V06_EQUIPMENT = {
+    "board": svg(shadow(rx=56), rect(10, 50, 108, 50, "#d9a066", 12), rect(18, 56, 92, 38, "#e8b980", 8, 2.5),
+                 circle(104, 60, 5, "#8a5a2e", 3),
+                 '<path d="M30,44 L84,26" stroke="#1d1a2f" stroke-width="12" stroke-linecap="round"/><path d="M30,44 L84,26" stroke="#dfe6ee" stroke-width="6" stroke-linecap="round"/>',
+                 '<path d="M84,26 L104,20" stroke="#1d1a2f" stroke-width="10" stroke-linecap="round"/><path d="M84,26 L104,20" stroke="#8a4b24" stroke-width="5" stroke-linecap="round"/>'),
+}
+# Shared stations reuse the older pictures of the same tools.
+ALIASES = {
+    "items": {"dough": "pizza_dough"},
+    "equipment": {"bowl": "mixing_bowl", "pot": "boil_pot", "pan": "frying_pan", "pasta_machine": "pasta_maker"},
+}
+
 ITEMS.update(MEXICAN_ITEMS)
 ITEMS.update(JAPANESE_ITEMS)
 EQUIPMENT.update(MORE_EQUIPMENT)
 ITEMS.update(V05_ITEMS)
 EQUIPMENT.update(V05_EQUIPMENT)
+ITEMS.update(V06_ITEMS)
+EQUIPMENT.update(V06_EQUIPMENT)
+for _alias, _source in ALIASES["items"].items():
+    ITEMS[_alias] = ITEMS[_source]
+for _alias, _source in ALIASES["equipment"].items():
+    EQUIPMENT[_alias] = EQUIPMENT[_source]
 
 
 def main():

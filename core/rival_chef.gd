@@ -133,7 +133,4 @@ func _complete_dish() -> void:
 
 
 func _longest_cook(dish: String) -> float:
-	var longest := 0.0
-	for step in _db.process_steps(dish):
-		longest = maxf(longest, float(_db.processes[step].cook_time))
-	return longest
+	return _db.longest_cook(dish)
