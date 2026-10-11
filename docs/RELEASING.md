@@ -4,12 +4,17 @@
 
 | Workflow | When | What it does |
 |---|---|---|
-| **CI** (`.github/workflows/ci.yml`) | every push and pull request | unit tests and bot simulations, a smoke test that drives the real screens with taps, drags and swipes on a virtual display (screenshots are uploaded), then builds Android, Windows, Linux and Web as `0.1.0-dev.<run>` |
+| **CI** (`.github/workflows/ci.yml`) | every push and pull request | unit tests and bot simulations, a smoke test that drives the real screens with taps, drags and swipes on a virtual display (screenshots are uploaded), then builds Android, Windows, Linux and Web as `<version>-dev.<run>` |
 | **Release** (`.github/workflows/release.yml`) | pushing a tag `v1.2.3`, or running it by hand | the same tests and builds, stamped with the release version, published as a GitHub release with the changelog section as notes |
 
 The building blocks are reusable: `test.yml`, `build.yml` and the
 `setup-godot` action (downloads and caches Godot 4.7.2 and the export
 templates). Every build is also an artifact of its workflow run.
+
+Artifacts (dev builds, screenshots) are kept for **7 days**. The **Clean up
+old builds** workflow (`cleanup.yml`) runs daily and deletes any artifact
+older than that, so storage doesn't fill up. Files attached to a GitHub
+release are not artifacts and stay forever.
 
 ## Making a release
 

@@ -636,7 +636,7 @@ later. Also a profile (name, chef look, favourite cuisine = most played, best
 cuisine = highest average score), a settings screen, and a Play menu that
 holds the World Tour, LAN and arcade.
 
-**v0.5.0:** USA (diner + *County Fair* + *Smoke & Fire Championship*), Spain
+**v0.5 (finished, ships in v0.6.0):** USA (diner + *County Fair* + *Smoke & Fire Championship*), Spain
 (tapas bar + *Fiesta del Tomate* + *Copa de la Paella*) and France (bistro +
 *Fête de la Gastronomie* + *Golden Toque World Final*, the last boss for now).
 The World Tour order is now Italy → Mexico → USA → Spain → Japan → France, as
@@ -648,6 +648,10 @@ Kitchen changes: food on the counter is 50% bigger (two rows when the counter
 is narrow), and mini-game work can be paused (LATER, or tap anywhere else) and
 resumed from a tool badge on the food; the progress travels with the food,
 even when it's thrown to a teammate.
+
+**v0.6.0 (in progress):** the kitchen becomes a 3D comic page and recipes
+become Overcooked-style with multipurpose cookware. The agreed design is in
+[V06_DESIGN.md](V06_DESIGN.md); it replaces parts of §3, §4, §5 and §6.
 
 ### M5 – Art & audio pass
 - Comic/anime art for kitchen, food items, characters and customers.

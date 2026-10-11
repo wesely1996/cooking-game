@@ -47,3 +47,5 @@ jobs:
           name: builds
           path: build/release
           if-no-files-found: error
+          # Dev builds are only for testing; releases keep their own copies.
+          retention-days: 7

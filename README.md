@@ -23,8 +23,9 @@ and throw them to each other to serve customers around the world.
 | CI/CD: tests, smoke test, Android/desktop builds, releases | done |
 | M4 (part 1): 2-player LAN for story and arcade | done (v0.3.0) |
 | Mexico and Japan regions, profile, settings, new menus | done (v0.4.0) |
-| USA, Spain and France regions, pausable work, bigger plates | done (v0.5.0) |
-| M3: polish, real playtests · M4: 3–4 players | next |
+| USA, Spain and France regions, pausable work, bigger plates | done (ships in v0.6.0) |
+| v0.6: 3D comic-page kitchen, Overcooked-style recipes ([design](docs/V06_DESIGN.md)) | in progress |
+| M3: polish, real playtests · M4: 3–4 players | later |
 
 ## Project layout
 
