@@ -1,0 +1,13 @@
+{
+  "id": "france_competition",
+  "name": "Golden Toque World Final",
+  "description": "The world final in Lyon. Chef Céleste is the best in the world: beat her and so are you.",
+  "pack": "french",
+  "type": "competition",
+  "dishes": ["onion_soup", "ratatouille", "crepe"],
+  "roles": "bistro",
+  "judges_orders": ["crepe", "onion_soup", "ratatouille", "crepe", "onion_soup", "ratatouille", "crepe", "onion_soup"],
+  "max_active": 2,
+  "time_limit": 360,
+  "rival": {"name": "Chef Céleste", "personality": "perfectionist", "speed": {"1": 1.0, "2": 1.4, "3": 1.75, "4": 2.0}}
+}

@@ -42,3 +42,4 @@ jobs:
           name: screenshots
           path: build/screenshots
           if-no-files-found: ignore
+          retention-days: 7

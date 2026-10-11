@@ -245,4 +245,7 @@ func _add(action: Dictionary) -> void:
 		"throw":
 			if _kitchen.players[action.target].free_slot() < 0:
 				return
+		"insert":
+			if not _kitchen.players[action.player].appliances.get(action.equipment, []).has(null):
+				return
 	_actions.append(action)

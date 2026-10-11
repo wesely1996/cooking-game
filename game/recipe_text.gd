@@ -13,12 +13,14 @@ const GESTURES := {
 	"press": "tap ×%d",
 	"mash": "tap ×%d",
 	"grate": "swipe down ×%d",
+	"whisk": "draw circles ×%d",
+	"blend": "draw circles ×%d",
 }
 const VERBS := {
 	"chop": "Chop", "slice": "Slice", "knead": "Knead", "roll": "Roll out",
 	"stir": "Stir", "crank": "Crank", "bake": "Bake", "boil": "Boil",
 	"press": "Press", "mash": "Mash", "grate": "Grate", "cook": "Cook", "sizzle": "Fry",
-	"grill": "Grill", "steam": "Steam",
+	"grill": "Grill", "steam": "Steam", "fry": "Fry", "simmer": "Simmer", "whisk": "Whisk", "blend": "Blend",
 }
 
 

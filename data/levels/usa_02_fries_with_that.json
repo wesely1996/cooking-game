@@ -1,0 +1,17 @@
+{
+  "id": "usa_02",
+  "name": "Fries With That?",
+  "description": "Every burger wants fries. Slice the potatoes and keep the fryer busy.",
+  "pack": "american",
+  "type": "normal",
+  "dishes": [
+    {"id": "cheeseburger", "weight": 1},
+    {"id": "fries", "weight": 1}
+  ],
+  "roles": "diner",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 15, "2": 12, "3": 11, "4": 10},
+  "stars": {"1": [130, 260, 370], "2": [180, 350, 500], "3": [210, 420, 600], "4": [240, 480, 690]}
+}

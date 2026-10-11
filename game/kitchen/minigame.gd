@@ -4,8 +4,12 @@ extends Control
 ## tap to knead, swipe side to side to roll, draw circles to stir. Each
 ## recognised gesture is one unit of work (the process's "work" value says
 ## how many are needed). The KitchenScreen forwards input here.
+##
+## Work can be paused at any time with the LATER button (or by tapping
+## outside the panel): the food keeps its progress and can be finished later.
 
 signal work_done(units: int)
+signal paused  # the player left before the work was done
 signal closed
 
 const KIND_SWIPE_DOWN := "swipe_down"
@@ -20,7 +24,7 @@ const ACTION_KINDS := {
 	"chop": KIND_SWIPE_DOWN, "slice": KIND_SWIPE_DOWN, "grate": KIND_SWIPE_DOWN,
 	"knead": KIND_TAP, "press": KIND_TAP, "mash": KIND_TAP,
 	"roll": KIND_SWIPE_SIDE,
-	"stir": KIND_CIRCLE, "crank": KIND_CIRCLE,
+	"stir": KIND_CIRCLE, "crank": KIND_CIRCLE, "whisk": KIND_CIRCLE, "blend": KIND_CIRCLE,
 }
 const HINTS := {
 	KIND_SWIPE_DOWN: "SWIPE DOWN!",
@@ -77,7 +81,17 @@ func finish() -> void:
 
 
 func close_rect() -> Rect2:
-	return Rect2(size.x - 62, 8, 54, 54)
+	return Rect2(size.x - 158, 10, 148, 54)
+
+
+## Leaves the mini-game; the progress so far stays on the food.
+func pause() -> void:
+	if not visible:
+		return
+	visible = false
+	if not _finished:
+		paused.emit()
+	closed.emit()
 
 
 ## Handles a pointer event in this control's local coordinates. Returns true
@@ -88,8 +102,7 @@ func handle_input(event: InputEvent, local: Vector2) -> bool:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			if close_rect().has_point(local):
-				visible = false
-				closed.emit()
+				pause()
 				return true
 			_pressed = true
 			_anchor = local
@@ -137,12 +150,14 @@ func _draw() -> void:
 	var title: String = HINTS.get(kind, "")
 	draw_string_outline(font, Vector2(24, 54), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 42, 8, Color.WHITE)
 	draw_string(font, Vector2(24, 54), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 42, Art.TOMATO)
-	# Close button.
+	draw_string(Art.ui_font(), Vector2(26, 84), "Busy? Tap LATER: the work is kept.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Art.INK, 0.65))
+	# LATER (pause) button.
 	var close := close_rect()
-	draw_rect(close, Art.TOMATO)
+	draw_rect(close, Art.SKY)
 	draw_rect(close, Art.INK, false, 4.0)
-	draw_line(close.position + Vector2(14, 14), close.end - Vector2(14, 14), Color.WHITE, 6.0)
-	draw_line(Vector2(close.end.x - 14, close.position.y + 14), Vector2(close.position.x + 14, close.end.y - 14), Color.WHITE, 6.0)
+	draw_rect(Rect2(close.position + Vector2(16, 14), Vector2(8, 26)), Art.INK)
+	draw_rect(Rect2(close.position + Vector2(30, 14), Vector2(8, 26)), Art.INK)
+	draw_string(font, Vector2(close.position.x + 46, close.end.y - 14), "LATER", HORIZONTAL_ALIGNMENT_LEFT, -1, 30, Art.INK)
 	# Item in the middle, with an animated hint of the gesture.
 	var center := size * 0.5 + Vector2(0, 10)
 	if item_texture:

@@ -52,6 +52,43 @@ func test_chopping_takes_several_gestures() -> void:
 	assert_error(k.do_intent({"type": "work", "player": 0, "slot": 0, "equipment": "rolling_pin"}), "not_owned")
 
 
+func test_paused_work_is_kept_when_food_moves() -> void:
+	var k := _kitchen([
+		{"name": "A", "crates": ["tomato"], "equipment": ["knife"], "slots": 3},
+		{"name": "B", "crates": ["bread"], "equipment": ["knife", "serving_window"], "slots": 3},
+	])
+	k.do_intent({"type": "take", "player": 0, "ingredient": "tomato"})
+	for i in 2:
+		k.do_intent({"type": "work", "player": 0, "slot": 0, "equipment": "knife"})
+	# Leave it half chopped, move it along the counter, throw it to a friend...
+	assert_ok(k.do_intent({"type": "move", "player": 0, "from": 0, "to": 2}))
+	assert_eq(k.item_at(0, 2).work, 2.0)
+	assert_ok(k.do_intent({"type": "throw", "player": 0, "slot": 2, "target": 1}))
+	var item := k.item_at(1, 0)
+	assert_eq(item.work, 2.0, "progress travels with the food")
+	assert_eq(item.work_process, "chop_tomato")
+	# ...who finishes the last three chops.
+	for i in 3:
+		assert_ok(k.do_intent({"type": "work", "player": 1, "slot": 0, "equipment": "knife"}))
+	assert_eq(k.item_at(1, 0).type, "chopped_tomato")
+
+
+func test_paused_appliance_work_is_kept() -> void:
+	var k := _two_player_kitchen()
+	k.do_intent({"type": "take", "player": 0, "ingredient": "tomato"})
+	for i in 5:
+		k.do_intent({"type": "work", "player": 0, "slot": 0, "equipment": "knife"})
+	k.do_intent({"type": "insert", "player": 0, "slot": 0, "equipment": "sauce_pot"})
+	k.do_intent({"type": "work_appliance", "player": 0, "equipment": "sauce_pot", "index": 0})
+	k.tick(30.0)  # the chef wanders off to do something else
+	var aslot: KitchenState.ApplianceSlot = k.players[0].appliances["sauce_pot"][0]
+	assert_eq(aslot.progress, 1.0)
+	assert_false(aslot.done)
+	for i in 2:
+		k.do_intent({"type": "work_appliance", "player": 0, "equipment": "sauce_pot", "index": 0})
+	assert_true(aslot.done)
+
+
 func test_work_amount_is_capped() -> void:
 	var k := _two_player_kitchen()
 	k.do_intent({"type": "take", "player": 0, "ingredient": "tomato"})

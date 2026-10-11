@@ -38,6 +38,24 @@ func test_next_region_needs_the_competition_win() -> void:
 	assert_eq(progress.unlocked_arcade_packs(), ["italian", "mexican"] as Array[String])
 
 
+func test_regions_with_results_stay_open() -> void:
+	# A save from before new regions were added in front of this one.
+	var progress := Progression.new([
+		{"id": "a", "pack": "italian", "boss": "a_boss", "levels": [{"id": "a_boss", "stars_required": 0}]},
+		{"id": "new", "pack": "american", "boss": "new_boss", "levels": [{"id": "new_1", "stars_required": 0}]},
+		{"id": "old", "pack": "japanese", "boss": "old_boss", "levels": [{"id": "old_1", "stars_required": 0}]},
+	])
+	progress.load_save({"best_stars": {"old_1": 2}, "won": ["a_boss"]})
+	assert_true(progress.is_region_unlocked(1), "the new region opens from the won boss")
+	assert_true(progress.is_region_unlocked(2), "the region already played stays open")
+	assert_eq(progress.unlocked_arcade_packs(), ["italian", "american", "japanese"] as Array[String])
+
+
+func test_world_tour_order() -> void:
+	var ids: Array = Progression.load_map().regions.map(func(r): return r.id)
+	assert_eq(ids, ["italy", "mexico", "usa", "spain", "japan", "france"])
+
+
 func test_save_round_trip() -> void:
 	var progress := Progression.load_map()
 	progress.record("italy_01", {"type": "normal", "failed": false, "stars": 3})

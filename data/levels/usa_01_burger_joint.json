@@ -1,0 +1,16 @@
+{
+  "id": "usa_01",
+  "name": "Burger Joint",
+  "description": "New York! Shape the patties, sizzle them on the griddle and stack a cheeseburger.",
+  "pack": "american",
+  "type": "normal",
+  "dishes": [
+    {"id": "cheeseburger", "weight": 1}
+  ],
+  "roles": "diner",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 20, "2": 16, "3": 14, "4": 13},
+  "stars": {"1": [120, 230, 330], "2": [160, 320, 450], "3": [190, 380, 540], "4": [220, 430, 620]}
+}

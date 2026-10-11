@@ -1,0 +1,20 @@
+{
+  "id": "arcade_spanish",
+  "name": "Arcade: Spanish",
+  "description": "Endless tapas bar. Three angry customers and it's over.",
+  "pack": "spanish",
+  "type": "arcade",
+  "dishes": [
+    {"id": "paella", "weight": 1.5},
+    {"id": "tortilla_espanola", "weight": 1},
+    {"id": "patatas_bravas", "weight": 1}
+  ],
+  "roles": "tapas_bar",
+  "first_spawn": 2,
+  "max_active": {"1": 2, "2": 3, "3": 3, "4": 4},
+  "spawn_interval": {"1": 26, "2": 21, "3": 18, "4": 17},
+  "escalate_every": 30,
+  "interval_factor": 0.93,
+  "patience_factor": 0.95,
+  "strikes": 3
+}

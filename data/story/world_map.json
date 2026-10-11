@@ -65,6 +65,70 @@
       ]
     },
     {
+      "id": "usa",
+      "name": "USA",
+      "pack": "american",
+      "boss": "usa_competition",
+      "levels": [
+        {
+          "id": "usa_01",
+          "stars_required": 0
+        },
+        {
+          "id": "usa_02",
+          "stars_required": 2
+        },
+        {
+          "id": "usa_03",
+          "stars_required": 4
+        },
+        {
+          "id": "usa_04",
+          "stars_required": 6
+        },
+        {
+          "id": "usa_festival",
+          "stars_required": 8
+        },
+        {
+          "id": "usa_competition",
+          "stars_required": 10
+        }
+      ]
+    },
+    {
+      "id": "spain",
+      "name": "Spain",
+      "pack": "spanish",
+      "boss": "spain_competition",
+      "levels": [
+        {
+          "id": "spain_01",
+          "stars_required": 0
+        },
+        {
+          "id": "spain_02",
+          "stars_required": 2
+        },
+        {
+          "id": "spain_03",
+          "stars_required": 4
+        },
+        {
+          "id": "spain_04",
+          "stars_required": 6
+        },
+        {
+          "id": "spain_festival",
+          "stars_required": 8
+        },
+        {
+          "id": "spain_competition",
+          "stars_required": 10
+        }
+      ]
+    },
+    {
       "id": "japan",
       "name": "Japan",
       "pack": "japanese",
@@ -92,6 +156,38 @@
         },
         {
           "id": "japan_competition",
+          "stars_required": 10
+        }
+      ]
+    },
+    {
+      "id": "france",
+      "name": "France",
+      "pack": "french",
+      "boss": "france_competition",
+      "levels": [
+        {
+          "id": "france_01",
+          "stars_required": 0
+        },
+        {
+          "id": "france_02",
+          "stars_required": 2
+        },
+        {
+          "id": "france_03",
+          "stars_required": 4
+        },
+        {
+          "id": "france_04",
+          "stars_required": 6
+        },
+        {
+          "id": "france_festival",
+          "stars_required": 8
+        },
+        {
+          "id": "france_competition",
           "stars_required": 10
         }
       ]

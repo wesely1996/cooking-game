@@ -1,0 +1,78 @@
+{
+  "id": "spanish",
+  "name": "Spanish",
+  "items": {
+    "saffron": {"name": "Saffron", "kind": "raw"},
+    "churro_dough": {"name": "Churro dough", "kind": "raw"},
+    "chopped_chicken": {"name": "Chopped chicken"},
+    "paella_mix": {"name": "Paella mix"},
+    "beaten_egg": {"name": "Beaten egg"},
+    "tortilla_mix": {"name": "Tortilla mix"},
+    "gazpacho_mix": {"name": "Gazpacho mix"},
+    "paella": {"name": "Paella", "kind": "dish", "price": 34, "patience": 80},
+    "tortilla_espanola": {"name": "Tortilla Española", "kind": "dish", "price": 24, "patience": 60},
+    "gazpacho": {"name": "Gazpacho", "kind": "dish", "price": 16, "patience": 45},
+    "patatas_bravas": {"name": "Patatas Bravas", "kind": "dish", "price": 18, "patience": 45},
+    "churros": {"name": "Churros", "kind": "dish", "price": 8, "patience": 25}
+  },
+  "equipment": {
+    "paella_pan": {"name": "Paella pan", "kind": "appliance", "capacity": 2},
+    "frying_pan": {"name": "Frying pan", "kind": "appliance", "capacity": 2}
+  },
+  "processes": [
+    {"id": "chop_chicken", "input": "chicken", "equipment": "knife", "action": "chop", "work": 4, "output": "chopped_chicken"},
+    {"id": "simmer_paella", "input": "paella_mix", "equipment": "paella_pan", "action": "simmer", "cook_time": 8, "perfect_window": 5, "burn_time": 12, "output": "paella"},
+    {"id": "whisk_egg", "input": "egg", "equipment": "mixing_bowl", "action": "whisk", "work": 5, "output": "beaten_egg"},
+    {"id": "fry_tortilla", "input": "tortilla_mix", "equipment": "frying_pan", "action": "fry", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "tortilla_espanola"},
+    {"id": "blend_gazpacho", "input": "gazpacho_mix", "equipment": "blender", "action": "blend", "work": 5, "output": "gazpacho"},
+    {"id": "fry_churros", "input": "churro_dough", "equipment": "fryer", "action": "fry", "cook_time": 4, "perfect_window": 4, "burn_time": 8, "output": "churros"}
+  ],
+  "assemblies": [
+    {"output": "paella_mix", "base": "rice", "parts": ["chopped_chicken", "saffron"]},
+    {"output": "tortilla_mix", "base": "beaten_egg", "parts": ["cut_potato", "chopped_onion"]},
+    {"output": "gazpacho_mix", "base": "chopped_tomato", "parts": ["cucumber_sticks"]},
+    {"output": "patatas_bravas", "base": "fries", "parts": ["hot_sauce"]}
+  ],
+  "role_presets": {
+    "tapas_bar": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["egg", "potato", "onion", "chili", "rice", "chicken", "saffron", "tomato", "cucumber"], "equipment": ["mixing_bowl", "knife", "frying_pan", "fryer", "blender", "paella_pan", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Tortillas & Fryer", "crates": ["egg", "potato", "onion", "chili", "rice"], "equipment": ["mixing_bowl", "knife", "frying_pan", "fryer", "blender"]},
+        {"name": "Paella & Pass", "crates": ["chicken", "saffron", "tomato", "cucumber"], "equipment": ["knife", "paella_pan", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Tortillas", "crates": ["egg", "onion", "potato"], "equipment": ["mixing_bowl", "knife", "frying_pan"]},
+        {"name": "Fryer & Blender", "crates": ["chili", "rice", "cucumber"], "equipment": ["knife", "fryer", "blender"]},
+        {"name": "Paella & Pass", "crates": ["chicken", "saffron", "tomato"], "equipment": ["knife", "paella_pan", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Tortillas", "crates": ["egg", "onion"], "equipment": ["mixing_bowl", "knife", "frying_pan"]},
+        {"name": "Fryer", "crates": ["potato", "chili"], "equipment": ["knife", "fryer", "blender"]},
+        {"name": "Paella", "crates": ["rice", "chicken", "saffron", "cucumber"], "equipment": ["knife", "paella_pan"]},
+        {"name": "Gazpacho & Pass", "crates": ["tomato"], "equipment": ["knife", "blender", "serving_window"]}
+      ]
+    },
+    "fiesta": {
+      "1": [
+        {"name": "Chef", "slots": 8, "crates": ["churro_dough", "tomato", "cucumber"], "equipment": ["fryer", "knife", "blender", "serving_window"]}
+      ],
+      "2": [
+        {"name": "Churros", "crates": ["churro_dough", "cucumber"], "equipment": ["fryer", "knife"]},
+        {"name": "Gazpacho & Pass", "crates": ["tomato"], "equipment": ["knife", "blender", "serving_window"]}
+      ],
+      "3": [
+        {"name": "Churros", "crates": ["churro_dough"], "equipment": ["fryer"]},
+        {"name": "Chopping", "crates": ["cucumber"], "equipment": ["knife"]},
+        {"name": "Blender & Pass", "crates": ["tomato"], "equipment": ["knife", "blender", "serving_window"]}
+      ],
+      "4": [
+        {"name": "Churros", "crates": ["churro_dough"], "equipment": ["fryer"]},
+        {"name": "Blender & Fryer", "crates": ["churro_dough"], "equipment": ["fryer", "blender"]},
+        {"name": "Cucumbers", "crates": ["cucumber"], "equipment": ["knife"]},
+        {"name": "Tomatoes & Pass", "crates": ["tomato"], "equipment": ["knife", "serving_window"]}
+      ]
+    }
+  }
+}

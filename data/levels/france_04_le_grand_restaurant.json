@@ -1,0 +1,18 @@
+{
+  "id": "france_04",
+  "name": "Le Grand Restaurant",
+  "description": "White tablecloths and food critics. The whole French menu, perfectly.",
+  "pack": "french",
+  "type": "normal",
+  "dishes": [
+    {"id": "onion_soup", "weight": 1.5},
+    {"id": "ratatouille", "weight": 1},
+    {"id": "crepe", "weight": 1}
+  ],
+  "roles": "bistro",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 14, "2": 12, "3": 11, "4": 10},
+  "stars": {"1": [220, 430, 620], "2": [280, 560, 800], "3": [310, 620, 880], "4": [340, 670, 960]}
+}

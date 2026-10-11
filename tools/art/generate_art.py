@@ -523,9 +523,172 @@ MORE_EQUIPMENT = {
                  '<path d="M12,52 L116,52" stroke="#c5ced8" stroke-width="6" stroke-linecap="round"/>'),
 }
 
+
+# --- American, Spanish and French (v0.5) ---------------------------------------
+
+def glass(fill, top_extra="", straw=False):
+    """A tall diner glass with a drink in it."""
+    out = [shadow(rx=34)]
+    if straw:
+        out.append('<path d="M70,40 L92,6" stroke="#1d1a2f" stroke-width="10" stroke-linecap="round"/>'
+                   '<path d="M70,40 L92,6" stroke="#e5352b" stroke-width="5" stroke-linecap="round"/>')
+    out += [path("M34,34 L94,34 L84,110 L44,110 Z", "#e8f4fb"), path("M38,46 L90,46 L82,106 L46,106 Z", fill, 3), top_extra,
+            shine(48, 70, 4, 16, 8)]
+    return "\n".join(out)
+
+
+def crock(top, extra=""):
+    """A French onion-soup crock with lion-head handles."""
+    return "\n".join([
+        shadow(rx=50),
+        circle(16, 70, 10, "#8a5a2e", 4), circle(112, 70, 10, "#8a5a2e", 4),
+        path("M20,56 L108,56 Q104,108 64,108 Q24,108 20,56 Z", "#8a5a2e"),
+        ellipse(64, 56, 44, 14, top),
+        extra,
+        hatch(90, 70, 84, 98, 3),
+    ])
+
+
+def baking_dish(extra):
+    return "\n".join([
+        shadow(rx=56),
+        rect(8, 50, 112, 56, "#f7f4ee", 14),
+        rect(16, 56, 96, 40, "#c0392b", 10, 3),
+        extra,
+    ])
+
+
+def potato(cx=64, cy=68, rx=44, ry=34, rot=-12):
+    return "\n".join([ellipse(cx, cy, rx, ry, "#c9a26b", W, rot), blobs([(cx - 18, cy - 8), (cx + 14, cy + 6), (cx + 4, cy - 16)], 2.5, "#8a6a3c", 1.5),
+                      shine(cx - 20, cy - 12, 6, 10)])
+
+
+BUN = "#e0a85a"
+SESAME = '\n'.join(ellipse(x, y, 3, 1.6, "#fdf6e3", 1, rot=r) for x, y, r in [(44, 44, 20), (62, 36, -10), (80, 42, 30), (54, 54, -30), (74, 52, 10), (92, 54, -20), (36, 58, 0)])
+POTATO_STICK = "#f3d9a4"
+FRY = "#f6c94c"
+CHOC = "#5a2a14"
+EGGPLANT = "#6b2f7a"
+ZUCCHINI = "#2f7a3a"
+
+V05_ITEMS = {
+    # American diner.
+    "bun": svg(shadow(rx=50), rect(14, 72, 100, 24, "#f3d9a4", 10), path("M14,78 C14,26 114,26 114,78 Z", BUN), SESAME, shine(40, 46, 6, 12)),
+    "potato": svg(shadow(rx=44), potato()),
+    "lettuce": svg(shadow(rx=50), leaf(64, 104, 70, -120, "#8fd65a", 5), leaf(64, 104, 70, -60, "#7ccf5a", 5), leaf(64, 106, 74, -90, "#a6e070", 5)),
+    "ice_cream": svg(shadow(rx=40), path("M26,54 L102,54 L94,110 L34,110 Z", "#8fd3f4"), rect(40, 72, 48, 18, "#fdfbf5", 4, 3),
+                     path("M30,56 C26,30 50,24 64,30 C78,24 102,30 98,56 Z", "#f9c6d8"), shine(48, 40, 6, 4, 0)),
+    "milk": svg(shadow(rx=34), path("M36,40 L92,40 L92,110 L36,110 Z", "#fdfbf5"), path("M36,40 L50,20 L78,20 L92,40 Z", "#fdfbf5"),
+                rect(56, 12, 16, 10, "#5ab4ea", 3, 3), rect(36, 64, 56, 26, "#5ab4ea", 0, 3), blobs([(50, 76), (72, 72)], 5, "#fdfbf5", 2)),
+    "sausage": svg(shadow(rx=50), rect(10, 52, 108, 30, "#d96a5a", 15, rot=-18), shine(46, 58, 18, 3, -18)),
+    "raw_patty": svg(shadow(rx=50), ellipse(64, 74, 50, 24, "#d9506a"), ellipse(64, 70, 42, 16, "#e8708a", 2.5),
+                     blobs([(44, 70), (60, 64), (78, 72), (90, 66), (52, 78)], 2.5, "#fdf6e3", 1)),
+    "cooked_patty": svg(shadow(rx=50), ellipse(64, 74, 50, 24, "#7a4422"), ellipse(64, 70, 42, 16, "#8a5230", 2.5),
+                        '<path d="M34,64 L54,82 M52,58 L76,82 M72,58 L94,78" stroke="#4a2410" stroke-width="5" stroke-linecap="round"/>'),
+    "cheese_slice": svg(shadow(rx=46), rect(22, 30, 84, 74, "#f6c94c", 4, rot=8), blobs([(44, 52), (82, 62), (60, 84)], 6, "#e8b02a", 2)),
+    "shredded_lettuce": svg(shadow(rx=46), '\n'.join(f'<path d="M{24 + (i % 6) * 14},{60 + (i // 6) * 18} q8,-12 16,0" stroke="#1d1a2f" stroke-width="9" fill="none" stroke-linecap="round"/>' for i in range(12)),
+                            '\n'.join(f'<path d="M{24 + (i % 6) * 14},{60 + (i // 6) * 18} q8,-12 16,0" stroke="#8fd65a" stroke-width="4" fill="none" stroke-linecap="round"/>' for i in range(12))),
+    "cut_potato": svg(shadow(rx=44), '\n'.join(rect(22 + i * 15, 40 + (i % 2) * 8, 12, 62, POTATO_STICK, 3, 4, rot=-8) for i in range(6))),
+    "fries": svg(shadow(rx=40), '\n'.join(rect(30 + i * 12, 22 + (i % 3) * 6, 11, 60, FRY, 3, 4, rot=-10 + i * 4) for i in range(6)),
+                 path("M26,58 L102,58 L92,112 L36,112 Z", TOMATO_RED), path("M44,70 Q64,84 84,70", "none", 4), shine(40, 82, 3, 12, 8)),
+    "shake_mix": svg(glass("#fdfbf5", top_extra=circle(64, 40, 18, "#f9c6d8", 4) + "\n" + shine(58, 34, 5, 3, 0))),
+    "milkshake": svg(glass("#f9a8c4", top_extra="\n".join([
+        path("M36,38 C30,18 52,14 58,22 C64,10 86,14 88,28 C98,30 96,42 90,42 Z", "#fdfbf5", 4), circle(66, 12, 8, "#e5352b", 3)]), straw=True)),
+    "cooked_sausage": svg(shadow(rx=50), rect(10, 52, 108, 30, "#9a4a24", 15, rot=-18),
+                          '<path d="M38,72 L46,56 M58,66 L66,50 M78,60 L86,44" stroke="#4a2410" stroke-width="5" stroke-linecap="round"/>'),
+    "hot_dog": svg(shadow(rx=54), rect(8, 62, 112, 34, BUN, 16, rot=-12), rect(12, 50, 104, 24, "#9a4a24", 12, rot=-12),
+                   '<path d="M24,64 l10,-8 l10,6 l10,-8 l10,6 l10,-8 l10,6 l10,-8 l10,6" stroke="#f6c94c" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" transform="rotate(-12 64 64)"/>',
+                   rect(10, 72, 108, 22, BUN, 12, rot=-12)),
+    "fried_chicken": svg(drumstick("#d9893a"), blobs([(32, 70), (46, 58), (40, 88), (60, 76)], 3, "#f2b862", 1.5)),
+    "hot_sauce": svg(shadow(rx=30), rect(42, 40, 44, 70, TOMATO_RED, 12), rect(54, 14, 20, 30, "#e5352b", 4), rect(52, 6, 24, 12, GREEN, 4, 4),
+                     rect(48, 62, 32, 24, "#fdfbf5", 3, 3), path("M58,80 C52,70 64,64 64,70 C64,64 76,70 70,80 L64,86 Z", "#ff6b1c", 2), shine(52, 50, 3, 8, 0)),
+    "buffalo_wings": svg(shadow(rx=54, cy=110), plate(), '\n'.join(ellipse(x, y, 16, 10, "#e5571f", 4, rot=r) for x, y in [(42, 70), (64, 62), (86, 72), (58, 82), (80, 86)] for r in [-20]),
+                         rect(92, 40, 10, 40, "#8fd65a", 4, 3, rot=20), rect(100, 46, 10, 40, "#a6e070", 4, 3, rot=30)),
+    "cheeseburger": svg(shadow(rx=52), rect(16, 92, 96, 18, "#f3d9a4", 9), rect(10, 72, 108, 24, "#7a4422", 12),
+                        path("M14,72 L114,72 L108,80 L98,74 L88,88 L78,74 L64,86 L52,74 L40,88 L30,74 L20,82 Z", "#f6c94c", 4),
+                        path("M10,66 Q20,56 30,66 Q40,56 50,66 Q60,56 70,66 Q80,56 90,66 Q100,56 110,66 L118,70 L10,70 Z", "#7ccf5a", 4),
+                        path("M14,62 C14,14 114,14 114,62 Z", BUN), SESAME, shine(40, 34, 6, 10)),
+    # Spanish.
+    "saffron": svg(shadow(rx=34), path("M40,44 L88,44 L84,110 L44,110 Z", "#e8f4fb"), rect(38, 32, 52, 14, "#c0392b", 4),
+                   '\n'.join(f'<path d="M{50 + i * 6},{104} q{(i % 3) - 1},-20 {4 - (i % 3) * 2},-44" stroke="#e5571f" stroke-width="3" fill="none" stroke-linecap="round"/>' for i in range(6))),
+    "churro_dough": svg(shadow(rx=40), path("M20,40 L108,40 L68,112 L60,112 Z", "#fdfbf5"), path("M24,40 Q64,22 104,40 Z", "#f3d9a4", 4),
+                        rect(58, 104, 12, 14, "#9aa5b1", 2, 3), hatch(86, 50, 74, 76, 3)),
+    "chopped_chicken": svg(shadow(rx=44), cubes([(40, 80), (62, 72), (84, 82), (50, 96), (74, 98), (58, 56), (80, 58)], 18, "#f4b8a8")),
+    "paella_mix": svg(bowl("#fdfbf5", extra="\n".join([cubes([(50, 58), (76, 62)], 10, "#f4b8a8", 2),
+                                                       '<path d="M60,54 l6,6 M84,56 l-4,6 M42,64 l6,-4" stroke="#e5571f" stroke-width="3" stroke-linecap="round"/>']))),
+    "paella": svg(shadow(rx=60), rect(2, 64, 22, 10, "#2b2523", 4), rect(104, 64, 22, 10, "#2b2523", 4),
+                  ellipse(64, 72, 54, 30, "#2b2523"), ellipse(64, 70, 46, 23, "#f2b830", 3),
+                  cubes([(44, 66), (70, 60), (82, 78), (54, 82)], 10, "#e8a878", 2), blobs([(60, 68), (78, 68), (48, 76), (66, 84), (90, 66)], 3.5, GREEN, 1.5),
+                  path("M30,62 C30,52 46,52 46,62 Z", "#fff275", 3), path("M84,86 C88,78 100,80 98,90 C94,96 86,94 84,86 Z", "#ff8a5a", 3)),
+    "beaten_egg": svg(bowl("#f7d64a", rim="#9ccbf2", extra='<path d="M48,62 q16,-10 32,0" stroke="#f2b830" stroke-width="3" fill="none"/>')),
+    "tortilla_mix": svg(bowl("#f7d64a", rim="#9ccbf2", extra=cubes([(48, 60), (66, 56), (82, 62)], 9, POTATO_STICK, 2) + "\n" + blobs([(58, 64), (74, 66)], 3, "#e7c6ef", 1.5))),
+    "tortilla_espanola": svg(shadow(rx=54), path("M14,74 L14,86 Q64,110 114,86 L114,74 Z", "#d99a3a"), ellipse(64, 74, 50, 22, "#f2c75a"),
+                             path("M64,74 L114,74 L114,86 L64,92 Z", "#f7e08a", 3), blobs([(40, 70), (56, 64), (84, 66)], 4, "#d99a3a", 1.5)),
+    "gazpacho_mix": svg(bowl("#e5352b", extra=cubes([(46, 58), (62, 62), (80, 58)], 9, TOMATO_RED, 2) + "\n" + '\n'.join(rect(50 + i * 12, 50, 7, 18, "#a8e08a", 2, 2) for i in range(3)))),
+    "gazpacho": svg(bowl("#ef6b3a", rim="#e8f4fb", extra=cubes([(56, 60), (74, 58)], 8, "#a8e08a", 2) + "\n" + leaf(84, 60, 14, -30, GREEN, 3))),
+    "patatas_bravas": svg(shadow(rx=50, cy=110), ellipse(64, 84, 54, 24, "#c0563a"), ellipse(64, 80, 44, 16, "#e07a4a", 3),
+                          cubes([(42, 70), (62, 64), (84, 70), (52, 82), (74, 82)], 18, "#f2c75a"),
+                          path("M38,66 Q52,58 62,66 Q74,58 88,66", "none", 6), '<path d="M38,66 Q52,58 62,66 Q74,58 88,66" stroke="#e5352b" stroke-width="3" fill="none"/>'),
+    "churros": svg(shadow(rx=50), circle(94, 86, 22, "#7a3a1e"), ellipse(94, 76, 18, 6, CHOC, 3),
+                   '\n'.join(rect(14 + i * 16, 30 + i * 6, 14, 74, "#e0a14a", 7, 4, rot=-20) for i in range(3)),
+                   '\n'.join(f'<path d="M{26 + i * 16},{44 + i * 6} l-10,60" stroke="#b8742a" stroke-width="2.5" transform="rotate(-20 {21 + i * 16} {67 + i * 6})"/>' for i in range(3))),
+    # French.
+    "eggplant": svg(shadow(rx=44), path("M40,40 C70,30 110,64 106,96 C102,114 74,114 60,100 C40,80 20,54 40,40 Z", EGGPLANT),
+                    path("M28,30 L44,26 L52,40 L40,48 Z", GREEN, 4), shine(66, 70, 6, 14, -40)),
+    "zucchini": svg(shadow(rx=50), rect(14, 52, 100, 28, ZUCCHINI, 14, rot=-22), blobs([(40, 74), (62, 66), (84, 58)], 2.5, "#7ccf5a", 1),
+                    rect(98, 30, 14, 12, "#f2d04a", 4, 3, rot=-22)),
+    "croissant_dough": svg(shadow(rx=46), path("M24,96 L104,96 L64,30 Z", "#f6e3b8"), '<path d="M40,84 L88,84 M50,68 L78,68 M58,52 L70,52" stroke="#d9b07a" stroke-width="3"/>'),
+    "crepe_mix": svg(bowl("#fdfbf5", rim="#4f9de0", extra=path("M40,60 Q50,48 62,60 Z", "#f2e6c9", 3) + "\n" + circle(78, 60, 7, "#f7b32b", 2.5))),
+    "crepe_batter": svg(bowl("#f6e3a6", rim="#4f9de0", extra='<path d="M44,62 q20,-10 40,0" stroke="#e0c070" stroke-width="3" fill="none"/>')),
+    "plain_crepe": svg(disc("#f5d48e", blobs([(44, 68), (70, 80), (84, 66), (56, 86), (90, 82), (62, 62)], 3.5, "#c98a3c", 1.5), ry=28)),
+    "chocolate_sauce": svg(bowl(CHOC, rim="#f7f4ee", extra=shine(54, 58, 10, 3, 0))),
+    "crepe": svg(shadow(rx=54, cy=110), plate(), path("M20,80 L108,80 L64,46 Z", "#f5d48e", 4),
+                 '<path d="M34,72 Q48,62 56,70 Q66,58 76,68 Q88,60 96,74" stroke="#5a2a14" stroke-width="5" fill="none" stroke-linecap="round"/>'),
+    "caramelized_onion": svg(shadow(rx=46), '\n'.join(f'<path d="M{26 + (i % 5) * 16},{66 + (i // 5) * 16} q8,-14 16,0 q-4,10 -12,4" stroke="#1d1a2f" stroke-width="9" fill="none" stroke-linecap="round"/>' for i in range(10)),
+                             '\n'.join(f'<path d="M{26 + (i % 5) * 16},{66 + (i // 5) * 16} q8,-14 16,0 q-4,10 -12,4" stroke="#c07a2a" stroke-width="4" fill="none" stroke-linecap="round"/>' for i in range(10))),
+    "raw_onion_soup": svg(crock("#c8873a", extra=rect(40, 46, 48, 18, "#e0b070", 4, 3) + "\n" + blobs([(48, 52), (62, 50), (76, 54)], 5, "#fff3c4", 2))),
+    "onion_soup": svg(crock("#f2b830", extra=blobs([(40, 54), (54, 50), (70, 52), (86, 56), (62, 60)], 7, "#e8a030", 2) + "\n" + blobs([(48, 56), (78, 50)], 3, "#a8521c", 1))),
+    "chopped_eggplant": svg(shadow(rx=44), cubes([(40, 80), (62, 72), (84, 82), (50, 96), (74, 98), (58, 56)], 18, "#efe4c4"),
+                            cubes([(84, 58), (32, 62)], 16, EGGPLANT)),
+    "sliced_zucchini": svg(shadow(rx=46), '\n'.join(circle(x, y, 15, ZUCCHINI, 4) + "\n" + circle(x, y, 10, "#e8f0b0", 2) for x, y in [(38, 76), (66, 66), (92, 78), (52, 96), (80, 98)])),
+    "ratatouille_mix": svg(baking_dish('\n'.join(circle(26 + i * 11, 76, 10, [EGGPLANT, ZUCCHINI, TOMATO_RED][i % 3], 2.5) for i in range(8)))),
+    "ratatouille": svg(baking_dish('\n'.join(ellipse(26 + i * 11, 76, 7, 12, ["#4a1f58", "#2a5a2a", "#b8281f"][i % 3], 2.5) for i in range(8))
+                                   + "\n" + leaf(96, 64, 14, -40, GREEN, 3))),
+    "croissant": svg(shadow(rx=50), path("M14,88 C20,56 44,40 64,40 C84,40 108,56 114,88 C100,80 90,78 84,82 C76,66 52,66 44,82 C38,78 28,80 14,88 Z", "#d9913f"),
+                     '<path d="M44,50 L52,76 M64,42 L64,70 M84,50 L76,76" stroke="#8a5222" stroke-width="4" stroke-linecap="round"/>', shine(52, 52, 8, 3, -20)),
+    "pain_perdu_mix": svg(shadow(rx=50), ellipse(64, 80, 54, 22, "#9ccbf2"), ellipse(64, 78, 46, 15, "#f7d64a", 3),
+                          rect(36, 46, 56, 44, "#f3d9a4", 10, rot=-8), rect(36, 46, 56, 44, "none", 10, 3, rot=-8)),
+    "pain_perdu": svg(shadow(rx=54, cy=110), plate(), rect(28, 50, 44, 36, "#d9913f", 8, rot=-10), rect(54, 54, 44, 36, "#e0a14a", 8, rot=8),
+                      blobs([(40, 58), (60, 64), (80, 60), (70, 76)], 2, "#fdfbf5", 0.5), blobs([(98, 82), (88, 88)], 6, "#c0392b", 2.5)),
+}
+
+V05_EQUIPMENT = {
+    "griddle": svg(shadow(rx=58, cy=116), rect(18, 92, 10, 22, "#2b2523", 2, 4), rect(100, 92, 10, 22, "#2b2523", 2, 4),
+                   rect(6, 62, 116, 34, "#c5ced8", 6), rect(12, 54, 104, 14, "#2b2523", 4),
+                   circle(30, 80, 6, "#e5352b", 3), circle(50, 80, 6, "#2b2523", 3), shine(40, 58, 18, 2, 0)),
+    "fryer": svg(shadow(rx=54), rect(14, 46, 100, 62, "#c5ced8", 8), rect(22, 40, 84, 14, "#f2b830", 4, 3),
+                 '\n'.join(circle(32 + i * 14, 46, 3.5, "#fff3a0", 1.5) for i in range(6)),
+                 rect(40, 20, 48, 26, "none", 4, 4), '<path d="M64,20 L64,4" stroke="#1d1a2f" stroke-width="8" stroke-linecap="round"/>',
+                 rect(30, 70, 68, 22, "#9aa5b1", 4, 3), hatch(88, 56, 82, 100, 3)),
+    "blender": svg(shadow(rx=40), rect(30, 90, 68, 22, "#3f6fb5", 6), path("M36,90 L92,90 L100,18 L28,18 Z", "#e8f4fb"),
+                   rect(26, 10, 76, 12, "#2b2523", 4), '<path d="M50,82 L78,74 M50,74 L78,82" stroke="#1d1a2f" stroke-width="4" stroke-linecap="round"/>',
+                   circle(64, 101, 5, "#e5352b", 2), shine(44, 50, 4, 20, 4)),
+    "crepe_pan": svg(shadow(rx=56), ellipse(54, 72, 50, 22, "#2b2523"), ellipse(54, 68, 42, 15, "#3d3532", 3),
+                     '<path d="M100,70 L124,58" stroke="#1d1a2f" stroke-width="12" stroke-linecap="round"/><path d="M100,70 L124,58" stroke="#8a4b24" stroke-width="6" stroke-linecap="round"/>',
+                     '<path d="M70,30 L30,50" stroke="#1d1a2f" stroke-width="9" stroke-linecap="round"/><path d="M70,30 L30,50" stroke="#d9b07a" stroke-width="4" stroke-linecap="round"/>',
+                     path("M24,46 L44,40 L46,48 L26,56 Z", "#d9b07a", 3)),
+    "paella_pan": svg(shadow(rx=62), rect(0, 62, 22, 12, "#2b2523", 4), rect(106, 62, 22, 12, "#2b2523", 4),
+                      ellipse(64, 70, 54, 28, "#2b2523"), ellipse(64, 66, 46, 20, "#4d4945", 3), shine(44, 60, 12, 3, -10)),
+    "frying_pan": svg(shadow(rx=50), ellipse(50, 74, 44, 22, "#2b2523"), ellipse(50, 70, 36, 15, "#4d4945", 3),
+                      '<path d="M90,68 L124,48" stroke="#1d1a2f" stroke-width="13" stroke-linecap="round"/><path d="M90,68 L124,48" stroke="#2b2523" stroke-width="7" stroke-linecap="round"/>',
+                      shine(36, 66, 10, 3, -10)),
+}
+
 ITEMS.update(MEXICAN_ITEMS)
 ITEMS.update(JAPANESE_ITEMS)
 EQUIPMENT.update(MORE_EQUIPMENT)
+ITEMS.update(V05_ITEMS)
+EQUIPMENT.update(V05_EQUIPMENT)
 
 
 def main():

@@ -1,0 +1,16 @@
+{
+  "id": "france_01",
+  "name": "Café de Paris",
+  "description": "Paris! Whisk the batter, cook thin crêpes, pour on chocolate.",
+  "pack": "french",
+  "type": "normal",
+  "dishes": [
+    {"id": "crepe", "weight": 1}
+  ],
+  "roles": "bistro",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 14, "2": 11, "3": 10, "4": 9},
+  "stars": {"1": [150, 290, 420], "2": [160, 320, 450], "3": [170, 340, 480], "4": [180, 360, 520]}
+}

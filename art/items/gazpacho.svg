@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<ellipse cx="64" cy="112" rx="46" ry="8" fill="#1d1a2f" fill-opacity="0.18"/>
+<path d="M16,62 L112,62 Q108,110 64,110 Q20,110 16,62 Z" fill="#e8f4fb" stroke="#1d1a2f" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<ellipse cx="64" cy="62" rx="48" ry="14" fill="#ef6b3a" stroke="#1d1a2f" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="52.0" y="56.0" width="8" height="8" rx="2" fill="#a8e08a" stroke="#1d1a2f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-13 56.0 60.0)"/>
+<rect x="70.0" y="54.0" width="8" height="8" rx="2" fill="#a8e08a" stroke="#1d1a2f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-13 74.0 58.0)"/>
+<path d="M84.0,60.0 Q92.5,60.7 96.1,53.0 Q87.6,52.3 84.0,60.0 Z" fill="#3fae49" stroke="#1d1a2f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<line x1="84.0" y1="60.0" x2="90.1" y2="56.5" stroke="#1d1a2f" stroke-width="2" stroke-opacity="0.6"/>
+<line x1="92" y1="76" x2="86" y2="100" stroke="#1d1a2f" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.55"/>
+<line x1="99" y1="76" x2="93" y2="100" stroke="#1d1a2f" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.55"/>
+<line x1="106" y1="76" x2="100" y2="100" stroke="#1d1a2f" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.55"/>
+</svg>

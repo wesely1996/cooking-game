@@ -84,7 +84,7 @@ func test_validation_catches_broken_content() -> void:
 
 func test_three_cuisines_with_their_own_dishes() -> void:
 	var db := ContentDB.load_dir()
-	for pack in ["italian", "mexican", "japanese"]:
+	for pack in ["italian", "mexican", "japanese", "american", "spanish", "french"]:
 		var dishes := db.items.values().filter(func(item): return item.kind == ContentDB.KIND_DISH and item.pack == pack)
 		assert_true(dishes.size() >= 5, pack + " has at least 5 dishes")
 	assert_eq(db.effective_id("tortilla", ["cooked_beef", "salsa"]), "beef_taco")
