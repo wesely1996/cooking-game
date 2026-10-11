@@ -2,23 +2,24 @@
   "id": "common",
   "name": "Common kitchen",
   "items": {
+    "plate": {"name": "Plate", "kind": "raw"},
     "water": {"name": "Water", "kind": "raw"},
     "tomato": {"name": "Tomato", "kind": "raw"},
-    "egg": {"name": "Egg", "kind": "raw"},
     "chopped_tomato": {"name": "Chopped tomato"},
-    "chicken": {"name": "Chicken", "kind": "raw"},
     "burnt_food": {"name": "Burnt food", "kind": "waste"}
   },
-  "equipment": {
-    "knife": {"name": "Knife", "kind": "tool"},
-    "mixing_bowl": {"name": "Mixing bowl", "kind": "tool"},
-    "rolling_pin": {"name": "Rolling pin", "kind": "tool"},
-    "sauce_pot": {"name": "Sauce pot", "kind": "appliance", "capacity": 1},
-    "boil_pot": {"name": "Boiling pot", "kind": "appliance", "capacity": 2},
-    "oven": {"name": "Oven", "kind": "appliance", "capacity": 2},
-    "serving_window": {"name": "Serving window", "kind": "pass"}
+  "stations": {
+    "counter": {"name": "Counter", "kind": "counter", "capacity": 1},
+    "board": {"name": "Chopping board", "kind": "manual", "capacity": 1, "holds_anything": true},
+    "bowl": {"name": "Mixing bowl", "kind": "manual", "capacity": 3},
+    "pot": {"name": "Pot", "kind": "cook", "capacity": 3},
+    "pan": {"name": "Pan", "kind": "cook", "capacity": 3},
+    "oven": {"name": "Oven", "kind": "cook", "capacity": 1},
+    "fryer": {"name": "Fryer", "kind": "cook", "capacity": 2},
+    "grill": {"name": "Grill", "kind": "cook", "capacity": 1},
+    "serving_window": {"name": "Serving window", "kind": "pass", "capacity": 0}
   },
-  "processes": [
-    {"id": "chop_tomato", "input": "tomato", "equipment": "knife", "action": "chop", "work": 5, "output": "chopped_tomato"}
+  "recipes": [
+    {"id": "chop_tomato", "station": "board", "inputs": ["tomato"], "action": "chop", "work": 4, "output": "chopped_tomato"}
   ]
 }

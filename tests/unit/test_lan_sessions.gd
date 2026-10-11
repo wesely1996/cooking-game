@@ -19,12 +19,12 @@ func after_each() -> void:
 		client.send = Callable()
 
 
-func _setup(level_file: String, seed: int = 3) -> void:
+func _setup(level_file: String, seed: int = 3, prologue: Array = []) -> void:
 	after_each()
 	db = ContentDB.load_dir()
 	var level := LevelDef.load_file("res://data/levels/" + level_file)
-	host = HostSession.new(Shift.new(db, level, 2, seed), func(_peer, msg): _to_client.append(_wire(msg)))
-	client = ClientSession.new(Shift.new(db, level, 2, 0), 1, func(msg): _to_host.append(_wire(msg)))
+	host = HostSession.new(Shift.new(db, level, 2, seed, prologue), func(_peer, msg): _to_client.append(_wire(msg)))
+	client = ClientSession.new(Shift.new(db, level, 2, 0, prologue), 1, func(msg): _to_host.append(_wire(msg)))
 	host.add_peer(PEER, 1)
 	_pump()
 
@@ -58,7 +58,7 @@ func _same_state() -> bool:
 
 
 func test_client_mirrors_host_from_the_start() -> void:
-	_setup("italy_01_pizza_night.json")
+	_setup("italy_01_caprese_corner.json")
 	assert_true(client.states_received >= 1)
 	assert_true(_same_state())
 
@@ -67,24 +67,24 @@ func test_client_acts_for_its_own_chef_only() -> void:
 	_setup("italy_02_aperitivo.json")
 	var answers := []
 	client.intent_answered.connect(func(intent, result): answers.append([intent.type, result]))
-	client.do_intent({"type": "take", "ingredient": "tomato"})
+	client.do_intent({"type": "take", "ingredient": "basil"})
 	_pump()
-	assert_eq(answers[0][1].ok, true, "the client's chef owns tomatoes")
-	assert_eq(host.shift.kitchen.item_at(1, 0).type, "tomato")
+	assert_eq(answers[0][1].ok, true, "the client's chef owns basil")
+	assert_eq(host.shift.kitchen.item_at(1, 0).type, "basil")
 	# Pretending to be the host's chef doesn't work.
 	client.do_intent({"type": "take", "player": 0, "ingredient": "flour"})
 	_pump()
 	assert_eq(answers[1][1].get("error", ""), "not_owned")
 	_run(0.2)
-	assert_eq(client.shift.kitchen.item_at(1, 0).type, "tomato", "the mirror catches up")
+	assert_eq(client.shift.kitchen.item_at(1, 0).type, "basil", "the mirror catches up")
 
 
 func test_throwing_between_phones() -> void:
-	_setup("italy_01_pizza_night.json")
-	client.do_intent({"type": "take", "ingredient": "tomato"})
-	client.do_intent({"type": "throw", "slot": 0, "target": 0})
+	_setup("italy_01_caprese_corner.json")
+	client.do_intent({"type": "take", "ingredient": "basil"})
+	client.do_intent({"type": "throw", "station": 0, "target": 0})
 	_pump()
-	assert_eq(host.shift.kitchen.item_at(0, 0).type, "tomato", "lands on the host's counter")
+	assert_eq(host.shift.kitchen.item_at(0, 0).type, "basil", "lands on the host's counter")
 	var thrown := host.drain_events().filter(func(e): return e.type == "item_thrown")
 	assert_eq(thrown.size(), 1)
 	assert_eq(thrown[0].target, 0)
@@ -96,7 +96,7 @@ func test_throwing_between_phones() -> void:
 
 
 func test_pause_is_shared() -> void:
-	_setup("italy_01_pizza_night.json")
+	_setup("italy_01_caprese_corner.json")
 	_run(1.0)
 	client.set_paused(true)
 	_pump()
@@ -112,7 +112,7 @@ func test_pause_is_shared() -> void:
 
 
 func test_whole_shift_stays_in_sync() -> void:
-	_setup("italy_03_pasta_e_pizza.json")
+	_setup("italy_03_pasta_night.json")
 	var bot := KitchenBot.new()
 	var ended := false
 	while not host.shift.finished and host.shift.time < 600.0:
@@ -130,8 +130,8 @@ func test_whole_shift_stays_in_sync() -> void:
 
 
 func test_festival_and_competition_status_sync() -> void:
-	_setup("italy_festival_festa_della_pizza.json")
-	_run(30.0, 0.25)
+	_setup("italy_festival_sagra_in_piazza.json")
+	_run(90.0, 0.25)
 	var host_rules: FestivalRules = host.shift.rules
 	var client_rules: FestivalRules = client.shift.rules
 	assert_true(host_rules.mood < 60.0, "idle crowd gets upset")
@@ -145,9 +145,25 @@ func test_festival_and_competition_status_sync() -> void:
 	assert_true(_same_state())
 
 
+func test_prologue_is_shared_and_either_phone_can_skip_it() -> void:
+	_setup("italy_competition_gran_premio.json", 3, ["bruschetta"])
+	assert_true(host.shift.in_prologue())
+	assert_true(client.shift.in_prologue())
+	_run(5.0)
+	assert_almost(host.shift.time, 0.0, 0.0001, "the clock waits for the tutorial")
+	assert_true(_same_state())
+	client.do_intent({"type": "skip_prologue"})
+	_pump()
+	assert_false(host.shift.in_prologue())
+	_run(0.2)
+	assert_false(client.shift.in_prologue(), "the client's mirror starts too")
+	assert_true(client.shift.rival != null)
+	assert_true(_same_state())
+
+
 func test_solo_host_needs_no_network() -> void:
 	db = ContentDB.load_dir()
-	var solo := HostSession.new(Shift.new(db, LevelDef.load_file("res://data/levels/italy_01_pizza_night.json"), 1, 1))
-	assert_ok(solo.do_intent({"type": "take", "ingredient": "flour"}))
+	var solo := HostSession.new(Shift.new(db, LevelDef.load_file("res://data/levels/italy_01_caprese_corner.json"), 1, 1))
+	assert_ok(solo.do_intent({"type": "take", "ingredient": "tomato"}))
 	solo.tick(0.1)
-	assert_eq(solo.drain_events()[0].type, "item_added")
+	assert_true(solo.drain_events().any(func(e): return e.type == "item_added"))

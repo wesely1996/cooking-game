@@ -115,8 +115,8 @@ func _sub_status() -> String:
 	return ""
 
 
-## The pieces that go into a dish, for the ticket: the parts of the last
-## assembly in its recipe, plus the appliance that finishes it.
+## The pieces that go into a dish, for the ticket: what goes on the plate
+## (or on the base), plus the station that finishes it.
 static func recipe_hint(db: ContentDB, dish: String) -> Array:
 	var finishing := []
 	var id := dish
@@ -126,9 +126,10 @@ static func recipe_hint(db: ContentDB, dish: String) -> Array:
 			break
 		if prod.kind == "assembly":
 			var asm: Dictionary = db.assemblies[prod.id]
-			return ([asm.base] + asm.parts + finishing).slice(0, 4)
-		var proc: Dictionary = db.processes[prod.id]
+			var shown: Array = asm.parts.duplicate() if asm.base == ContentDB.PLATE else [asm.base] + asm.parts
+			return (shown + finishing).slice(0, 4)
+		var recipe: Dictionary = db.recipes[prod.id]
 		if finishing.is_empty():
-			finishing.append(proc.equipment)
-		id = proc.input
+			finishing.append(recipe.station)
+		id = recipe.inputs[0]
 	return [id] + finishing

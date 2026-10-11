@@ -3,6 +3,9 @@ extends Node
 ## settings, which level is being played, and scene changes.
 
 const SAVE_PATH := "user://save.json"
+## Bumped when saved progress no longer fits the game (v0.6: new recipes and
+## levels). Older saves keep only the name, chef look and settings.
+const SAVE_VERSION := 2
 const SCENE_MENU := "res://ui/main_menu.tscn"
 const SCENE_LEVEL_SELECT := "res://ui/level_select.tscn"
 const SCENE_KITCHEN := "res://game/kitchen/kitchen_screen.tscn"
@@ -27,6 +30,10 @@ var last_outcome := {}
 var last_stats := {}
 var best_arcade := {}  # "level id:<n>p" -> best score
 var shift_seed := 0
+## Dishes to teach before the clock starts (the new-dish prologue).
+var prologue_dishes: Array[String] = []
+## Set when an old save was reset; the title screen explains it once.
+var show_makeover_note := false
 ## Shown once by the lobby, e.g. "Your friend left the kitchen."
 var lobby_message := ""
 ## Off for automated runs (smoke test), so they never touch a player's save.
@@ -68,16 +75,38 @@ func next_level_id(level_id: String) -> String:
 
 ## Starts a level. Solo by default; in a LAN game the host calls this with 2
 ## players and every client follows when the "start" message arrives.
-func start_level(level_id: String, players: int = 1, seed: int = -1) -> void:
+## `prologue` is only passed by a LAN client: the host decides which dishes
+## everyone learns first.
+func start_level(level_id: String, players: int = 1, seed: int = -1, prologue: Variant = null) -> void:
 	current_level = levels[level_id]
 	player_count = players
 	for i in progression.regions.size():
 		if progression.regions[i].levels.any(func(entry): return entry.id == level_id):
 			selected_region = i
 	shift_seed = seed if seed >= 0 else randi()
+	if prologue is Array:
+		prologue_dishes.assign(prologue)
+	else:
+		prologue_dishes = new_dishes_for(current_level)
 	if Net.is_host():
-		Net.send_to_clients({"t": "start", "level": level_id, "seed": shift_seed, "players": players})
+		Net.send_to_clients({"t": "start", "level": level_id, "seed": shift_seed, "players": players, "prologue": prologue_dishes})
 	get_tree().change_scene_to_file(SCENE_KITCHEN)
+
+
+## Dishes of a level that someone in this game has never made (and so will
+## learn in the prologue). None when new-dish tips are off.
+func new_dishes_for(level: LevelDef) -> Array[String]:
+	var result: Array[String] = []
+	if not settings.tips:
+		return result
+	for dish in level.dish_ids():
+		var someone_new := not progression.is_discovered(dish)
+		for player in Net.profiles:
+			if player != Net.local_player and not Net.profile_of(player).get("discovered", []).has(dish):
+				someone_new = true
+		if someone_new:
+			result.append(dish)
+	return result
 
 
 ## Host only: brings everybody back to the lobby after a level.
@@ -146,6 +175,12 @@ func finish_level(outcome: Dictionary, stats: Dictionary) -> void:
 
 ## Records that a dish was served. Returns true the first time ever.
 func discover(dish: String) -> bool:
+	# Everybody in a LAN game made it together, so it's known to all of them.
+	for player in Net.profiles:
+		var known: Array = Net.profiles[player].get("discovered", [])
+		if not known.has(dish):
+			known.append(dish)
+			Net.profiles[player]["discovered"] = known
 	var is_new := progression.discover(dish)
 	if is_new:
 		save()
@@ -178,7 +213,8 @@ func vibrate(ms: int) -> void:
 func save() -> void:
 	if not save_enabled:
 		return
-	var data := {"progress": progression.to_dict(), "settings": settings, "best_arcade": best_arcade, "profile": profile.to_dict()}
+	var data := {"save_version": SAVE_VERSION, "progress": progression.to_dict(), "settings": settings,
+		"best_arcade": best_arcade, "profile": profile.to_dict()}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(data, "  "))
@@ -190,10 +226,17 @@ func _load() -> void:
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
 	if not data is Dictionary:
 		return
-	progression.load_save(data.get("progress", {}))
 	var saved_settings: Dictionary = data.get("settings", {})
 	for key in settings:
 		settings[key] = bool(saved_settings.get(key, settings[key]))
+	if int(data.get("save_version", 1)) < SAVE_VERSION:
+		# The kitchen got a makeover: old stars and dishes don't fit any more.
+		var old_profile: Dictionary = data.get("profile", {})
+		profile.load_dict({"name": old_profile.get("name", ""), "look": old_profile.get("look", {})})
+		show_makeover_note = true
+		save()
+		return
+	progression.load_save(data.get("progress", {}))
 	profile.load_dict(data.get("profile", {}))
 	var arcade: Dictionary = data.get("best_arcade", {})
 	for key in arcade:
@@ -206,7 +249,8 @@ func _on_net_message(_peer_id: int, message: Dictionary) -> void:
 		return
 	match str(message.get("t", "")):
 		"start":
-			start_level(str(message.get("level", "")), int(message.get("players", 2)), int(message.get("seed", 0)))
+			start_level(str(message.get("level", "")), int(message.get("players", 2)), int(message.get("seed", 0)),
+				message.get("prologue", []))
 		"lobby":
 			goto(SCENE_LOBBY)
 

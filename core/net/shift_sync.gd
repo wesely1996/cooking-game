@@ -19,6 +19,8 @@ static func snapshot(shift: Shift) -> Dictionary:
 		"lost": shift.orders.lost,
 		"rules": shift.rules.sync_state(),
 		"rival": shift.rival.sync_state() if shift.rival else {},
+		"prologue": shift.prologue.duplicate(),
+		"rules_started": shift.rules_started,
 	}
 
 
@@ -32,6 +34,9 @@ static func apply(shift: Shift, snap: Dictionary) -> void:
 	for key in stats:
 		shift.stats[key] = int(stats[key])
 	shift.finished = bool(snap.get("finished", false))
+	shift.prologue.assign(snap.get("prologue", []))
+	if bool(snap.get("rules_started", true)) and not shift.rules_started:
+		shift.start_rules()
 	shift.outcome = snap.get("outcome", {}).duplicate()
 	shift.kitchen.load_snapshot(snap.get("kitchen", {}))
 	var orders: Array[Dictionary] = []

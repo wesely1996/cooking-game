@@ -31,18 +31,19 @@ and throw them to each other to serve customers around the world.
 
 ```
 core/            game rules, no rendering (runs headless)
-  content_db.gd    items, equipment, processes, assemblies (recipes)
-  kitchen_state.gd players' counters, crates, appliances; all player intents
-  shift.gd         one play session: kitchen + customers + score
+  content_db.gd    items, stations, recipes (by contents), assemblies (plating)
+  kitchen_state.gd players' crates and stations with the food on them; all player intents
+  shift.gd         one play session: kitchen + customers + score + new-dish prologue
   rules/           normal, festival (horde), competition (boss), arcade
   rival_chef.gd    the AI chef in competitions
   level_def.gd, level_validator.gd, progression.gd
   sim/kitchen_bot.gd  bot that plays levels through the same intents as players
   net/             LAN: state snapshots (shift_sync), host and client sessions
 data/
-  packs/           cuisine packs (JSON): ingredients, recipes, role splits
+  packs/           cuisine packs (JSON): ingredients, stations, recipes, role splits
   levels/          levels (JSON)
   story/           world map (regions, star requirements)
+  legacy/          the v0.5 cuisines, waiting to move to the v0.6 rules
 tests/             headless tests (tests/unit/test_*.gd)
 tools/             test runner script, balancing report
 game/              the playable game: kitchen screen, mini-games, effects, sound,
@@ -53,22 +54,35 @@ art/               fonts and the generated SVG pictures (tools/art/generate_art.
 
 ## Menus
 
-- **Play** → *World Tour* (Italy, Mexico, USA, Spain, Japan, France: shifts,
-  a festival and a competition per region), *Play with a friend* (LAN) or *Arcade* (pick a
-  cuisine you have reached).
+- **Play** → *World Tour* (shifts, a festival and a competition per region;
+  Italy for now, the other five come back on the v0.6 rules), *Play with a
+  friend* (LAN) or *Arcade* (pick a cuisine you have reached).
 - **Profile**: your name and chef, favourite and best cuisine, stats.
 - **Recipe book**: every dish you have served, step by step.
 - **Settings**: sound, vibration, tips, easy mini-games, reset progress.
 
 ## How to play (solo)
 
-- **Tap a crate** to take an ingredient (or drag it onto a counter spot).
+The kitchen is a comic page: a pantry with crates, a prep panel (boards,
+mixing bowl, gadgets, counter spots), a stove panel (pot, pan, oven, grill,
+fryer), the pass with the serving window, and your teammates.
+
+- **Tap a crate** to take an ingredient (or drag it onto a station: a
+  tomato onto a board, flour into the bowl).
 - **Tap food** to select it: everything it can go to glows. Then tap (or drag
-  the food onto) a tool, an appliance, other food, the serving window or the bin.
-- **Tools open a mini-game:** swipe down to chop, slice or grate; tap to
-  knead, press or mash; swipe side to side to roll; draw circles to stir.
-- **Ovens and pots cook on their own.** Take food out while the ring is green
-  for a PERFECT bonus. Wait too long and it burns.
+  the food onto) another station, a plate, the serving window or the bin.
+- **Boards, the bowl and gadgets are worked by hand:** tap them to open a
+  mini-game (swipe down to chop, tap to knead, circles to crank or stir).
+  Leave any time with LATER; tap the station again to carry on.
+- **Pots, pans and ovens cook on their own**, and what's inside decides the
+  result: the pot boils pasta, the pan turns chopped tomato into sauce. Take
+  food out while the ring is green for a PERFECT bonus; wait too long and it
+  burns.
+- **Plate it, in any order:** take a plate and drop the parts on it (drag the
+  pan onto the plate and only the sauce moves). Pizza toppings go on the
+  dough, then it goes in the oven.
+- **New dishes start with a tutorial:** before the clock starts, you make
+  each new dish once with tips. It doesn't score; SKIP jumps straight in.
 - **With a friend (LAN):** both phones on the same Wi-Fi → *Play with a
   friend*. One hosts, the other joins (the kitchen shows up by itself, or type
   the host's address). Each of you owns half the kitchen: drag food onto your
@@ -105,7 +119,8 @@ GODOT=/path/to/godot tools/lan_test.sh
 
 Cuisines, recipes and levels are JSON files, so most content needs no code:
 
-1. Add ingredients, processes and assemblies to a pack in `data/packs/`.
+1. Add ingredients, recipes and assemblies to a pack in `data/packs/` (see
+   `tools/content/make_italy.py`, which writes the Italian pack).
 2. Add levels to `data/levels/` and list them on the map in `data/story/world_map.json`.
 3. Run the tests. They check that every recipe can be made, that every level
    works with 1–4 players, and that bots can actually finish it.

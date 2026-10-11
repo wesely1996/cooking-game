@@ -82,8 +82,8 @@ func test_close_button() -> void:
 
 func test_every_action_has_a_gesture_and_a_verb() -> void:
 	var db := ContentDB.load_dir()
-	for proc in db.processes.values():
-		assert_true(RecipeText.VERBS.has(proc.action), "recipe book verb for '%s'" % proc.action)
-		if not db.is_passive(proc):
-			assert_true(Minigame.ACTION_KINDS.has(proc.action), "mini-game gesture for '%s'" % proc.action)
-			assert_true(RecipeText.GESTURES.has(proc.action), "recipe book gesture for '%s'" % proc.action)
+	for recipe in db.recipes.values():
+		assert_true(RecipeText.VERBS.has(recipe.action), "recipe book verb for '%s'" % recipe.action)
+		if not db.is_cook_recipe(recipe):
+			assert_true(Minigame.ACTION_KINDS.has(recipe.action), "mini-game gesture for '%s'" % recipe.action)
+			assert_true(RecipeText.GESTURES.has(recipe.action), "recipe book gesture for '%s'" % recipe.action)

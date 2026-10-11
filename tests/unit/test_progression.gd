@@ -53,7 +53,8 @@ func test_regions_with_results_stay_open() -> void:
 
 func test_world_tour_order() -> void:
 	var ids: Array = Progression.load_map().regions.map(func(r): return r.id)
-	assert_eq(ids, ["italy", "mexico", "usa", "spain", "japan", "france"])
+	# The other regions come back as they move to the v0.6 cooking rules.
+	assert_eq(ids, ["italy"])
 
 
 func test_save_round_trip() -> void:

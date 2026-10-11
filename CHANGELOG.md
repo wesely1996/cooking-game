@@ -11,6 +11,34 @@ v0.6 rebuilds the kitchen as a 3D comic page with Overcooked-style recipes
 (see docs/V06_DESIGN.md). The changes below were finished first and ship
 with it; 0.5.0 was never released on its own.
 
+### Changed: Overcooked-style cooking
+- **Multipurpose kitchen gear** shared by every cuisine: chopping board,
+  mixing bowl, pot, pan, oven, grill and fryer, plus counter spots and a
+  plate stack. Italy keeps one signature gadget, the pasta machine.
+- **What's inside decides the result:** a pot or pan takes up to three things
+  and cooks as soon as they make a recipe; it only takes things that can.
+  Changing what's inside starts the cooking again.
+- **Food sits where the work happens:** on boards, in bowls and pots, on
+  counter spots. Boards, the bowl and gadgets are worked with gestures; pots,
+  pans and ovens cook on their own.
+- **Plating in any order:** dishes are put together on a plate, and dropping
+  the pan on a plate moves just the sauce. A pizza dough works like a plate.
+- **Italy's simpler menu:** caprese (no stove), bruschetta, pasta al
+  pomodoro and pizza margherita, in four new shifts, the *Sagra in Piazza*
+  festival and the *Gran Premio* competition.
+- **The kitchen screen is a comic page** with panels for the pantry, prep,
+  stove, the pass and your teammates (a stand-in look until the 3D kitchen).
+- Mexico, USA, Spain, Japan and France are paused while they move to the new
+  rules (kept in `data/legacy/`).
+
+### Added
+- **New-dish tutorial:** before the clock starts, each dish you've never made
+  is cooked once with tips, scoring nothing, then the real shift starts. In
+  LAN games it runs when either chef is new to a dish. SKIP jumps straight
+  in; turning tips off skips it.
+- **The kitchen got a makeover:** saves from earlier versions keep the name,
+  chef and settings but start the World Tour fresh, with a one-time note.
+
 ### Infrastructure
 - Dev builds and screenshots from CI are kept for 7 days, and a daily
   cleanup workflow deletes older ones. Release downloads are kept forever.
