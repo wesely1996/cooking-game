@@ -441,3 +441,18 @@ func _box(box_size: Vector3, position: Vector3, color: Color, muted: float) -> M
 	node.position = position
 	Comic.apply(node, muted, Color.WHITE, false, 0.0 if muted <= 0.0 else 2.0)
 	return node
+
+
+## A close-up of one station for the mini-game's splash panel.
+func closeup_camera(station_index: int, aspect: float) -> Camera3D:
+	if not _anchors.has(station_index):
+		return null
+	var target: Vector3 = _anchors[station_index].global_position + Vector3(0, 0.05, 0)
+	var camera := Camera3D.new()
+	camera.fov = 26.0 if aspect >= 1.6 else 34.0
+	camera.keep_aspect = Camera3D.KEEP_HEIGHT
+	# From the front left: the chef (behind, to the right) stays beside the food.
+	var eye := target + Vector3(-0.7, 0.9, 1.15)
+	var look := target + Vector3(0.12, 0.12, 0)
+	camera.transform = Transform3D(Basis.looking_at(look - eye, Vector3.UP), eye)
+	return camera

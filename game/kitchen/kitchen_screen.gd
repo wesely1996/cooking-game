@@ -327,9 +327,9 @@ func _layout() -> void:
 
 	_pause_rect = Rect2(w - 66, TOP_BAR_H + MARGIN + 4, 54, 54)
 	_skip_rect = Rect2(w * 0.5 - 90, TOP_BAR_H + 62, 180, 52)
-	var mini_size := Vector2(minf(560.0, w - 120.0), 330.0)
+	var mini_size := Vector2(minf(640.0, w - 120.0), minf(420.0, h - TOP_BAR_H - 50.0))
 	_minigame.size = mini_size
-	_minigame.position = Vector2((w - mini_size.x) * 0.5, TOP_BAR_H + 40)
+	_minigame.position = Vector2((w - mini_size.x) * 0.5, TOP_BAR_H + 25)
 	_backdrop.queue_redraw()
 
 
@@ -617,10 +617,12 @@ func _gui_input(event: InputEvent) -> void:
 			_pause_menu_click(pos)
 		return
 	if _minigame.visible:
+		# The splash panel is tilted: work in its own (rotated) coordinates.
+		var local := _minigame.get_transform().affine_inverse() * pos
 		var outside_tap: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT \
-			and not Rect2(_minigame.position, _minigame.size).has_point(pos)
+			and not Rect2(Vector2.ZERO, _minigame.size).has_point(local)
 		if not outside_tap:
-			_minigame.handle_input(event, pos - _minigame.position)
+			_minigame.handle_input(event, local)
 			return
 		# Tapping the kitchen pauses the work; the tap then does its usual job.
 		_minigame.pause()
@@ -809,7 +811,10 @@ func _start_work(index: int) -> void:
 		return
 	var shown: Texture2D = Art.item(kitchen.effective_id(st.contents[0])) if st.contents.size() == 1 else Art.item(st.recipe.output)
 	_work = {"station": index, "recipe": st.recipe}
-	_minigame.open(st.recipe.action, st.recipe.work, st.progress, shown, Art.equipment(st.type))
+	var view := _minigame.view_rect()
+	var camera := _stage.closeup_camera(index, view.size.x / maxf(view.size.y, 1.0))
+	_minigame.open(st.recipe.action, st.recipe.work, st.progress, shown, Art.equipment(st.type), camera, _world)
+	_stage.chef_act(index, "interact-right")
 
 
 func _on_minigame_work(units: int) -> void:
@@ -824,7 +829,7 @@ func _on_minigame_work(units: int) -> void:
 	Sfx.play(ACTION_SOUNDS.get(recipe.action, "pop"))
 	Game.vibrate(15)
 	var words: Array = ACTION_WORDS.get(recipe.action, ["POW!"])
-	_bubble(_minigame.position + Vector2(_rng.randf_range(80, _minigame.size.x - 80), _rng.randf_range(125, 235)), _pick(words), Color.WHITE, 32)
+	_bubble(_minigame.get_transform() * Vector2(_rng.randf_range(80, _minigame.size.x - 80), _rng.randf_range(130, _minigame.size.y - 110)), _pick(words), Color.WHITE, 32)
 	# Count the gesture right away; on a client the host confirms a moment later.
 	_minigame.set_progress(minf(_minigame.done + units, recipe.work))
 	_check_work_done()

@@ -211,11 +211,11 @@ func _check_input(screen: Node, shift: Shift) -> void:
 	_check(k.item_at(0, board) != null and k.item_at(0, board).type == "tomato", "dragging a crate onto a board")
 	await _tap(screen.station_center(board))
 	_check(screen._minigame.visible, "tapping a full board opens the mini-game")
-	var center: Vector2 = screen._minigame.position + screen._minigame.size * 0.5
+	var center: Vector2 = screen._minigame.get_transform() * (screen._minigame.size * 0.5)
 	for i in 2:
 		await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
 	# Pause with LATER: the board keeps the two chops.
-	await _tap(screen._minigame.position + screen._minigame.close_rect().get_center())
+	await _tap(screen._minigame.get_transform() * screen._minigame.close_rect().get_center())
 	_check(not screen._minigame.visible, "LATER closes the mini-game")
 	_check(k.station(0, board).progress == 2.0, "paused work keeps its progress")
 	await _wait(0.3)
