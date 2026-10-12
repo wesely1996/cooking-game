@@ -5,7 +5,7 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
-## [Unreleased]
+## [0.6.3] - 2026-10-12
 
 ### Added
 - **Recipes on the orders:** tap an order to pop its recipe out in a comic
