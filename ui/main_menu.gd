@@ -121,7 +121,7 @@ func _draw() -> void:
 		var a := _time * 0.15 + TAU * i / 16.0
 		var b := a + TAU / 32.0
 		draw_colored_polygon(PackedVector2Array([center, center + Vector2(cos(a), sin(a)) * 1400.0, center + Vector2(cos(b), sin(b)) * 1400.0]), Color(1, 1, 1, 0.07))
-	var foods := ["pizza_margherita", "beef_taco", "salmon_nigiri", "guacamole", "miso_ramen"]
+	var foods := ["pizza_margherita", "caprese_salad", "bruschetta", "pasta_pomodoro", "tomato"]
 	for i in foods.size():
 		var item := Art.item(foods[i])
 		if item:

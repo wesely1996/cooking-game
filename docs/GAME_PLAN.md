@@ -426,8 +426,9 @@ issues (e.g. Bocuse d'Or®, World Sushi Cup®, MasterChef®).
 - **Free assets** fill the gaps, but only clearly licensed ones (CC0 preferred: Kenney,
   OpenGameArt CC0, freesound CC0 for audio). Every third-party file is listed in
   `CREDITS.md` with its source and license.
-- Each item's art is chosen by its id in the data files (`art/items/<id>.svg`), so any
-  file can be replaced later without touching code.
+- Each item's art is chosen by its id in the data files (its 3D model in
+  `game/look/models.gd`, its picture `art/icons/items/<id>.png` rendered from it), so
+  art can be replaced later without touching the game rules.
 
 **Phase 2 (later):** replace the generated art with commissioned or hand-drawn art,
 starting with the most visible things: characters, customers, the hero dishes.
@@ -600,7 +601,7 @@ Each milestone ends with something playable or testable.
 drag controls, all gesture mini-games (chop, slice, knead, roll, stir, crank),
 cooking timers with a perfect window, chef's tips on the first levels, comic
 bubbles, synthesized sounds and vibration. The art is generated SVG
-(`tools/art/generate_art.py`). CI/CD builds Android, Windows, Linux and Web
+(`tools/art/generate_art.py`, replaced in v0.6 by 3D models). CI/CD builds Android, Windows, Linux and Web
 on every push and publishes tagged releases (docs/RELEASING.md).
 
 **v0.2.0:** recipe book (known recipes step by step, locked dishes, "?" for

@@ -55,7 +55,7 @@ var _viewport: SubViewport
 var _front: Control  # the gesture hint, drawn over the 3D close-up
 
 
-func _ready() -> void:
+func _init() -> void:
 	_view = SubViewportContainer.new()
 	_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_view.stretch = true

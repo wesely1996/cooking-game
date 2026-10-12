@@ -1,8 +1,8 @@
 class_name Art
 extends RefCounted
-## Looks up pictures and fonts. Item and equipment pictures are found by id
-## (art/items/<id>.svg, art/equipment/<id>.svg), so art can be replaced
-## without touching code.
+## Looks up pictures and fonts. Food and station pictures are found by id
+## (art/icons/items/<id>.png, art/icons/stations/<id>.png). They are rendered
+## from the 3D models by tools/art/render_icons.gd, so they match the kitchen.
 
 const INK := Color("#1d1a2f")
 const PAPER := Color("#fffaf0")
@@ -18,11 +18,11 @@ static var _ui_font: Font
 
 
 static func item(id: String) -> Texture2D:
-	return _texture("res://art/items/%s.svg" % id)
+	return _texture("res://art/icons/items/%s.png" % id)
 
 
 static func equipment(id: String) -> Texture2D:
-	return _texture("res://art/equipment/%s.svg" % id)
+	return _texture("res://art/icons/stations/%s.png" % id)
 
 
 static func comic_font() -> Font:
