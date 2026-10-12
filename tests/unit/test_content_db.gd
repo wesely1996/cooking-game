@@ -97,13 +97,27 @@ func test_validation_catches_broken_content() -> void:
 	assert_true(errors.contains("two recipes for"), "same inputs twice")
 
 
-func test_italy_is_the_template() -> void:
-	var db := _db()
-	var dishes := db.items.values().filter(func(item): return item.kind == ContentDB.KIND_DISH and item.pack == "italian")
-	assert_eq(dishes.size(), 4, "caprese, bruschetta, pasta and pizza")
-	for dish in dishes:
-		var steps := db.recipe_steps(dish.id).size()
-		assert_true(steps >= 2 and steps <= 6, "%s takes a few steps (%d)" % [dish.id, steps])
+## Every cuisine follows the Italy template: four dishes of a few steps, at
+## most one signature gadget, and a first shift that needs no stove.
+func test_every_cuisine_follows_the_italy_template() -> void:
+	var db := ContentDB.load_dir()
+	var levels := {}
+	for level in LevelDef.load_dir():
+		levels[level.id] = level
+	var map := Progression.load_map()
+	for region in map.regions:
+		var pack: String = region.pack
+		var dishes := db.items.values().filter(func(item): return item.kind == ContentDB.KIND_DISH and item.pack == pack)
+		assert_eq(dishes.size(), 4, pack + " has four dishes")
+		for dish in dishes:
+			var steps := db.recipe_steps(dish.id).size()
+			assert_true(steps >= 2 and steps <= 7, "%s takes a few steps (%d)" % [dish.id, steps])
+		var gadgets := db.stations.values().filter(func(st): return st.pack == pack)
+		assert_true(gadgets.size() <= 1, pack + " has at most one signature gadget")
+		var first: LevelDef = levels[region.levels[0].id]
+		for dish in first.dish_ids():
+			for st in db.station_requirements(dish):
+				assert_true(db.station_kind(st) != ContentDB.STATION_COOK, "%s's first shift needs no %s" % [pack, st])
 
 
 func test_every_item_and_station_has_a_picture() -> void:

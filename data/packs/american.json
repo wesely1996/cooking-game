@@ -1,0 +1,118 @@
+{
+  "id": "american",
+  "name": "American",
+  "items": {
+    "ice_cream": {"name": "Ice cream", "kind": "raw"},
+    "sausage": {"name": "Sausage", "kind": "raw"},
+    "bun": {"name": "Bun", "kind": "raw"},
+    "ketchup": {"name": "Ketchup", "kind": "raw"},
+    "patty": {"name": "Patty", "kind": "raw"},
+    "cheddar": {"name": "Cheddar slice", "kind": "raw"},
+    "lettuce": {"name": "Lettuce", "kind": "raw"},
+    "shake": {"name": "Shake"},
+    "grilled_sausage": {"name": "Grilled sausage"},
+    "grilled_patty": {"name": "Grilled patty"},
+    "chopped_lettuce": {"name": "Chopped lettuce"},
+    "milkshake": {"name": "Milkshake", "kind": "dish", "price": 14, "patience": 45},
+    "french_fries": {"name": "Fries", "kind": "dish", "price": 20, "patience": 55},
+    "hot_dog": {"name": "Hot Dog", "kind": "dish", "price": 24, "patience": 60},
+    "cheeseburger": {"name": "Cheeseburger", "kind": "dish", "price": 32, "patience": 80}
+  },
+  "stations": {
+    "blender": {"name": "Blender", "kind": "manual", "capacity": 3}
+  },
+  "recipes": [
+    {"id": "blend_shake", "station": "blender", "inputs": ["ice_cream", "milk", "strawberry"], "action": "blend", "work": 4, "output": "shake"},
+    {"id": "chop_lettuce", "station": "board", "inputs": ["lettuce"], "action": "chop", "work": 3, "output": "chopped_lettuce"},
+    {"id": "grill_sausage", "station": "grill", "inputs": ["sausage"], "action": "grill", "cook_time": 5, "perfect_window": 4, "burn_time": 9, "output": "grilled_sausage"},
+    {"id": "grill_patty", "station": "grill", "inputs": ["patty"], "action": "grill", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "grilled_patty"}
+  ],
+  "assemblies": [
+    {"output": "milkshake", "base": "plate", "parts": ["shake"]},
+    {"output": "french_fries", "base": "plate", "parts": ["fries"]},
+    {"output": "hot_dog", "base": "plate", "parts": ["bun", "grilled_sausage", "ketchup"]},
+    {"output": "cheeseburger", "base": "plate", "parts": ["bun", "grilled_patty", "cheddar", "chopped_lettuce", "chopped_tomato"]}
+  ],
+  "role_presets": {
+    "diner_counter": {
+      "1": [
+        {"name": "Chef", "crates": ["ice_cream", "milk", "strawberry", "potato", "plate"], "stations": {"counter": 4, "board": 1, "blender": 1, "fryer": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Kitchen", "crates": ["ice_cream", "potato"], "stations": {"counter": 3, "board": 1, "fryer": 1, "blender": 1}},
+        {"name": "Counter & Pass", "crates": ["milk", "strawberry", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Ice Cream & Fries", "crates": ["ice_cream", "potato"], "stations": {"counter": 3, "board": 1, "fryer": 1}},
+        {"name": "Blender", "crates": ["milk"], "stations": {"counter": 3, "blender": 1}},
+        {"name": "Counter & Pass", "crates": ["strawberry", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Ice Cream", "crates": ["ice_cream"], "stations": {"counter": 3}},
+        {"name": "Fries", "crates": ["milk", "potato"], "stations": {"counter": 3, "board": 1, "fryer": 1}},
+        {"name": "Blender", "crates": ["strawberry"], "stations": {"counter": 3, "blender": 1}},
+        {"name": "Counter & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    },
+    "fair": {
+      "1": [
+        {"name": "Chef", "crates": ["potato", "sausage", "bun", "ketchup", "plate"], "stations": {"counter": 4, "board": 1, "fryer": 1, "grill": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Grill & Fryer", "crates": ["potato", "sausage"], "stations": {"counter": 3, "board": 1, "fryer": 1, "grill": 1}},
+        {"name": "Buns & Pass", "crates": ["bun", "ketchup", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Fryer", "crates": ["potato"], "stations": {"counter": 3, "board": 1, "fryer": 1}},
+        {"name": "Grill", "crates": ["sausage"], "stations": {"counter": 3, "grill": 1}},
+        {"name": "Buns & Pass", "crates": ["bun", "ketchup", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Potatoes", "crates": ["potato"], "stations": {"counter": 3, "board": 1}},
+        {"name": "Fryer", "crates": [], "stations": {"counter": 3, "fryer": 1}},
+        {"name": "Grill", "crates": ["sausage"], "stations": {"counter": 3, "grill": 1}},
+        {"name": "Buns & Pass", "crates": ["bun", "ketchup", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    },
+    "grill_house": {
+      "1": [
+        {"name": "Chef", "crates": ["potato", "sausage", "bun", "ketchup", "patty", "cheddar", "lettuce", "tomato", "plate"], "stations": {"counter": 4, "board": 2, "fryer": 1, "grill": 2, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Grill & Fryer", "crates": ["potato", "sausage", "patty", "lettuce"], "stations": {"counter": 3, "board": 1, "fryer": 1, "grill": 2}},
+        {"name": "Buns & Pass", "crates": ["bun", "ketchup", "cheddar", "tomato", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Prep", "crates": ["potato", "lettuce", "tomato"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Grill & Fryer", "crates": ["sausage", "patty"], "stations": {"counter": 3, "grill": 2, "fryer": 1}},
+        {"name": "Buns & Pass", "crates": ["bun", "ketchup", "cheddar", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Prep", "crates": ["potato", "lettuce", "tomato"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Grill", "crates": ["sausage", "patty"], "stations": {"counter": 3, "grill": 2}},
+        {"name": "Fryer", "crates": [], "stations": {"counter": 3, "fryer": 1}},
+        {"name": "Buns & Pass", "crates": ["bun", "ketchup", "cheddar", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    },
+    "diner": {
+      "1": [
+        {"name": "Chef", "crates": ["ice_cream", "milk", "strawberry", "potato", "sausage", "bun", "ketchup", "patty", "cheddar", "lettuce", "tomato", "plate"], "stations": {"counter": 4, "board": 2, "blender": 1, "fryer": 1, "grill": 2, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Kitchen", "crates": ["potato", "sausage", "patty", "lettuce", "ice_cream"], "stations": {"counter": 3, "board": 1, "fryer": 1, "grill": 2, "blender": 1}},
+        {"name": "Counter & Pass", "crates": ["bun", "ketchup", "cheddar", "tomato", "milk", "strawberry", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Prep", "crates": ["potato", "lettuce", "tomato", "strawberry"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Grill & Fryer", "crates": ["sausage", "patty"], "stations": {"counter": 3, "grill": 2, "fryer": 1}},
+        {"name": "Shakes & Pass", "crates": ["ice_cream", "milk", "bun", "ketchup", "cheddar", "plate"], "stations": {"counter": 4, "blender": 1, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Prep", "crates": ["potato", "lettuce", "tomato", "strawberry"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Grill", "crates": ["sausage", "patty"], "stations": {"counter": 3, "grill": 2}},
+        {"name": "Fryer & Blender", "crates": ["ice_cream", "milk"], "stations": {"counter": 3, "fryer": 1, "blender": 1}},
+        {"name": "Buns & Pass", "crates": ["bun", "ketchup", "cheddar", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    }
+  }
+}

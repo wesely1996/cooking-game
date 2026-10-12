@@ -1,0 +1,17 @@
+{
+  "id": "france_02",
+  "name": "La Crêperie",
+  "description": "Whisk the batter, cook thin crêpes on the crêpe pan, add sliced strawberries.",
+  "pack": "french",
+  "type": "normal",
+  "dishes": [
+    {"id": "tartine", "weight": 1},
+    {"id": "crepe", "weight": 1}
+  ],
+  "roles": "cafe",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 13, "2": 10, "3": 9, "4": 8},
+  "stars": {"1": [150, 290, 420], "2": [230, 460, 660], "3": [250, 500, 720], "4": [300, 600, 860]}
+}

@@ -1,0 +1,16 @@
+{
+  "id": "japan_01",
+  "name": "Sushi Counter",
+  "description": "Tokyo! Slice the salmon, slice the cucumber, lay them on the plate: sashimi.",
+  "pack": "japanese",
+  "type": "normal",
+  "dishes": [
+    {"id": "salmon_sashimi", "weight": 1}
+  ],
+  "roles": "sushi_bar",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 3, "3": 4, "4": 4},
+  "spawn_interval": {"1": 14, "2": 11, "3": 10, "4": 9},
+  "stars": {"1": [130, 250, 360], "2": [150, 290, 420], "3": [160, 320, 450], "4": [170, 340, 480]}
+}

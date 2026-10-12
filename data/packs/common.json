@@ -5,7 +5,25 @@
     "plate": {"name": "Plate", "kind": "raw"},
     "water": {"name": "Water", "kind": "raw"},
     "tomato": {"name": "Tomato", "kind": "raw"},
+    "flour": {"name": "Flour", "kind": "raw"},
+    "bread": {"name": "Bread", "kind": "raw"},
+    "egg": {"name": "Egg", "kind": "raw"},
+    "milk": {"name": "Milk", "kind": "raw"},
+    "rice": {"name": "Rice", "kind": "raw"},
+    "potato": {"name": "Potato", "kind": "raw"},
+    "cheese": {"name": "Cheese", "kind": "raw"},
+    "cucumber": {"name": "Cucumber", "kind": "raw"},
+    "strawberry": {"name": "Strawberry", "kind": "raw"},
     "chopped_tomato": {"name": "Chopped tomato"},
+    "dough": {"name": "Dough"},
+    "sliced_bread": {"name": "Sliced bread"},
+    "toast": {"name": "Toast"},
+    "tomato_sauce": {"name": "Tomato sauce"},
+    "chopped_potato": {"name": "Potato sticks"},
+    "fries": {"name": "Fries"},
+    "grated_cheese": {"name": "Grated cheese"},
+    "chopped_cucumber": {"name": "Sliced cucumber"},
+    "cooked_rice": {"name": "Cooked rice"},
     "burnt_food": {"name": "Burnt food", "kind": "waste"}
   },
   "stations": {
@@ -20,6 +38,15 @@
     "serving_window": {"name": "Serving window", "kind": "pass", "capacity": 0}
   },
   "recipes": [
-    {"id": "chop_tomato", "station": "board", "inputs": ["tomato"], "action": "chop", "work": 4, "output": "chopped_tomato"}
+    {"id": "chop_tomato", "station": "board", "inputs": ["tomato"], "action": "chop", "work": 4, "output": "chopped_tomato"},
+    {"id": "slice_bread", "station": "board", "inputs": ["bread"], "action": "chop", "work": 3, "output": "sliced_bread"},
+    {"id": "chop_potato", "station": "board", "inputs": ["potato"], "action": "chop", "work": 4, "output": "chopped_potato"},
+    {"id": "grate_cheese", "station": "board", "inputs": ["cheese"], "action": "grate", "work": 3, "output": "grated_cheese"},
+    {"id": "slice_cucumber", "station": "board", "inputs": ["cucumber"], "action": "slice", "work": 3, "output": "chopped_cucumber"},
+    {"id": "knead_dough", "station": "bowl", "inputs": ["flour", "water"], "action": "knead", "work": 8, "output": "dough"},
+    {"id": "cook_sauce", "station": "pan", "inputs": ["chopped_tomato"], "action": "simmer", "cook_time": 5, "perfect_window": 4, "burn_time": 9, "output": "tomato_sauce"},
+    {"id": "toast_bread", "station": "grill", "inputs": ["sliced_bread"], "action": "grill", "cook_time": 4, "perfect_window": 3, "burn_time": 7, "output": "toast"},
+    {"id": "fry_potato", "station": "fryer", "inputs": ["chopped_potato"], "action": "fry", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "fries"},
+    {"id": "cook_rice", "station": "pot", "inputs": ["rice", "water"], "action": "boil", "cook_time": 6, "perfect_window": 5, "burn_time": 11, "output": "cooked_rice"}
   ]
 }

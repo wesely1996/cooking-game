@@ -1,0 +1,18 @@
+{
+  "id": "usa_04",
+  "name": "Route 66 Diner",
+  "description": "Truckers, tourists and a jukebox. Cheeseburgers, hot dogs and fries all night long.",
+  "pack": "american",
+  "type": "normal",
+  "dishes": [
+    {"id": "cheeseburger", "weight": 2},
+    {"id": "hot_dog", "weight": 1.5},
+    {"id": "french_fries", "weight": 1}
+  ],
+  "roles": "grill_house",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 16, "2": 13, "3": 12, "4": 11},
+  "stars": {"1": [240, 480, 680], "2": [340, 690, 980], "3": [400, 790, 1130], "4": [410, 810, 1160]}
+}

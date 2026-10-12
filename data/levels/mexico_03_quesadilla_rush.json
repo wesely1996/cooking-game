@@ -1,0 +1,17 @@
+{
+  "id": "mexico_03",
+  "name": "Quesadilla Rush",
+  "description": "Knead the dough, press tortillas, fill them with cheese and fry them golden.",
+  "pack": "mexican",
+  "type": "normal",
+  "dishes": [
+    {"id": "quesadilla", "weight": 1},
+    {"id": "elote", "weight": 1}
+  ],
+  "roles": "taqueria",
+  "duration": 210,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 17, "2": 13, "3": 12, "4": 11},
+  "stars": {"1": [180, 360, 520], "2": [270, 550, 780], "3": [300, 610, 870], "4": [360, 710, 1020]}
+}

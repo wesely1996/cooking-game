@@ -1,0 +1,21 @@
+{
+  "id": "arcade_japanese",
+  "name": "Arcade: Japanese",
+  "description": "Endless Japanese kitchen. Three angry customers and it's over.",
+  "pack": "japanese",
+  "type": "arcade",
+  "dishes": [
+    {"id": "miso_ramen", "weight": 2},
+    {"id": "cucumber_maki", "weight": 1.5},
+    {"id": "salmon_nigiri", "weight": 1},
+    {"id": "salmon_sashimi", "weight": 1}
+  ],
+  "roles": "izakaya",
+  "first_spawn": 2,
+  "max_active": {"1": 2, "2": 3, "3": 3, "4": 4},
+  "spawn_interval": {"1": 30, "2": 24, "3": 20, "4": 18},
+  "escalate_every": 30,
+  "interval_factor": 0.93,
+  "patience_factor": 0.95,
+  "strikes": 3
+}

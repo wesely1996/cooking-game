@@ -2,17 +2,11 @@
   "id": "italian",
   "name": "Italian",
   "items": {
-    "flour": {"name": "Flour", "kind": "raw"},
     "mozzarella": {"name": "Mozzarella", "kind": "raw"},
     "basil": {"name": "Basil", "kind": "raw"},
-    "bread": {"name": "Bread", "kind": "raw"},
     "sliced_mozzarella": {"name": "Sliced mozzarella"},
-    "sliced_bread": {"name": "Sliced bread"},
-    "toast": {"name": "Toast"},
-    "dough": {"name": "Dough"},
     "fresh_pasta": {"name": "Fresh pasta"},
     "cooked_pasta": {"name": "Boiled pasta"},
-    "tomato_sauce": {"name": "Tomato sauce"},
     "raw_pizza_margherita": {"name": "Raw pizza"},
     "whole_pizza": {"name": "Baked pizza"},
     "caprese_salad": {"name": "Caprese", "kind": "dish", "price": 14, "patience": 45},
@@ -25,12 +19,8 @@
   },
   "recipes": [
     {"id": "slice_mozzarella", "station": "board", "inputs": ["mozzarella"], "action": "slice", "work": 3, "output": "sliced_mozzarella"},
-    {"id": "slice_bread", "station": "board", "inputs": ["bread"], "action": "chop", "work": 3, "output": "sliced_bread"},
-    {"id": "knead_dough", "station": "bowl", "inputs": ["flour", "water"], "action": "knead", "work": 8, "output": "dough"},
     {"id": "crank_pasta", "station": "pasta_machine", "inputs": ["dough"], "action": "crank", "work": 3, "output": "fresh_pasta"},
     {"id": "boil_pasta", "station": "pot", "inputs": ["fresh_pasta"], "action": "boil", "cook_time": 6, "perfect_window": 4, "burn_time": 10, "output": "cooked_pasta"},
-    {"id": "cook_sauce", "station": "pan", "inputs": ["chopped_tomato"], "action": "simmer", "cook_time": 5, "perfect_window": 4, "burn_time": 9, "output": "tomato_sauce"},
-    {"id": "toast_bread", "station": "grill", "inputs": ["sliced_bread"], "action": "grill", "cook_time": 4, "perfect_window": 3, "burn_time": 7, "output": "toast"},
     {"id": "bake_pizza", "station": "oven", "inputs": ["raw_pizza_margherita"], "action": "bake", "cook_time": 8, "perfect_window": 4, "burn_time": 10, "output": "whole_pizza"}
   ],
   "assemblies": [

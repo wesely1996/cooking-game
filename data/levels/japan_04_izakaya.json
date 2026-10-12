@@ -1,0 +1,18 @@
+{
+  "id": "japan_04",
+  "name": "Izakaya",
+  "description": "After work everyone wants ramen: noodles in miso broth, spring onion and an egg. And sushi, of course.",
+  "pack": "japanese",
+  "type": "normal",
+  "dishes": [
+    {"id": "miso_ramen", "weight": 2},
+    {"id": "cucumber_maki", "weight": 1.5},
+    {"id": "salmon_sashimi", "weight": 1}
+  ],
+  "roles": "izakaya",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 16, "2": 13, "3": 12, "4": 11},
+  "stars": {"1": [220, 430, 620], "2": [260, 520, 750], "3": [310, 620, 890], "4": [320, 640, 920]}
+}

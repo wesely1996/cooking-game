@@ -43,7 +43,6 @@ data/
   packs/           cuisine packs (JSON): ingredients, stations, recipes, role splits
   levels/          levels (JSON)
   story/           world map (regions, star requirements)
-  legacy/          the v0.5 cuisines, waiting to move to the v0.6 rules
 tests/             headless tests (tests/unit/test_*.gd)
 tools/             test runner script, balancing report
 game/              the playable game: kitchen screen, mini-games, effects, sound,
@@ -56,7 +55,7 @@ art/               fonts, CC0 3D models, comic shaders, icons rendered from the
 ## Menus
 
 - **Play** → *World Tour* (shifts, a festival and a competition per region;
-  Italy for now, the other five come back on the v0.6 rules), *Play with a
+  Italy, Mexico, USA, Spain, Japan and France), *Play with a
   friend* (LAN) or *Arcade* (pick a cuisine you have reached).
 - **Profile**: your name and chef, favourite and best cuisine, stats.
 - **Recipe book**: every dish you have served, step by step.
@@ -120,8 +119,11 @@ GODOT=/path/to/godot tools/lan_test.sh
 
 Cuisines, recipes and levels are JSON files, so most content needs no code:
 
-1. Add ingredients, recipes and assemblies to a pack in `data/packs/` (see
-   `tools/content/make_italy.py`, which writes the Italian pack).
-2. Add levels to `data/levels/` and list them on the map in `data/story/world_map.json`.
+1. Add ingredients, recipes, assemblies and role splits to a cuisine in
+   `tools/content/make_content.py` and run it: it writes the packs in
+   `data/packs/`, the levels in `data/levels/` and the World Tour map in
+   `data/story/world_map.json`.
+2. Give new food and gadgets a 3D model in `game/look/models.gd`, then render
+   their pictures with `tools/art/render_icons.gd`.
 3. Run the tests. They check that every recipe can be made, that every level
    works with 1–4 players, and that bots can actually finish it.

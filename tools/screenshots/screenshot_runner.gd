@@ -154,8 +154,11 @@ func _run() -> void:
 	Engine.time_scale = 1.0
 	await _shot("10_busy_kitchen")
 	# Two chefs: the teammate's chef in the team panel; then the rival panel.
-	await _play_a_bit("italy_03", 2, "10b_team_kitchen")
-	await _play_a_bit("italy_competition", 1, "10c_rival_kitchen")
+	await _play_a_bit("mexico_04", 2, "10b_team_kitchen")
+	await _play_a_bit("japan_competition", 1, "10c_rival_kitchen")
+	await _play_a_bit("france_04", 1, "10d_france_kitchen")
+	await _play_a_bit("usa_04", 3, "10e_usa_kitchen")
+	await _play_a_bit("spain_04", 1, "10f_spain_kitchen")
 	Game.current_level = Game.levels["italy_01"]
 	Game.finish_level({"type": "normal", "failed": false, "stars": 2, "score": 312}, {"served": 4, "lost": 1, "perfect": 2, "score": 312})
 	await _wait(1.6)

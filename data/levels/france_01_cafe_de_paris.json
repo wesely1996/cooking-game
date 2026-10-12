@@ -1,0 +1,16 @@
+{
+  "id": "france_01",
+  "name": "Café de Paris",
+  "description": "Paris! Breakfast at the café: sliced baguette with butter and jam.",
+  "pack": "french",
+  "type": "normal",
+  "dishes": [
+    {"id": "tartine", "weight": 1}
+  ],
+  "roles": "cafe",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 3, "3": 4, "4": 4},
+  "spawn_interval": {"1": 14, "2": 11, "3": 10, "4": 9},
+  "stars": {"1": [130, 250, 360], "2": [180, 360, 520], "3": [220, 440, 630], "4": [260, 520, 740]}
+}
