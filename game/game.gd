@@ -40,6 +40,7 @@ var lobby_message := ""
 var save_enabled := true
 ## Where the recipe book returns to.
 var recipe_book_return := SCENE_MENU
+var _page_turn: PageTurn
 
 
 func _ready() -> void:
@@ -90,7 +91,7 @@ func start_level(level_id: String, players: int = 1, seed: int = -1, prologue: V
 		prologue_dishes = new_dishes_for(current_level)
 	if Net.is_host():
 		Net.send_to_clients({"t": "start", "level": level_id, "seed": shift_seed, "players": players, "prologue": prologue_dishes})
-	get_tree().change_scene_to_file(SCENE_KITCHEN)
+	_change_scene(SCENE_KITCHEN)
 
 
 ## Dishes of a level that someone in this game has never made (and so will
@@ -170,7 +171,7 @@ func finish_level(outcome: Dictionary, stats: Dictionary) -> void:
 	else:
 		progression.record(current_level.id, outcome)
 	save()
-	get_tree().change_scene_to_file(SCENE_RESULTS)
+	_change_scene(SCENE_RESULTS)
 
 
 ## Records that a dish was served. Returns true the first time ever.
@@ -202,7 +203,17 @@ func open_recipe_book(return_scene: String) -> void:
 
 
 func goto(scene: String) -> void:
+	_change_scene(scene)
+
+
+## Every screen change turns the page, like a comic.
+func _change_scene(scene: String) -> void:
+	if _page_turn == null:
+		_page_turn = PageTurn.new()
+		add_child(_page_turn)
+	_page_turn.capture(get_viewport())
 	get_tree().change_scene_to_file(scene)
+	_page_turn.play()
 
 
 func vibrate(ms: int) -> void:

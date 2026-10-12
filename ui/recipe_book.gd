@@ -1,9 +1,12 @@
 extends Control
-## The recipe book. Dishes you have served show their recipe step by step;
-## dishes in the game you haven't made yet are locked silhouettes that say
-## where to find them; planned cuisines show "?" cards.
+## The recipe book, an inner page of the comic. Each dish you have served
+## is a little comic strip, one panel per step (what goes in, the tool, the
+## gesture, what comes out), ending with the plated dish. Dishes you haven't
+## made yet are covered panels that say where to find them; planned cuisines
+## are "?" cards, coming soon in a future issue.
 
 const CARD := Vector2(124, 150)
+const STRIP_PANEL := Vector2(150, 220)
 const COMING_SOON_PATH := "res://data/recipe_book.json"
 
 var _db: ContentDB
@@ -25,9 +28,10 @@ func _ready() -> void:
 	var back := UiStyle.button("◀ BACK", Art.PAPER, 26)
 	back.pressed.connect(func(): Game.goto(Game.recipe_book_return))
 	header.add_child(back)
-	var title := UiStyle.title("RECIPE BOOK  ·  %d/%d DISHES" % [known, dishes.size()], 52, Art.SUN)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(title)
+	header.add_child(UiStyle.caption("RECIPE BOOK  ·  %d/%d DISHES" % [known, dishes.size()], 44))
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(back.get_combined_minimum_size().x, 0)
+	header.add_child(spacer)
 	root.add_child(_margin(header, 18, 18, 14, 0))
 
 	var body := HBoxContainer.new()
@@ -56,7 +60,10 @@ func _ready() -> void:
 			grid.add_child(_dish_card(dish))
 		list.add_child(grid)
 	var coming: Variant = DataFiles.read_json(COMING_SOON_PATH)
+	var issue := Game.progression.regions.size()
 	for entry in (coming.get("coming_soon", []) if coming is Dictionary else []):
+		issue += 1
+		entry["issue"] = issue
 		list.add_child(UiStyle.title("%s · COMING SOON" % str(entry.cuisine).to_upper(), 26, Color(1, 1, 1, 0.75)))
 		var grid := _grid()
 		for i in int(entry.get("dishes", 1)):
@@ -65,7 +72,7 @@ func _ready() -> void:
 
 	var detail_panel := PanelContainer.new()
 	detail_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	detail_panel.add_theme_stylebox_override("panel", UiStyle.box(Art.PAPER))
+	detail_panel.add_theme_stylebox_override("panel", UiStyle.panel_box(Art.PAPER))
 	body.add_child(detail_panel)
 	var detail_scroll := ScrollContainer.new()
 	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -134,63 +141,141 @@ func _card_button(text: String, color: Color) -> Button:
 func _show_dish(dish: String) -> void:
 	_clear_detail()
 	var known := Game.progression.is_discovered(dish)
-	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 16)
-	var picture := TextureRect.new()
-	picture.texture = Art.item(dish)
-	picture.custom_minimum_size = Vector2(130, 130)
-	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	if not known:
-		picture.modulate = Color(0.1, 0.08, 0.15, 0.6)
-	top.add_child(picture)
-	var info := VBoxContainer.new()
-	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info.add_child(_left(UiStyle.title(_db.item_name(dish).to_upper() if known else "LOCKED DISH", 40, Art.TOMATO)))
 	var level := Game.first_level_with(dish)
-	var where := "%s (%s)" % [level.name, Game.progression.regions[0].name] if level else "a future level"
+	var where := "%s (%s)" % [level.name, _region_name(level.id)] if level else "a future level"
+	_detail.add_child(_left(UiStyle.title(_db.item_name(dish).to_upper() if known else "LOCKED DISH", 40, Art.TOMATO)))
 	if known:
-		info.add_child(_left(UiStyle.text("Price %d · first served in %s" % [int(_db.items[dish].price), where], 18)))
-		info.add_child(_left(UiStyle.text("Ingredients:", 20)))
-		info.add_child(_icon_row(_db.raw_requirements(dish)))
+		_detail.add_child(_left(UiStyle.text("Price %d · first served in %s" % [int(_db.items[dish].price), where], 18)))
 	else:
-		info.add_child(_left(UiStyle.text("You haven't made this one yet.\nCook it in %s to add the recipe to your book.\nThe first time you make a new dish, tips and arrows show every step." % where, 18)))
-	top.add_child(info)
-	_detail.add_child(top)
-	if not known:
-		return
-	var lines := RecipeText.instructions(_db, dish)
-	for i in lines.size():
-		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 10)
-		var number := UiStyle.title(str(i + 1), 28, Art.SUN)
-		number.custom_minimum_size = Vector2(36, 0)
-		row.add_child(number)
-		var text := UiStyle.text(lines[i], 18)
-		text.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(text)
-		_detail.add_child(row)
+		_detail.add_child(_left(UiStyle.text("You haven't made this one yet. Cook it in %s to uncover its strip: " % where +
+			"the first time you make a new dish, tips and arrows show every step.", 18)))
+	var strip := HFlowContainer.new()
+	strip.add_theme_constant_override("h_separation", 10)
+	strip.add_theme_constant_override("v_separation", 10)
+	_detail.add_child(strip)
+	var steps := _db.recipe_steps(dish)
+	for i in steps.size():
+		strip.add_child(_step_panel(i + 1, steps[i]) if known else _covered_panel(i + 1))
+	strip.add_child(_serve_panel(dish, known))
 
 
 func _show_mystery(entry: Dictionary) -> void:
 	_clear_detail()
-	_detail.add_child(_left(UiStyle.title("?", 120, Color("#b9b2a4"))))
+	var issue := int(entry.get("issue", Game.progression.regions.size() + 1))
 	_detail.add_child(_left(UiStyle.title("A %s DISH" % str(entry.cuisine).to_upper(), 40, Art.TOMATO)))
-	_detail.add_child(_left(UiStyle.text("This recipe isn't in the kitchen yet. The crew will learn it when the World Tour reaches %s in a future update." % entry.get("region", "a new region"), 20)))
+	_detail.add_child(_left(UiStyle.text("This recipe isn't in the kitchen yet. The crew will learn it when the World Tour reaches %s." %
+		entry.get("region", "a new region"), 20)))
+	var strip := HFlowContainer.new()
+	strip.add_theme_constant_override("h_separation", 10)
+	_detail.add_child(strip)
+	for i in 3:
+		strip.add_child(_covered_panel(i + 1))
+	var soon := _strip_panel(Comic.MAGENTA)
+	var column: VBoxContainer = soon.get_child(0)
+	column.add_child(UiStyle.title("COMING SOON", 30, Comic.YELLOW))
+	column.add_child(UiStyle.title("IN ISSUE #%d!" % issue, 34, Color.WHITE))
+	strip.add_child(soon)
 
 
-func _icon_row(ids: Array) -> Control:
+func _icon_row(ids: Array, icon_size: float = 48.0) -> Control:
 	var row := HFlowContainer.new()
+	row.alignment = FlowContainer.ALIGNMENT_CENTER
 	for id in ids:
 		var icon := TextureRect.new()
 		icon.texture = Art.item(id)
-		icon.custom_minimum_size = Vector2(48, 48)
+		icon.custom_minimum_size = Vector2(icon_size, icon_size)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.tooltip_text = _db.item_name(id)
 		row.add_child(icon)
 	return row
+
+
+## One step of a recipe as a comic panel: the step's caption, what goes in,
+## the tool and the gesture (or cooking time), and what comes out.
+func _step_panel(number: int, step: Dictionary) -> Control:
+	var panel := _strip_panel(Art.PAPER)
+	var column: VBoxContainer = panel.get_child(0)
+	if step.kind == "assembly":
+		column.add_child(_step_caption("%d · PLATE IT" % number if step.base == ContentDB.PLATE else "%d · TOP IT" % number))
+		column.add_child(_icon_row(step.parts, 38.0))
+		column.add_child(UiStyle.text("on the %s" % _db.item_name(step.base).to_lower(), 15))
+		column.add_child(_icon_row([step.base], 40.0))
+	else:
+		var verb: String = RecipeText.VERBS.get(step.action, str(step.action).capitalize())
+		column.add_child(_step_caption("%d · %s" % [number, verb.to_upper()]))
+		column.add_child(_icon_row(step.inputs, 38.0))
+		var tool := TextureRect.new()
+		tool.texture = Art.equipment(step.station)
+		tool.custom_minimum_size = Vector2(52, 52)
+		tool.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tool.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tool.tooltip_text = _db.station_name(step.station)
+		column.add_child(tool)
+		var how: String
+		if float(step.cook_time) > 0.0:
+			how = "cooks %d s" % roundi(step.cook_time)
+		else:
+			how = str(RecipeText.GESTURES.get(step.action, "×%d")) % roundi(step.work)
+		column.add_child(UiStyle.text(how, 15, Art.TOMATO))
+	column.add_child(UiStyle.text("= %s" % _db.item_name(step.output).to_upper(), 15))
+	return panel
+
+
+## The strip's last panel: the plated dish, served.
+func _serve_panel(dish: String, known: bool) -> Control:
+	var panel := _strip_panel(Comic.YELLOW if known else Color("#3b3157"))
+	var column: VBoxContainer = panel.get_child(0)
+	var picture := TextureRect.new()
+	picture.texture = Art.item(dish)
+	picture.custom_minimum_size = Vector2(110, 110)
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	if not known:
+		picture.modulate = Color(0.1, 0.08, 0.15, 0.7)
+	column.add_child(picture)
+	column.add_child(UiStyle.title("SERVE!" if known else "???", 34, Color.WHITE))
+	return panel
+
+
+## A step you haven't seen yet: an ink panel with a question mark.
+func _covered_panel(number: int) -> Control:
+	var panel := _strip_panel(Color("#3b3157"))
+	var column: VBoxContainer = panel.get_child(0)
+	column.add_child(_step_caption("%d · ???" % number))
+	column.add_child(UiStyle.title("?", 72, Color(1, 1, 1, 0.35)))
+	return panel
+
+
+func _strip_panel(color: Color) -> PanelContainer:
+	var panel := PanelContainer.new()
+	var style := UiStyle.panel_box(color, 4)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 6
+	style.content_margin_bottom = 8
+	panel.add_theme_stylebox_override("panel", style)
+	panel.custom_minimum_size = STRIP_PANEL
+	var column := VBoxContainer.new()
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_theme_constant_override("separation", 4)
+	panel.add_child(column)
+	return panel
+
+
+func _step_caption(text: String) -> Label:
+	var label := UiStyle.caption(text, 18)
+	label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	return label
+
+
+## The region whose issue has the level, e.g. "Italy".
+func _region_name(level_id: String) -> String:
+	for region in Game.progression.regions:
+		for entry in region.get("levels", []):
+			if entry.id == level_id:
+				return str(region.name)
+	return ""
 
 
 func _clear_detail() -> void:
@@ -228,4 +313,4 @@ func _notification(what: int) -> void:
 
 
 func _draw() -> void:
-	UiStyle.draw_halftone(self, Rect2(Vector2.ZERO, size), Color("#8a5a2e"), Color("#9c6a3a"), 22.0)
+	UiStyle.draw_page(self, Rect2(Vector2.ZERO, size))

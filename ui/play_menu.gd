@@ -33,12 +33,16 @@ func _show(page: Page) -> void:
 	match page:
 		Page.MAIN:
 			_title.text = "PLAY"
-			_add_choice("WORLD TOUR", "Travel the world, learn its kitchens, win its competitions.", Art.SUN,
-				func(): Game.goto(Game.SCENE_LEVEL_SELECT))
-			_add_choice("PLAY WITH A FRIEND", "Two phones on the same Wi-Fi: one kitchen, two chefs.", Art.LEAF,
-				func(): Game.goto(Game.SCENE_LOBBY))
-			_add_choice("ARCADE", "Endless orders in the cuisine of your choice. How long can you last?", Color("#7fc8f8"),
-				func(): _show(Page.ARCADE))
+			# Three panels of one comic page.
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 14)
+			_content.add_child(row)
+			_add_choice(row, "WORLD TOUR", "Six issues, six kitchens: learn them all and win their competitions.",
+				Comic.YELLOW, ["pizza_margherita", "beef_taco", "miso_ramen"], func(): Game.goto(Game.SCENE_LEVEL_SELECT))
+			_add_choice(row, "PLAY WITH A FRIEND", "Two phones on the same Wi-Fi: one kitchen, two chefs.",
+				Color("#7be08a"), ["caprese_salad", "salmon_nigiri"], func(): Game.goto(Game.SCENE_LOBBY))
+			_add_choice(row, "ARCADE", "Endless orders in the cuisine of your choice. How long can you last?",
+				Comic.CYAN, ["cheeseburger"], func(): _show(Page.ARCADE))
 		Page.ARCADE:
 			_title.text = "ARCADE"
 			_content.add_child(UiStyle.title("PICK A CUISINE", 34, Color.WHITE))
@@ -54,14 +58,33 @@ func _show(page: Page) -> void:
 			_content.add_child(UiStyle.text("Win a region's competition in the World Tour to unlock the next cuisine.", 20, Color.WHITE))
 
 
-func _add_choice(text: String, help: String, color: Color, action: Callable) -> void:
-	var button := UiStyle.button(text, color, 40)
-	button.custom_minimum_size = Vector2(520, 0)
+func _add_choice(row: HBoxContainer, text: String, help: String, color: Color, dishes: Array, action: Callable) -> void:
+	var panel := UiStyle.panel(color)
+	panel.custom_minimum_size = Vector2(370, 430)
+	row.add_child(panel)
+	var column := VBoxContainer.new()
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_theme_constant_override("separation", 16)
+	panel.add_child(column)
+	var icons := HBoxContainer.new()
+	icons.alignment = BoxContainer.ALIGNMENT_CENTER
+	for dish in dishes:
+		var icon := TextureRect.new()
+		icon.texture = Art.item(dish)
+		icon.custom_minimum_size = Vector2(100, 100)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icons.add_child(icon)
+	column.add_child(icons)
+	column.add_child(UiStyle.title(text, 36, Color.WHITE))
+	var label := UiStyle.text(help, 20)
+	label.custom_minimum_size = Vector2(320, 0)
+	column.add_child(label)
+	var button := UiStyle.button("GO!", Art.PAPER, 36)
+	button.custom_minimum_size = Vector2(200, 0)
 	button.pressed.connect(action)
 	button.name = text.replace(" ", "_")
-	_content.add_child(UiStyle.centered(button))
-	var label := UiStyle.text(help, 20, Color.WHITE)
-	_content.add_child(label)
+	column.add_child(UiStyle.centered(button))
 
 
 func _cuisine_card(region_index: int, card_size: Vector2) -> Control:
@@ -99,4 +122,4 @@ func _notification(what: int) -> void:
 
 
 func _draw() -> void:
-	UiStyle.draw_halftone(self, Rect2(Vector2.ZERO, size), Color("#e5352b"), Color("#f0604a"), 22.0)
+	UiStyle.draw_page(self, Rect2(Vector2.ZERO, size))

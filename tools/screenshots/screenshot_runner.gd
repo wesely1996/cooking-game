@@ -45,6 +45,10 @@ func _run() -> void:
 	Game.goto(Game.SCENE_LEVEL_SELECT)
 	await _wait(0.4)
 	await _shot("02_level_select")
+	get_tree().current_scene._show_region(1)
+	await _wait(0.2)
+	await _shot("02_level_select_locked_issue")
+	get_tree().current_scene._show_region(0)
 
 	Game.open_recipe_book(Game.SCENE_MENU)
 	await _wait(0.4)
@@ -173,7 +177,7 @@ func _run() -> void:
 	book._show_dish("pizza_margherita")
 	await _wait(0.2)
 	await _shot("13b_recipe_locked")
-	book._show_mystery({"cuisine": "Mexican", "region": "Mexico"})
+	book._show_mystery({"cuisine": "Penguin Iceberg", "region": "The Iceberg", "issue": 7})
 	await _wait(0.2)
 	await _shot("14_recipe_coming_soon")
 

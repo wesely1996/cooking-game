@@ -25,9 +25,10 @@ func _ready() -> void:
 	var back := UiStyle.button("◀ BACK", Art.PAPER, 26)
 	back.pressed.connect(_on_back)
 	header.add_child(back)
-	var title := UiStyle.title("PLAY WITH A FRIEND", 56, Art.SUN)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(title)
+	header.add_child(UiStyle.caption("PLAY WITH A FRIEND", 50))
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(back.get_combined_minimum_size().x, 0)
+	header.add_child(spacer)
 	var margin := MarginContainer.new()
 	for side in ["left", "right", "top"]:
 		margin.add_theme_constant_override("margin_" + side, 18)
@@ -251,4 +252,4 @@ func _add_button(text: String, color: Color, font_size: int, action: Callable) -
 
 
 func _draw() -> void:
-	UiStyle.draw_halftone(self, Rect2(Vector2.ZERO, size), Color("#3f8fe0"), Color("#5aa2ea"), 22.0)
+	UiStyle.draw_page(self, Rect2(Vector2.ZERO, size))

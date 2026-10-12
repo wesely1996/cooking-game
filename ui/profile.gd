@@ -3,7 +3,7 @@ extends Control
 ## stats, including the favourite cuisine (played most) and the best cuisine
 ## (highest average score).
 
-var _portrait: ChefPortrait
+var _portrait: ChefView
 var _name_edit: LineEdit
 var _option_labels := {}  # part -> Label
 var _option_swatches := {}  # part -> ColorRect
@@ -34,7 +34,7 @@ func _chef_panel() -> Control:
 	var left := VBoxContainer.new()
 	left.add_theme_constant_override("separation", 8)
 	row.add_child(left)
-	_portrait = ChefPortrait.new()
+	_portrait = ChefView.new()
 	_portrait.custom_minimum_size = Vector2(210, 240)
 	_portrait.look = Game.profile.look
 	left.add_child(_portrait)
@@ -195,4 +195,4 @@ func _notification(what: int) -> void:
 
 
 func _draw() -> void:
-	UiStyle.draw_halftone(self, Rect2(Vector2.ZERO, size), Color("#b45ab4"), Color("#c46ec4"), 22.0)
+	UiStyle.draw_page(self, Rect2(Vector2.ZERO, size))

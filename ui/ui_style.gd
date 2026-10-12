@@ -1,6 +1,11 @@
 class_name UiStyle
 extends RefCounted
-## Shared look for menus: chunky comic buttons with ink outlines.
+## Shared look for menus. Every menu is a comic page: an ink gutter with
+## halftone dots, square-framed panels, yellow caption boxes and chunky comic
+## buttons with ink outlines.
+
+const GUTTER := Color("#262038")
+const GUTTER_DOTS := Color("#2f2846")
 
 
 static func button(text: String, color: Color = Art.SUN, font_size: int = 30) -> Button:
@@ -79,8 +84,7 @@ static func header(title_text: String, on_back: Callable, title_size: int = 56) 
 	var back := button("◀ BACK", Art.PAPER, 26)
 	back.pressed.connect(on_back)
 	row.add_child(back)
-	var label := title(title_text, title_size, Art.SUN)
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var label := caption(title_text, title_size)
 	row.add_child(label)
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(back.get_combined_minimum_size().x, 0)
@@ -100,10 +104,73 @@ static func margin(control: Control, left: int, right: int, top: int, bottom: in
 	return container
 
 
+## A comic panel: square corners and a thick ink frame.
 static func panel(color: Color = Art.PAPER) -> PanelContainer:
 	var p := PanelContainer.new()
-	p.add_theme_stylebox_override("panel", box(color))
+	p.add_theme_stylebox_override("panel", panel_box(color))
 	return p
+
+
+static func panel_box(color: Color, border: int = 6) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.border_color = Art.INK
+	style.set_border_width_all(border)
+	style.set_corner_radius_all(2)
+	style.content_margin_left = 18
+	style.content_margin_right = 18
+	style.content_margin_top = 14
+	style.content_margin_bottom = 14
+	return style
+
+
+## A yellow caption box with ink text, like a comic narrator box.
+static func caption(text_value: String, font_size: int = 40, color: Color = Comic.YELLOW) -> Label:
+	var label := Label.new()
+	label.text = text_value
+	label.add_theme_font_override("font", Art.comic_font())
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", Art.INK)
+	var style := panel_box(color, 4)
+	style.content_margin_top = 2
+	style.content_margin_bottom = 0
+	style.shadow_color = Color(Art.INK, 0.8)
+	style.shadow_offset = Vector2(5, 5)
+	label.add_theme_stylebox_override("normal", style)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.size_flags_horizontal = Control.SIZE_EXPAND | Control.SIZE_SHRINK_CENTER
+	return label
+
+
+## The page behind the panels: dark ink with halftone dots.
+static func draw_page(canvas: CanvasItem, rect: Rect2) -> void:
+	draw_halftone(canvas, rect, GUTTER, GUTTER_DOTS, 16.0)
+
+
+## A comic starburst ("POW!" shape).
+static func draw_burst(canvas: CanvasItem, center: Vector2, radius: float, color: Color, spikes: int = 14,
+		spin: float = 0.0, outline: float = 5.0) -> void:
+	var points := PackedVector2Array()
+	for i in spikes * 2:
+		var a := spin + TAU * i / (spikes * 2)
+		var r := radius if i % 2 == 0 else radius * 0.72
+		points.append(center + Vector2(cos(a), sin(a)) * r)
+	canvas.draw_colored_polygon(points, color)
+	if outline > 0.0:
+		points.append(points[0])
+		canvas.draw_polyline(points, Art.INK, outline, true)
+
+
+## Big comic lettering printed slightly off-register: cyan and magenta ghosts
+## behind an ink-outlined title, like a Spider-Verse print.
+static func draw_print_title(canvas: CanvasItem, pos: Vector2, text_value: String, font_size: int, color: Color,
+		width: float = -1.0, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER) -> void:
+	var font := Art.comic_font()
+	var shift := maxf(font_size / 22.0, 3.0)
+	canvas.draw_string(font, pos + Vector2(-shift, -shift * 0.5), text_value, align, width, font_size, Color(Comic.CYAN, 0.9))
+	canvas.draw_string(font, pos + Vector2(shift, shift * 0.5), text_value, align, width, font_size, Color(Comic.MAGENTA, 0.9))
+	canvas.draw_string_outline(font, pos, text_value, align, width, font_size, maxi(font_size / 7, 6), Art.INK)
+	canvas.draw_string(font, pos, text_value, align, width, font_size, color)
 
 
 static func centered(control: Control) -> CenterContainer:
