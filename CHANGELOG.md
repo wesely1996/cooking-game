@@ -5,7 +5,7 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
-## [Unreleased]
+## [0.6.2] - 2026-10-12
 
 ### Changed
 - **Fewer kinds of mini-game:** chopping, slicing and grating are tapped now,
