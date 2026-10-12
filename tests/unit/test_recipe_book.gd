@@ -22,7 +22,7 @@ func test_pizza_instructions() -> void:
 	var lines := RecipeText.instructions(db, "pizza_margherita")
 	assert_eq(lines.size(), 7, "6 steps + serve")
 	assert_eq(lines[0], "Put the FLOUR and WATER in the MIXING BOWL and knead (tap ×8) → Dough")
-	assert_eq(lines[1], "Chop the TOMATO on the CHOPPING BOARD (swipe down ×4) → Chopped tomato")
+	assert_eq(lines[1], "Chop the TOMATO on the CHOPPING BOARD (tap ×4) → Chopped tomato")
 	assert_true(lines.has("Put the CHOPPED TOMATO and SLICED MOZZARELLA on the DOUGH → Raw pizza"))
 	assert_true(lines[4].begins_with("Bake the RAW PIZZA in the OVEN for 8 s"))
 	assert_eq(lines[5], "Put the BAKED PIZZA on the PLATE → Pizza Margherita")

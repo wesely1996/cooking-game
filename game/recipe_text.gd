@@ -1,18 +1,18 @@
 class_name RecipeText
 extends RefCounted
 ## Turns recipe steps (ContentDB.recipe_steps) into short instructions for
-## the recipe book, e.g. "Chop the TOMATO with the KNIFE (swipe down ×5)".
+## the recipe book, e.g. "Chop the TOMATO on the CHOPPING BOARD (tap ×4)".
 
 const GESTURES := {
-	"chop": "swipe down ×%d",
-	"slice": "swipe down ×%d",
+	"chop": "tap ×%d",
+	"slice": "tap ×%d",
 	"knead": "tap ×%d",
 	"roll": "swipe side to side ×%d",
 	"stir": "draw circles ×%d",
 	"crank": "draw circles ×%d",
 	"press": "tap ×%d",
 	"mash": "tap ×%d",
-	"grate": "swipe down ×%d",
+	"grate": "tap ×%d",
 	"whisk": "draw circles ×%d",
 	"blend": "draw circles ×%d",
 }

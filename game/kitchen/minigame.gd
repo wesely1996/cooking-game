@@ -1,7 +1,7 @@
 class_name Minigame
 extends Control
-## The gesture mini-game shown while working an item: swipe down to chop,
-## tap to knead, swipe side to side to roll, draw circles to stir. Each
+## The gesture mini-game shown while working an item: tap to chop or knead,
+## swipe side to side to roll, draw circles to stir. Each
 ## recognised gesture is one unit of work (the process's "work" value says
 ## how many are needed). The KitchenScreen forwards input here.
 ##
@@ -15,24 +15,21 @@ signal work_done(units: int)
 signal paused  # the player left before the work was done
 signal closed
 
-const KIND_SWIPE_DOWN := "swipe_down"
 const KIND_TAP := "tap"
 const KIND_SWIPE_SIDE := "swipe_side"
 const KIND_CIRCLE := "circle"
 
 const TILT := -0.04  # radians: the splash panel sits a little crooked
-const SWIPE_DISTANCE := 55.0
 const SIDE_DISTANCE := 70.0
 
 const ACTION_KINDS := {
-	"chop": KIND_SWIPE_DOWN, "slice": KIND_SWIPE_DOWN, "grate": KIND_SWIPE_DOWN,
+	"chop": KIND_TAP, "slice": KIND_TAP, "grate": KIND_TAP,
 	"knead": KIND_TAP, "press": KIND_TAP, "mash": KIND_TAP,
 	"roll": KIND_SWIPE_SIDE,
 	"stir": KIND_CIRCLE, "crank": KIND_CIRCLE, "whisk": KIND_CIRCLE, "blend": KIND_CIRCLE,
 }
 ## The one big word that says what to do.
 const HINTS := {
-	KIND_SWIPE_DOWN: "SWIPE!",
 	KIND_TAP: "TAP!",
 	KIND_SWIPE_SIDE: "ROLL!",
 	KIND_CIRCLE: "CIRCLE!",
@@ -178,12 +175,6 @@ func handle_input(event: InputEvent, local: Vector2) -> bool:
 			_trail.remove_at(0)
 		_trail_fade = 1.0
 		match kind:
-			KIND_SWIPE_DOWN:
-				if local.y - _anchor.y >= SWIPE_DISTANCE and absf(local.x - _anchor.x) < local.y - _anchor.y:
-					_anchor = local
-					work_done.emit(1)
-				elif local.y < _anchor.y:
-					_anchor = local
 			KIND_SWIPE_SIDE:
 				if absf(local.x - _anchor.x) >= SIDE_DISTANCE:
 					_anchor = local
@@ -274,12 +265,8 @@ func _draw_front() -> void:
 
 ## A big animated arrow (or rings, for taps) that shows the gesture.
 func _draw_gesture(c: Control, center: Vector2) -> void:
-	var t := fmod(_time, 1.0)
 	var reach := minf(c.size.y * 0.32, 90.0)
 	match kind:
-		KIND_SWIPE_DOWN:
-			var top := center + Vector2(0, -reach + t * reach * 0.6)
-			_arrow(c, top, top + Vector2(0, reach * 1.2), 1.0 - t * 0.5)
 		KIND_SWIPE_SIDE:
 			var shift := sin(_time * 5.0) * reach * 0.35
 			_arrow(c, center + Vector2(shift, 0), center + Vector2(shift + reach * 1.1, 0), 1.0)

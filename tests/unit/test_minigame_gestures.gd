@@ -33,19 +33,10 @@ func test_taps_knead() -> void:
 	game.free()
 
 
-func test_swipe_down_counts_each_stroke() -> void:
-	var game := _game(Minigame.KIND_SWIPE_DOWN)
-	_press(game, Vector2(250, 40), true)
-	for y in range(40, 260, 10):
-		_move(game, Vector2(250, y))
-	assert_eq(_units, 3, "one long swipe of 220 px = 3 chops of 55 px")
-	_press(game, Vector2(250, 260), false)
-	_units = 0
-	_press(game, Vector2(100, 200), true)
-	for x in range(100, 400, 10):
-		_move(game, Vector2(x, 200))
-	assert_eq(_units, 0, "sideways doesn't chop")
-	game.free()
+func test_chopping_is_tapping() -> void:
+	# The swipe-down mini-game is gone: chop, slice and grate are taps.
+	for action in ["chop", "slice", "grate"]:
+		assert_eq(Minigame.ACTION_KINDS[action], Minigame.KIND_TAP, action)
 
 
 func test_side_swipes_roll() -> void:

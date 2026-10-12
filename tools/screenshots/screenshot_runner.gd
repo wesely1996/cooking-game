@@ -236,7 +236,7 @@ func _check_input(screen: Node, shift: Shift) -> void:
 	_check(screen._minigame.visible, "tapping a full board opens the mini-game")
 	var center: Vector2 = screen._minigame.get_transform() * (screen._minigame.size * 0.5)
 	for i in 2:
-		await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
+		await _tap(center)
 	# Pause with LATER: the board keeps the two chops.
 	await _tap(screen._minigame.get_transform() * screen._minigame.close_rect().get_center())
 	_check(not screen._minigame.visible, "LATER closes the mini-game")
@@ -245,15 +245,15 @@ func _check_input(screen: Node, shift: Shift) -> void:
 	await _shot("03b_paused_work")
 	await _tap(screen.station_center(board))
 	_check(screen._minigame.visible and screen._minigame.done == 2.0, "tapping the board again goes on where it stopped")
-	await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
+	await _tap(center)
 	# Tapping the kitchen pauses too, and the tap still does its job.
 	await _tap(screen.crate_center("basil"))
 	_check(not screen._minigame.visible, "tapping outside pauses the work")
 	_check(k.item_at(0, 0) != null and k.item_at(0, 0).type == "basil", "...and the tap still takes an ingredient")
 	await _tap(screen.station_center(board))
-	await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
+	await _tap(center)
 	var chopped := k.item_at(0, board)
-	_check(chopped != null and chopped.type == "chopped_tomato", "four swipes down, with breaks, chop the tomato")
+	_check(chopped != null and chopped.type == "chopped_tomato", "four taps, with breaks, chop the tomato")
 	await _wait(0.8)
 	for station in [0, board]:
 		await _drag(screen.station_center(station), screen.bin_center())
