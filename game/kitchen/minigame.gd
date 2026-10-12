@@ -30,12 +30,15 @@ const ACTION_KINDS := {
 	"roll": KIND_SWIPE_SIDE,
 	"stir": KIND_CIRCLE, "crank": KIND_CIRCLE, "whisk": KIND_CIRCLE, "blend": KIND_CIRCLE,
 }
+## The one big word that says what to do.
 const HINTS := {
-	KIND_SWIPE_DOWN: "SWIPE DOWN!",
-	KIND_TAP: "TAP TAP TAP!",
-	KIND_SWIPE_SIDE: "SWIPE ← →",
-	KIND_CIRCLE: "STIR IN CIRCLES!",
+	KIND_SWIPE_DOWN: "SWIPE!",
+	KIND_TAP: "TAP!",
+	KIND_SWIPE_SIDE: "ROLL!",
+	KIND_CIRCLE: "CIRCLE!",
 }
+const ARROW_COLOR := Color("#ff2fa4")
+const TRAIL_POINTS := 24
 
 var action := ""
 var kind := KIND_TAP
@@ -50,6 +53,9 @@ var _last_angle := 0.0
 var _angle_sum := 0.0
 var _time := 0.0
 var _finished := false
+var _caption := ""  # e.g. "CHOP THE TOMATO"
+var _trail: Array[Vector2] = []  # the finger's last positions (panel coordinates)
+var _trail_fade := 0.0
 var _view: SubViewportContainer
 var _viewport: SubViewport
 var _front: Control  # the gesture hint, drawn over the 3D close-up
@@ -73,9 +79,11 @@ func _init() -> void:
 ## camera and world: a close-up of the station; without them the food's
 ## picture is shown instead.
 func open(p_action: String, p_needed: float, p_done: float, p_item: Texture2D, p_tool: Texture2D,
-		camera: Camera3D = null, world: World3D = null) -> void:
+		camera: Camera3D = null, world: World3D = null, caption: String = "") -> void:
 	action = p_action
 	kind = ACTION_KINDS.get(action, KIND_TAP)
+	_caption = caption.to_upper()
+	_trail.clear()
 	needed = p_needed
 	done = p_done
 	item_texture = p_item
@@ -155,6 +163,8 @@ func handle_input(event: InputEvent, local: Vector2) -> bool:
 				pause()
 				return true
 			_pressed = true
+			_trail = [local]
+			_trail_fade = 1.0
 			_anchor = local
 			_last_angle = (local - size * 0.5).angle()
 			if kind == KIND_TAP:
@@ -163,6 +173,10 @@ func handle_input(event: InputEvent, local: Vector2) -> bool:
 			_pressed = false
 		return true
 	if event is InputEventMouseMotion and _pressed:
+		_trail.append(local)
+		if _trail.size() > TRAIL_POINTS:
+			_trail.remove_at(0)
+		_trail_fade = 1.0
 		match kind:
 			KIND_SWIPE_DOWN:
 				if local.y - _anchor.y >= SWIPE_DISTANCE and absf(local.x - _anchor.x) < local.y - _anchor.y:
@@ -188,6 +202,8 @@ func handle_input(event: InputEvent, local: Vector2) -> bool:
 func _process(delta: float) -> void:
 	if visible:
 		_time += delta
+		if not _pressed:
+			_trail_fade = maxf(_trail_fade - delta * 2.5, 0.0)
 		queue_redraw()
 		_front.queue_redraw()
 
@@ -201,9 +217,10 @@ func _draw() -> void:
 	draw_rect(rect, Art.PAPER)
 	draw_rect(rect, Art.INK, false, 5.0)
 	var font := Art.comic_font()
-	var title: String = HINTS.get(kind, "")
-	draw_string_outline(font, Vector2(24, 54), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 42, 8, Color.WHITE)
-	draw_string(font, Vector2(24, 54), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 42, Comic.MAGENTA)
+	# What this is for, e.g. "CHOP THE TOMATO".
+	var caption := _caption if not _caption.is_empty() else str(action).to_upper()
+	draw_string_outline(font, Vector2(24, 54), caption, HORIZONTAL_ALIGNMENT_LEFT, size.x - 210, 40, 8, Color.WHITE)
+	draw_string(font, Vector2(24, 54), caption, HORIZONTAL_ALIGNMENT_LEFT, size.x - 210, 40, Comic.MAGENTA)
 	draw_string(Art.ui_font(), Vector2(26, 84), "Busy? Tap LATER: the work is kept.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Art.INK, 0.65))
 	# LATER (pause) button.
 	var close := close_rect()
@@ -224,28 +241,79 @@ func _draw() -> void:
 		var pip := Rect2(pos, Vector2(pip_size, pip_size))
 		draw_rect(pip, Comic.CYAN if i < int(done) else Color.WHITE)
 		draw_rect(pip, Art.INK, false, 3.0)
+	var left := count - int(done)
+	if left > 0 and not _finished:
+		var more := "%d MORE!" % left if left > 1 else "LAST ONE!"
+		draw_string(font, Vector2(size.x * 0.5 + total * 0.5 + 12, size.y - 20), more, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Art.INK)
 
 
-## Over the close-up: the food (when there is no 3D view), the moving tool
-## that shows the gesture, and the view's ink frame.
+## Over the close-up: the food (when there is no 3D view), the big word and
+## the animated arrow that show the gesture, the finger's trail, and the
+## view's ink frame.
 func _draw_front() -> void:
 	var c := _front
-	var center := c.size * 0.5 + Vector2(0, 10)
+	var center := c.size * 0.5 + Vector2(0, 14)
 	if item_texture and not _view.visible:
 		var s := minf(150.0, c.size.y - 20.0) * (1.0 + 0.04 * sin(_time * 8.0))
 		c.draw_texture_rect(item_texture, Rect2(center - Vector2(s, s) * 0.5, Vector2(s, s)), false)
-	if tool_texture:
-		c.draw_texture_rect(tool_texture, Rect2(center + _tool_offset(), Vector2(84, 84)), false, Color(1, 1, 1, 0.9))
+	if not _finished:
+		_draw_gesture(c, center)
+		var word: String = HINTS.get(kind, "")
+		var pulse := 1.0 + 0.06 * sin(_time * 6.0)
+		UiStyle.draw_print_title(c, Vector2(0, 66), word, int(64 * pulse), Comic.YELLOW, c.size.x)
+	# The finger's trail, so you can see the gesture land.
+	if _trail.size() > 1 and _trail_fade > 0.0:
+		var offset := view_rect().position
+		var points := PackedVector2Array()
+		for point in _trail:
+			points.append(point - offset)
+		c.draw_polyline(points, Color(Art.INK, 0.6 * _trail_fade), 16.0, true)
+		c.draw_polyline(points, Color(Comic.YELLOW, 0.9 * _trail_fade), 10.0, true)
 	c.draw_rect(Rect2(Vector2.ZERO, c.size), Art.INK, false, 5.0)
 
 
-func _tool_offset() -> Vector2:
+## A big animated arrow (or rings, for taps) that shows the gesture.
+func _draw_gesture(c: Control, center: Vector2) -> void:
 	var t := fmod(_time, 1.0)
+	var reach := minf(c.size.y * 0.32, 90.0)
 	match kind:
 		KIND_SWIPE_DOWN:
-			return Vector2(30, -110 + t * 120)
+			var top := center + Vector2(0, -reach + t * reach * 0.6)
+			_arrow(c, top, top + Vector2(0, reach * 1.2), 1.0 - t * 0.5)
 		KIND_SWIPE_SIDE:
-			return Vector2(-42 + sin(_time * 6.0) * 90.0, -20)
+			var shift := sin(_time * 5.0) * reach * 0.35
+			_arrow(c, center + Vector2(shift, 0), center + Vector2(shift + reach * 1.1, 0), 1.0)
+			_arrow(c, center + Vector2(shift, 0), center + Vector2(shift - reach * 1.1, 0), 1.0)
 		KIND_CIRCLE:
-			return Vector2(cos(_time * 5.0), sin(_time * 5.0)) * 70.0 - Vector2(42, 42)
-	return Vector2(40, -90 + absf(sin(_time * 10.0)) * 30.0)
+			var start := _time * 4.0
+			var radius := reach * 0.9
+			c.draw_arc(center, radius, start, start + PI * 1.5, 40, Art.INK, 22.0, true)
+			c.draw_arc(center, radius, start, start + PI * 1.5, 40, ARROW_COLOR, 14.0, true)
+			var end_angle := start + PI * 1.5
+			var tip := center + Vector2(cos(end_angle), sin(end_angle)) * radius
+			var along := Vector2(-sin(end_angle), cos(end_angle))
+			_arrow_head(c, tip, along)
+		_:
+			# Taps: rings growing out of a fingertip.
+			for i in 3:
+				var grow := fmod(_time * 1.6 + i / 3.0, 1.0)
+				c.draw_arc(center, 18.0 + grow * reach, 0, TAU, 40, Color(ARROW_COLOR, 1.0 - grow), 8.0, true)
+			var press := 1.0 - absf(sin(_time * 6.0)) * 0.25
+			c.draw_circle(center, 26.0 * press + 4.0, Art.INK)
+			c.draw_circle(center, 26.0 * press, Color.WHITE)
+
+
+func _arrow(c: Control, from: Vector2, to: Vector2, alpha: float) -> void:
+	var dir := (to - from).normalized()
+	var shaft_end := to - dir * 26.0
+	c.draw_line(from, shaft_end, Color(Art.INK, alpha), 24.0, true)
+	c.draw_line(from, shaft_end, Color(ARROW_COLOR, alpha), 16.0, true)
+	_arrow_head(c, to, dir, alpha)
+
+
+func _arrow_head(c: Control, tip: Vector2, dir: Vector2, alpha: float = 1.0) -> void:
+	var side := dir.orthogonal()
+	var head := PackedVector2Array([tip + dir * 8.0, tip - dir * 34.0 + side * 28.0, tip - dir * 34.0 - side * 28.0])
+	c.draw_colored_polygon(head, Color(Art.INK, alpha))
+	var inner := PackedVector2Array([tip, tip - dir * 28.0 + side * 20.0, tip - dir * 28.0 - side * 20.0])
+	c.draw_colored_polygon(inner, Color(ARROW_COLOR, alpha))

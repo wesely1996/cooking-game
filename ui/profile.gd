@@ -35,7 +35,7 @@ func _chef_panel() -> Control:
 	left.add_theme_constant_override("separation", 8)
 	row.add_child(left)
 	_portrait = ChefView.new()
-	_portrait.custom_minimum_size = Vector2(210, 240)
+	_portrait.custom_minimum_size = Vector2(230, 300)
 	_portrait.look = Game.profile.look
 	left.add_child(_portrait)
 	left.add_child(UiStyle.left_text("Name", 18))

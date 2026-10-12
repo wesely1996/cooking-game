@@ -32,11 +32,11 @@ func test_names_are_cleaned() -> void:
 func test_save_round_trip() -> void:
 	var profile := PlayerProfile.new()
 	profile.name = "Luigi"
-	profile.look = {"skin": 2, "hat": 1}
+	profile.look = {"model": 4, "hat": 1}
 	profile.record("japanese", 420, 200.0, 7)
 	var copy := PlayerProfile.new()
 	copy.load_dict(JSON.parse_string(JSON.stringify(profile.to_dict())))
 	assert_eq(copy.name, "Luigi")
-	assert_eq(int(copy.look.skin), 2)
+	assert_eq(int(copy.look.model), 4)
 	assert_eq(copy.best_cuisine(), "japanese")
 	assert_eq(copy.dishes_served, 7)

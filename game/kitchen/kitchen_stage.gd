@@ -15,9 +15,10 @@ const SET_SPACING := 100.0
 const SLOT := 1.05  # width of one counter unit
 const ROW_DEPTH := 1.25
 const COUNTER_HEIGHT := 1.0
-const CAMERA_PITCH := deg_to_rad(38.0)
+const CAMERA_PITCH := deg_to_rad(44.0)
+const TOP_CROP := 0.15  # how much of the cabinet fronts shows below the tops
 const CAMERA_FOV := 34.0
-const FRAME_MARGIN := 1.08
+const FRAME_MARGIN := 1.02
 const SHELF_HEIGHT := 0.6
 const SHELF_WIDTH := 0.8
 ## Spider-Verse print colours behind each panel's set; the floor is dark ink
@@ -82,7 +83,8 @@ func build(panels: Array) -> void:
 			"team":
 				_build_people(set_root, entry, panel.get("mates", []))
 			"rival":
-				_build_people(set_root, entry, [])
+				# The rival is a 2D status card on the screen: an empty set.
+				entry.bounds = AABB(Vector3(-1, 0, -1), Vector3(2, 2, 2))
 			_:
 				_build_counters(set_root, entry, i)
 		_add_backdrop(set_root, entry)
@@ -94,7 +96,7 @@ func build(panels: Array) -> void:
 func _build_counters(root: Node3D, entry: Dictionary, set_index: int) -> void:
 	var stations: Array = entry.stations
 	var n := stations.size() + (1 if entry.kind == "prep" else 0)  # the bin gets a spot in prep
-	var rows := 1 if n <= 4 else 2
+	var rows := best_rows(n, float(entry.get("aspect", 1.6)), entry.kind == "pass")
 	var cols := ceili(float(n) / rows)
 	var lo := Vector3(INF, 0, INF)
 	var hi := Vector3(-INF, 0, -INF)
@@ -127,11 +129,51 @@ func _build_counters(root: Node3D, entry: Dictionary, set_index: int) -> void:
 		_anchors[index] = anchor
 		_station_nodes[index] = model
 		_station_set[index] = set_index
-	entry.bounds = AABB(lo + Vector3(-SLOT * 0.6, 0, -0.6), (hi - lo) + Vector3(SLOT * 1.2, 1.6, 1.2))
+	# Tight around the counter tops: the cabinet fronts below are cropped
+	# away, so the tops (where the food goes) fill the panel. The chef's head
+	# may poke out of the top.
+	var floor_y := COUNTER_HEIGHT - TOP_CROP
+	for index in stations:
+		if _anchors.has(index):
+			floor_y = minf(floor_y, (_anchors[index] as Node3D).position.y - TOP_CROP)
+	entry.bounds = AABB(lo + Vector3(-SLOT * 0.52, floor_y, -0.45), (hi - lo) + Vector3(SLOT * 1.04, 1.4 - floor_y, 0.95))
 
 
 ## The pantry: the food on a shelf, read top to bottom. The number of
 ## columns is the one that makes the food biggest in the panel.
+## How big a counter set of n stations looks from the camera, in world units
+## (width, height): the panel layout uses it to give panels the right shape.
+## A set with the serving window shows more height (its shelf sits low).
+static func counter_extent(n: int, rows: int, with_window: bool = false) -> Vector2:
+	var cols := ceili(float(maxi(n, 1)) / rows)
+	var height := (1.4 if with_window else 0.7) * cos(CAMERA_PITCH) + ((rows - 1) * ROW_DEPTH + 0.95) * sin(CAMERA_PITCH)
+	return Vector2(cols * SLOT * 1.04 + 0.1, height)
+
+
+## One or two rows of stations, whichever shows them biggest in a panel of
+## this aspect (width / height).
+static func best_rows(n: int, aspect: float, with_window: bool = false) -> int:
+	var one := counter_extent(n, 1, with_window)
+	var two := counter_extent(n, 2, with_window)
+	var fit_one := minf(aspect / one.x, 1.0 / one.y)
+	var fit_two := minf(aspect / two.x, 1.0 / two.y)
+	return 2 if n > 1 and fit_two > fit_one * 1.05 else 1
+
+
+## How big the pantry shelf looks for n crates (see _build_pantry).
+static func pantry_extent(n: int, aspect: float) -> Vector2:
+	var best := Vector2(1, 1)
+	var best_fit := 0.0
+	for cols in range(1, 4):
+		var rows := maxi(ceili(n / float(cols)), 1)
+		var extent := Vector2(cols * SHELF_WIDTH + 0.3, rows * SHELF_HEIGHT + 0.2)
+		var fit := minf(aspect / extent.x, 1.0 / extent.y)
+		if fit > best_fit:
+			best_fit = fit
+			best = extent
+	return best
+
+
 func _build_pantry(root: Node3D, entry: Dictionary) -> void:
 	var crates: Array = entry.crates
 	var aspect: float = entry.get("aspect", 0.4)
@@ -190,7 +232,7 @@ func _build_people(root: Node3D, entry: Dictionary, mates: Array) -> void:
 		Models.animate(person, "idle", true)
 	entry.pitch = deg_to_rad(14.0)
 	# Room under their feet for the name tag drawn over the panel.
-	entry.bounds = AABB(Vector3(-count * 0.8, -0.5, -1.0), Vector3(count * 1.6, 2.1, 1.5))
+	entry.bounds = AABB(Vector3(-count * 0.8, -0.2, -1.0), Vector3(count * 1.6, 1.8, 1.5))
 
 
 func _add_backdrop(root: Node3D, entry: Dictionary) -> void:
