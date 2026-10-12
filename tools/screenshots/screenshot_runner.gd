@@ -63,7 +63,7 @@ func _run() -> void:
 	await _wait(0.3)
 	await _shot("02d_arcade_picker")
 	Game.profile.name = "Nikola"
-	Game.profile.look = {"skin": 1, "hair": 1, "hair_color": 3, "hat": 0, "apron": 1}
+	Game.profile.look = {"model": 3, "hat": 0, "hat_color": 0, "apron": 1}
 	Game.profile.record("italian", 320, 180.0, 6)
 	Game.profile.record("italian", 280, 180.0, 5)
 	Game.goto(Game.SCENE_PROFILE)
@@ -97,6 +97,7 @@ func _run() -> void:
 	# Real pointer input (a headless run gets no GUI input, so this part needs
 	# a display): taps, drags, the chopping mini-game, LATER and resuming.
 	if DisplayServer.get_name() != "headless":
+		await _check_dismiss(screen)
 		await _check_input(screen, shift)
 
 	# Make the caprese the way a player would, through intents.
@@ -197,6 +198,21 @@ func _play_a_bit(level_id: String, players: int, shot: String) -> void:
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
 	await _shot(shot)
+
+
+## Tips and the prologue banner go away when tapped, and the tap does
+## nothing else.
+func _check_dismiss(screen: Node) -> void:
+	await _wait(0.4)
+	var tip: Rect2 = screen._hint_rect
+	_check(tip.has_area(), "the tip is on screen")
+	await _tap(tip.get_center())
+	_check(screen._hint_text.is_empty() and screen._selected < 0, "tapping the tip puts it away, and nothing else happens")
+	await _wait(0.4)
+	_check(screen._hint_text.is_empty(), "the tip stays away until the next step")
+	var banner: Rect2 = screen._banner_rect
+	await _tap(banner.get_center())
+	_check(screen._banner_hidden, "tapping the prologue banner puts it away")
 
 
 func _check_input(screen: Node, shift: Shift) -> void:

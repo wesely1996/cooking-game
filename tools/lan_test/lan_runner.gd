@@ -34,7 +34,7 @@ func _ready() -> void:
 	for dish in ["caprese_salad", "pasta_pomodoro"]:
 		Game.progression.discover(dish)
 	Game.profile.name = "Nikola" if _role == "host" else "Maria"
-	Game.profile.look = {"skin": 1, "hair": 1, "hair_color": 3, "hat": 0, "apron": 0} if _role == "host" else {"skin": 3, "hair": 2, "hair_color": 0, "hat": 2, "apron": 2}
+	Game.profile.look = {"model": 3, "hat": 0, "hat_color": 0, "apron": 0} if _role == "host" else {"model": 8, "hat": 2, "hat_color": 3, "apron": 2}
 	await get_tree().process_frame
 	var dummy := Node.new()
 	get_tree().root.add_child(dummy)
@@ -131,7 +131,7 @@ func _run_client() -> void:
 	await _shot("1_lobby_found")
 	lobby._join(address)
 	_check(await _until(func(): return Net.is_client() and Net.local_player == 1), "joined as chef 2")
-	_check(Net.profile_of(0).name == "Nikola" and int(Net.profile_of(0).look.hair) == 1, "the friend knows the host's name and chef")
+	_check(Net.profile_of(0).name == "Nikola" and int(Net.profile_of(0).look.model) == 3, "the friend knows the host's name and chef")
 	await _wait(0.3)
 	await _shot("2_lobby_joined")
 

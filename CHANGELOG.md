@@ -5,11 +5,36 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [0.6.1] - 2026-10-12
+
+Less clunky: bigger things to tap, nothing in the way, clearer mini-games.
+
+### Changed
+- **The kitchen uses its space:** the page picks the panel layout that shows
+  everything biggest for your kitchen (solo, team and competition kitchens
+  get different layouts), the cameras zoom in on the counter tops instead of
+  the cabinet fronts, and each panel is a tap target: a tap goes to the
+  nearest station or crate in the panel, so the whole column is yours to hit.
+- **Teammates stand one above the other**, each in a panel of their own.
+- **The rival is a small status card:** what they're cooking, a progress bar
+  and their dishes and points.
+- **Tips, the "LEARNING" banner and customers' speech balloons go away when
+  you tap them** (that tap does nothing else). A tip comes back at the next
+  step. Teammate name tags are small and see-through.
+- **Mini-games say what to do:** one huge word (SWIPE!, TAP!, ROLL!,
+  CIRCLE!), a big animated arrow for the gesture, a trail behind your
+  finger, what you're making ("CHOP THE TOMATO") and how many more to go.
+- **Choose your chef:** pick one of 10 chefs, a hat (toque, cap, bandana or
+  none), the hat's colour and the apron's colour. Your old chef carries over.
+
+### Fixed
+- The 0.6.0 notes listed old v0.5 menus that the new kitchen replaced.
+
 ## [0.6.0] - 2026-10-12
 
 v0.6 rebuilds the kitchen as a 3D comic page with Overcooked-style recipes
-(see docs/V06_DESIGN.md). The changes below were finished first and ship
-with it; 0.5.0 was never released on its own.
+(see docs/V06_DESIGN.md). It also carries the unreleased 0.5 work that still
+fits the new kitchen (0.5.0 was never released on its own).
 
 ### Changed: Overcooked-style cooking
 - **Multipurpose kitchen gear** shared by every cuisine: chopping board,
@@ -76,37 +101,12 @@ with it; 0.5.0 was never released on its own.
 - Dev builds and screenshots from CI are kept for 7 days, and a daily
   cleanup workflow deletes older ones. Release downloads are kept forever.
 
-### Added
-- **Three new cuisines, each with its own World Tour region:**
-  - **USA:** cheeseburgers, fries and milkshakes, with a griddle, a deep fryer
-    and a blender (draw circles to blend). The *County Fair* festival (hot dogs
-    and fries) and the *Smoke & Fire Championship* against Big Earl, a grill
-    showman who sometimes burns things.
-  - **Spain:** tortilla española, patatas bravas, paella and gazpacho, with a
-    paella pan and a frying pan (whisk eggs with circles). The *Fiesta del
-    Tomate* festival (churros and gazpacho) and the *Copa de la Paella*
-    against Abuela Carmen.
-  - **France:** chocolate crêpes, French onion soup and ratatouille, with a
-    crêpe pan. The *Fête de la Gastronomie* festival (croissants and pain
-    perdu) and the *Golden Toque World Final* against Chef Céleste, the best
-    chef in the world.
-  - Arcade for all three, LAN play, 50 new food pictures and 6 new pieces of
-    kitchen gear.
-  - Recipes share ingredients across cuisines: cut potatoes become fries or go
-    into a tortilla, fries with hot sauce become patatas bravas, and Italian
-    tomato sauce goes into ratatouille.
+### Also in this release
 - **Pause work and finish it later:** leave a mini-game with the LATER button,
   or just tap anywhere else in the kitchen (the tap still does its job). The
-  food keeps its progress ring and gets a tool badge: tap the badge to carry
-  on where you stopped. The progress stays with the food when you move it or
-  throw it to a teammate.
-
-### Changed
-- Food on the counter is **50% bigger**. When the counter is too narrow for
-  one row of big plates, it uses two rows.
-- The World Tour now goes Italy → Mexico → USA → Spain → Japan → France.
-  Regions you already have results in stay open, so a v0.4 save keeps Japan.
-- The arcade picker shows the cuisines in two rows.
+  food keeps its progress, even when you move it or throw it to a teammate;
+  tap it again to carry on.
+- The World Tour goes Italy → Mexico → USA → Spain → Japan → France.
 
 ## [0.4.0] - 2026-10-02
 

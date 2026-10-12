@@ -212,18 +212,18 @@ static func character(variant: int) -> Node3D:
 	return pivot
 
 
-## The player's chef: a character picked by skin and hair, plus a hat and an
-## apron in the chosen colours.
+## The player's chef: the chosen character model, plus a hat and an apron
+## in the chosen colours.
 static func chef(look: Dictionary) -> Node3D:
 	look = ChefLook.sanitize(look)
-	var variant: int = CHEF_VARIANTS[(int(look.skin) * 2 + int(look.hair)) % CHEF_VARIANTS.size()]
+	var variant: int = CHEF_VARIANTS[int(look.model) % CHEF_VARIANTS.size()]
 	var pivot := character(variant)
 	var skeleton := _skeleton(pivot)
 	if skeleton:
 		var head := BoneAttachment3D.new()
 		head.bone_name = "head"
 		skeleton.add_child(head)
-		var hat := _hat(int(look.hat), ChefLook.APRONS[int(look.apron)], ChefLook.HAIR_COLORS[int(look.hair_color)])
+		var hat := _hat(int(look.hat), ChefLook.HAT_COLORS[int(look.hat_color)])
 		if hat:
 			head.add_child(hat)
 		var torso := BoneAttachment3D.new()
@@ -248,14 +248,14 @@ static func animate(character_node: Node, animation: String, loop: bool = false)
 		player.queue("idle")
 
 
-static func _hat(kind: int, color: Color, hair: Color) -> Node3D:
+static func _hat(kind: int, color: Color) -> Node3D:
 	var hat := Node3D.new()
 	match kind:
 		0:  # toque
-			var band := _cylinder(0.13, 0.13, 0.08, Color.WHITE)
+			var band := _cylinder(0.13, 0.13, 0.08, color)
 			band.position.y = 0.35
 			hat.add_child(band)
-			var puff := _sphere(0.3, 0.15, Color.WHITE)
+			var puff := _sphere(0.3, 0.15, color)
 			puff.position.y = 0.43
 			hat.add_child(puff)
 		1:  # cap

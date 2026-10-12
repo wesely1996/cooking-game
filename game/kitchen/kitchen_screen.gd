@@ -98,6 +98,15 @@ var _rng := RandomNumberGenerator.new()
 var _hint_bot := KitchenBot.new()
 var _hint_text := ""
 var _hint_points: Array[Vector2] = []
+# Overlays a tap puts away (so they don't hide the cooking): the tip until
+# the next step, the prologue banner for the rest of the prologue, and each
+# customer's balloon.
+var _hint_rect := Rect2()
+var _hint_dismissed := ""
+var _banner_rect := Rect2()
+var _banner_hidden := false
+var _balloon_rects := {}  # order uid -> Rect2
+var _dismissed_balloons := {}  # order uid -> true
 var _hint_timer := 0.0
 
 
@@ -229,26 +238,7 @@ func _layout() -> void:
 	_order_bar.position = Vector2.ZERO
 	_order_bar.size = Vector2(w, TOP_BAR_H)
 
-	# The page: a narrow pantry on the left; on the right a top row (prep and
-	# stove) and a bottom row (pass, team, rival).
 	var page := Rect2(MARGIN, TOP_BAR_H + MARGIN, w - MARGIN * 2.0, h - TOP_BAR_H - MARGIN * 2.0)
-	var kinds := _panel_kinds()
-	var pantry_w := clampf(page.size.x * 0.17, 150.0, 230.0)
-	var right := Rect2(page.position.x + pantry_w + GUTTER, page.position.y, page.size.x - pantry_w - GUTTER, page.size.y)
-	var top_row: Array[String] = []
-	var bottom_row: Array[String] = []
-	for kind in kinds:
-		if kind in [PANEL_PREP, PANEL_STOVE]:
-			top_row.append(kind)
-		elif kind != PANEL_PANTRY:
-			bottom_row.append(kind)
-	var top_h := right.size.y * (0.56 if not bottom_row.is_empty() else 1.0)
-	_panels.clear()
-	_panels.append({"kind": PANEL_PANTRY, "rect": Rect2(page.position, Vector2(pantry_w, page.size.y))})
-	_add_row(top_row, Rect2(right.position, Vector2(right.size.x, top_h)), [0.58, 0.42])
-	if not bottom_row.is_empty():
-		_add_row(bottom_row, Rect2(right.position + Vector2(0, top_h + GUTTER), Vector2(right.size.x, right.size.y - top_h - GUTTER)), [0.5, 0.5])
-
 	# Which panel each station is in.
 	var has_pass := pk.serves
 	var counters_total := pk.stations.filter(func(st): return db.station_kind(st.type) == ContentDB.STATION_COUNTER).size()
@@ -261,17 +251,21 @@ func _layout() -> void:
 		if not by_panel.has(kind):
 			by_panel[kind] = []
 		by_panel[kind].append(st.index)
+
+	# The panels: the layout that shows everything biggest for this kitchen
+	# (solo, team and competition kitchens come out differently).
 	var others: Array[int] = []
 	for p in kitchen.players.size():
 		if p != _me:
 			others.append(p)
+	_panels = _stack_team(_plan_panels(page, _panel_kinds(), by_panel), others)
 
 	# Build the 3D sets and a viewport per panel.
 	var plan := []
 	for panel in _panels:
 		var rect: Rect2 = panel.rect
 		plan.append({"kind": panel.kind, "stations": by_panel.get(panel.kind, []), "crates": pk.crates,
-			"mates": others, "aspect": rect.size.x / maxf(rect.size.y, 1.0)})
+			"mates": [panel.player] if panel.has("player") else others, "aspect": rect.size.x / maxf(rect.size.y, 1.0)})
 	_stage.build(plan)
 	for view in _views:
 		view.container.queue_free()
@@ -293,6 +287,10 @@ func _layout() -> void:
 		camera.current = true
 		_views_layer.add_child(container)
 		_views.append({"container": container, "viewport": viewport, "camera": camera})
+		if _panels[i].kind == PANEL_RIVAL:
+			# The rival is a 2D status card (see _draw_rival): nothing to render.
+			container.visible = false
+			viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
 	# Where the stations, crates and bin show up on screen (for taps and drags).
 	_spots.clear()
@@ -317,13 +315,11 @@ func _layout() -> void:
 	var bin_center := _project(prep_set, _stage.bin_position())
 	_bin_rect = Rect2(bin_center - Vector2(46, 56), Vector2(92, 112))
 
-	# Teammates: side by side in the team panel.
+	# Teammates: one panel each, one above the other.
 	_mates.clear()
-	var team := _panel_rect(PANEL_TEAM)
-	if team.has_area():
-		var each := team.size.x / others.size()
-		for i in others.size():
-			_mates.append({"player": others[i], "rect": Rect2(team.position + Vector2(i * each, 0), Vector2(each, team.size.y)).grow(-4)})
+	for panel in _panels:
+		if panel.kind == PANEL_TEAM:
+			_mates.append({"player": panel.player, "rect": (panel.rect as Rect2).grow(-4)})
 
 	_pause_rect = Rect2(w - 66, TOP_BAR_H + MARGIN + 4, 54, 54)
 	_skip_rect = Rect2(w * 0.5 - 90, TOP_BAR_H + 62, 180, 52)
@@ -341,16 +337,202 @@ func _project(set_index: int, world: Vector3) -> Vector2:
 	return _panels[set_index].rect.position + camera.unproject_position(world)
 
 
-func _add_row(kinds: Array[String], rect: Rect2, shares: Array) -> void:
+## The team panel becomes a column of panels, one per teammate, one above
+## the other (each its own camera), so every teammate is a big throw target.
+func _stack_team(panels: Array[Dictionary], others: Array[int]) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for panel in panels:
+		if panel.kind != PANEL_TEAM or others.is_empty():
+			result.append(panel)
+			continue
+		var rect: Rect2 = panel.rect
+		var each := (rect.size.y - GUTTER * (others.size() - 1)) / others.size()
+		for i in others.size():
+			var slot := Rect2(rect.position + Vector2(0, i * (each + GUTTER)), Vector2(rect.size.x, each))
+			result.append({"kind": PANEL_TEAM, "rect": slot, "player": others[i]})
+	return result
+
+
+## Tries a few comic-page layouts with a range of panel sizes and keeps the
+## one that shows the panels' contents biggest. Every panel's content (a row
+## of counters, the pantry shelf, the team) has a natural shape, so the score
+## of a layout is how large each content can be drawn in its panel, weighted
+## by how much the player taps it.
+func _plan_panels(page: Rect2, kinds: Array[String], by_panel: Dictionary) -> Array[Dictionary]:
+	var pk := kitchen.players[_me]
+	var counts := {
+		PANEL_PREP: by_panel.get(PANEL_PREP, []).size() + 1,  # the bin
+		PANEL_STOVE: by_panel.get(PANEL_STOVE, []).size(),
+		PANEL_PASS: by_panel.get(PANEL_PASS, []).size(),
+		PANEL_PANTRY: pk.crates.size(),
+		PANEL_TEAM: maxi(kitchen.players.size() - 1, 1),
+		PANEL_RIVAL: 1,
+	}
+	var others: Array[String] = []
+	for kind in kinds:
+		if kind not in [PANEL_PANTRY, PANEL_PREP]:
+			others.append(kind)
+	var best: Array[Dictionary] = []
+	var best_score := -INF
+	var steps := [0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75]
+	for template in 5:
+		for a in [0.13, 0.16, 0.19, 0.22, 0.26]:
+			for b in steps:
+				for c in steps:
+					var rects := _layout_template(template, page, a, b, c, others)
+					if rects.is_empty():
+						continue
+					var score := _layout_score(rects, counts)
+					if score > best_score:
+						best_score = score
+						best = []
+						for kind in kinds:
+							if rects.has(kind):
+								best.append({"kind": kind, "rect": rects[kind]})
+	return best
+
+
+## The panel rects of one layout, or {} if it doesn't fit these panels.
+## a: pantry width, b and c: the template's two other splits (fractions).
+func _layout_template(template: int, page: Rect2, a: float, b: float, c: float, others: Array[String]) -> Dictionary:
+	var rects := {}
+	var g := GUTTER
+	var pantry := Rect2(page.position, Vector2(page.size.x * a, page.size.y))
+	var rest := Rect2(pantry.end.x + g, page.position.y, page.end.x - pantry.end.x - g, page.size.y)
+	match template:
+		0:  # pantry | prep and the stove on top, the rest below
+			rects[PANEL_PANTRY] = pantry
+			var top_kinds: Array[String] = [PANEL_PREP]
+			var bottom: Array[String] = []
+			for kind in others:
+				if kind == PANEL_STOVE:
+					top_kinds.append(kind)
+				else:
+					bottom.append(kind)
+			var split := b if not bottom.is_empty() else 1.0
+			_split_row(rects, top_kinds, _top(rest, split, g), [c])
+			_split_row(rects, bottom, _bottom(rest, split, g), [])
+		1:  # pantry | prep, full height | everything else stacked
+			rects[PANEL_PANTRY] = pantry
+			if others.is_empty():
+				return {}
+			var prep := Rect2(rest.position, Vector2(rest.size.x * b, rest.size.y))
+			rects[PANEL_PREP] = prep
+			var column := Rect2(prep.end.x + g, rest.position.y, rest.end.x - prep.end.x - g, rest.size.y)
+			_split_column(rects, others, column, [c])
+		2:  # pantry | prep across the top, everything else in a row below
+			rects[PANEL_PANTRY] = pantry
+			if others.is_empty():
+				return {}
+			rects[PANEL_PREP] = _top(rest, b, g)
+			_split_row(rects, others, _bottom(rest, b, g), [c])
+		3:  # one row of tall panels
+			rects[PANEL_PANTRY] = pantry
+			var row: Array[String] = [PANEL_PREP]
+			row.append_array(others)
+			_split_row(rects, row, rest, [b, c])
+		4:  # pantry over the pass on the left | prep on top, the rest below
+			if not others.has(PANEL_PASS):
+				return {}
+			var left := Rect2(page.position, Vector2(page.size.x * (a + 0.1), page.size.y))
+			rects[PANEL_PANTRY] = _top(left, b, g)
+			rects[PANEL_PASS] = _bottom(left, b, g)
+			var right := Rect2(left.end.x + g, page.position.y, page.end.x - left.end.x - g, page.size.y)
+			var rest_kinds: Array[String] = []
+			for kind in others:
+				if kind != PANEL_PASS:
+					rest_kinds.append(kind)
+			if rest_kinds.is_empty():
+				rects[PANEL_PREP] = right
+			else:
+				rects[PANEL_PREP] = _top(right, c, g)
+				_split_row(rects, rest_kinds, _bottom(right, c, g), [])
+	for kind in rects:
+		var rect: Rect2 = rects[kind]
+		if rect.size.x < 110.0 or rect.size.y < 110.0:
+			return {}
+	return rects
+
+
+## How well a layout shows its panels: the log of each content's drawn size,
+## weighted by how much the player uses the panel.
+func _layout_score(rects: Dictionary, counts: Dictionary) -> float:
+	# Prep is tapped the most. Teammates and the rival only need to be seen,
+	# so they stop gaining once they're comfortably big (CAPS, pixels per
+	# world unit); the pantry and the counters can always use more.
+	const WEIGHTS := {PANEL_PREP: 1.5, PANEL_STOVE: 1.0, PANEL_PASS: 0.8, PANEL_PANTRY: 0.8, PANEL_TEAM: 0.4, PANEL_RIVAL: 0.25}
+	const CAPS := {PANEL_TEAM: 120.0, PANEL_RIVAL: 70.0, PANEL_PANTRY: 190.0, PANEL_PREP: 200.0, PANEL_STOVE: 170.0, PANEL_PASS: 170.0}
+	var score := 0.0
+	for kind in rects:
+		var rect: Rect2 = rects[kind]
+		var aspect := rect.size.x / rect.size.y
+		var n: int = counts.get(kind, 1)
+		var extent: Vector2
+		match kind:
+			PANEL_PANTRY:
+				extent = KitchenStage.pantry_extent(n, aspect)
+			PANEL_TEAM:
+				extent = Vector2(1.6, n * 1.8)  # the teammates stand one above the other
+			PANEL_RIVAL:
+				extent = Vector2(2.4, 1.6)  # a small status card
+			_:
+				var with_window: bool = kind == PANEL_PASS
+				extent = KitchenStage.counter_extent(n, KitchenStage.best_rows(n, aspect, with_window), with_window)
+		var fit := minf(minf(rect.size.x / extent.x, rect.size.y / extent.y), float(CAPS.get(kind, 400.0)))
+		score += float(WEIGHTS.get(kind, 0.5)) * log(fit)
+	return score
+
+
+func _top(rect: Rect2, share: float, gutter: float) -> Rect2:
+	return Rect2(rect.position, Vector2(rect.size.x, (rect.size.y - gutter) * share))
+
+
+func _bottom(rect: Rect2, share: float, gutter: float) -> Rect2:
+	var top := (rect.size.y - gutter) * share
+	return Rect2(rect.position + Vector2(0, top + gutter), Vector2(rect.size.x, rect.size.y - top - gutter))
+
+
+## Splits a rect into a row of panels. shares: the first panels' shares of
+## the width (the rest share what's left equally).
+func _split_row(rects: Dictionary, kinds: Array[String], rect: Rect2, shares: Array) -> void:
 	if kinds.is_empty():
 		return
-	var x := rect.position.x
 	var total := rect.size.x - GUTTER * (kinds.size() - 1)
+	var widths := _shares(kinds.size(), shares)
+	var x := rect.position.x
 	for i in kinds.size():
-		var share: float = shares[i] if kinds.size() == shares.size() else 1.0 / kinds.size()
-		var width := total * share if i < kinds.size() - 1 else rect.end.x - x
-		_panels.append({"kind": kinds[i], "rect": Rect2(x, rect.position.y, width, rect.size.y)})
+		var width: float = total * widths[i] if i < kinds.size() - 1 else rect.end.x - x
+		rects[kinds[i]] = Rect2(x, rect.position.y, width, rect.size.y)
 		x += width + GUTTER
+
+
+func _split_column(rects: Dictionary, kinds: Array[String], rect: Rect2, shares: Array) -> void:
+	if kinds.is_empty():
+		return
+	var total := rect.size.y - GUTTER * (kinds.size() - 1)
+	var heights := _shares(kinds.size(), shares)
+	var y := rect.position.y
+	for i in kinds.size():
+		var height: float = total * heights[i] if i < kinds.size() - 1 else rect.end.y - y
+		rects[kinds[i]] = Rect2(rect.position.x, y, rect.size.x, height)
+		y += height + GUTTER
+
+
+## count shares: the given ones first (as long as they leave room), the rest
+## split what's left equally.
+func _shares(count: int, given: Array) -> Array[float]:
+	var result: Array[float] = []
+	var used := 0.0
+	for i in count:
+		if i < given.size() and i < count - 1 and used + float(given[i]) < 0.95:
+			result.append(float(given[i]))
+			used += float(given[i])
+		else:
+			var left := count - i
+			for j in left:
+				result.append((1.0 - used) / left)
+			break
+	return result
 
 
 func _panel_rect(kind: String) -> Rect2:
@@ -630,6 +812,9 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
+			if _dismiss_overlay(pos):
+				_press = {}
+				return
 			_press = _hit(pos)
 			_press_pos = pos
 			_dragging = false
@@ -813,7 +998,10 @@ func _start_work(index: int) -> void:
 	_work = {"station": index, "recipe": st.recipe}
 	var view := _minigame.view_rect()
 	var camera := _stage.closeup_camera(index, view.size.x / maxf(view.size.y, 1.0))
-	_minigame.open(st.recipe.action, st.recipe.work, st.progress, shown, Art.equipment(st.type), camera, _world)
+	var verb: String = RecipeText.VERBS.get(st.recipe.action, str(st.recipe.action).capitalize())
+	var what := db.item_name(st.contents[0].type) if st.contents.size() == 1 else db.item_name(st.recipe.output)
+	_minigame.open(st.recipe.action, st.recipe.work, st.progress, shown, Art.equipment(st.type), camera, _world,
+		"%s the %s" % [verb, what])
 	_stage.chef_act(index, "interact-right")
 
 
@@ -863,6 +1051,32 @@ func _on_work_paused() -> void:
 # --- Tips --------------------------------------------------------------------
 
 func _update_hint() -> void:
+	_find_hint()
+	if not _hint_text.is_empty() and _hint_text == _hint_dismissed:
+		_hint_text = ""
+		_hint_points.clear()
+
+
+## Tapping a tip, the prologue banner or a customer's balloon puts it away;
+## that tap does nothing else. Returns true if the tap hit one.
+func _dismiss_overlay(pos: Vector2) -> bool:
+	if not _hint_text.is_empty() and _hint_rect.has_point(pos):
+		_hint_dismissed = _hint_text
+		_hint_text = ""
+		_hint_points.clear()
+		return true
+	if shift.in_prologue() and not _banner_hidden and _banner_rect.has_point(pos):
+		_banner_hidden = true
+		return true
+	for uid in _balloon_rects:
+		if (_balloon_rects[uid] as Rect2).has_point(pos):
+			_dismissed_balloons[uid] = true
+			_balloon_rects.erase(uid)
+			return true
+	return false
+
+
+func _find_hint() -> void:
 	_hint_text = ""
 	_hint_points.clear()
 	if _start_timer > 0.0 or shift.finished or _minigame.visible or not shift.in_prologue():
@@ -947,6 +1161,10 @@ func _pass_center() -> Vector2:
 	return station_center(index) if index >= 0 else Vector2(size.x - 120, TOP_BAR_H + 120)
 
 
+## What a tap at pos means. A whole panel is a tap target: the tap goes to
+## the nearest station, crate or bin in the panel it lands in, and height
+## counts less than width, so the whole column above and below a station is
+## its target.
 func _hit(pos: Vector2) -> Dictionary:
 	if _pause_rect.has_point(pos):
 		return {"kind": "pause"}
@@ -955,19 +1173,32 @@ func _hit(pos: Vector2) -> Dictionary:
 	for mate in _mates:
 		if mate.rect.has_point(pos):
 			return {"kind": "mate", "player": mate.player}
-	if _bin_rect.has_point(pos):
-		return {"kind": "bin"}
-	var best := -1
-	for spot in _spots:
-		if spot is Dictionary and not spot.is_empty() and spot.rect.has_point(pos):
-			if best < 0 or pos.distance_to(spot.center) < pos.distance_to(_spots[best].center):
-				best = spot.index
-	if best >= 0:
-		return {"kind": "station", "index": best}
-	for crate in _crates:
-		if crate.rect.has_point(pos):
-			return {"kind": "crate", "id": crate.id}
+	for i in _panels.size():
+		if not _panels[i].rect.has_point(pos):
+			continue
+		var best := {}
+		var best_distance := INF
+		for spot in _spots:
+			if spot is Dictionary and not spot.is_empty() and _stage.set_of_station(spot.index) == i:
+				var d := _tap_distance(pos, spot.center)
+				if d < best_distance:
+					best_distance = d
+					best = {"kind": "station", "index": spot.index}
+		if _panels[i].kind == PANEL_PREP and _bin_rect.has_area() and _tap_distance(pos, _bin_rect.get_center()) < best_distance:
+			best_distance = _tap_distance(pos, _bin_rect.get_center())
+			best = {"kind": "bin"}
+		if _panels[i].kind == PANEL_PANTRY:
+			for crate in _crates:
+				var d := _tap_distance(pos, crate.rect.get_center())
+				if d < best_distance:
+					best_distance = d
+					best = {"kind": "crate", "id": crate.id}
+		return best
 	return {}
+
+
+func _tap_distance(pos: Vector2, target: Vector2) -> float:
+	return Vector2(pos.x - target.x, (pos.y - target.y) * 0.45).length()
 
 
 ## Where the selected (or dragged) food could go, for highlighting.
@@ -1034,13 +1265,15 @@ func _draw_dynamic() -> void:
 	var c := _dynamic
 	var pulse := 0.5 + 0.5 * sin(_time * 7.0)
 	var glow := Color(1.0, 0.25, 0.75, 0.3 + 0.35 * pulse)  # hot magenta: things that need you
+	if _panel_rect(PANEL_RIVAL).has_area():
+		_draw_rival(c, _panel_rect(PANEL_RIVAL))
 	# Panel frames and their caption boxes, over the 3D views.
 	for panel in _panels:
 		var rect: Rect2 = panel.rect
 		c.draw_rect(rect, Art.INK, false, 6.0)
 		var title: String = PANEL_TITLES.get(panel.kind, "")
 		if panel.kind == PANEL_TEAM:
-			title = "TEAM · THROW HERE"
+			title = "TEAM · THROW HERE" if panel.player == _mates[0].player else "THROW HERE"
 		_draw_caption(c, rect.position + Vector2(8, 8), title)
 	for crate in _crates:
 		var rect: Rect2 = crate.rect
@@ -1053,8 +1286,6 @@ func _draw_dynamic() -> void:
 			c.draw_rect(mate.rect.grow(4), glow, false, 10.0)
 		_draw_mate(c, mate)
 	_draw_customers(c)
-	if _panel_rect(PANEL_RIVAL).has_area():
-		_draw_rival(c, _panel_rect(PANEL_RIVAL))
 	# Station timers and progress.
 	for st in kitchen.players[_me].stations:
 		if st.recipe.is_empty() and not st.burnt:
@@ -1111,13 +1342,14 @@ func _draw_mate(c: CanvasItem, mate: Dictionary) -> void:
 	var friend := Net.profile_of(player)
 	var color: Color = Art.PLAYER_COLORS[player % Art.PLAYER_COLORS.size()]
 	var free := kitchen.players[player].free_counter_count(db)
-	var tag := Rect2(rect.position + Vector2(10, rect.size.y - 58), Vector2(rect.size.x - 20, 48))
-	c.draw_rect(tag.grow(3), Art.INK)
-	c.draw_rect(tag, color.lightened(0.55))
+	# A small, see-through tag in the corner, so the chef stays in view.
 	var font := Art.comic_font()
-	c.draw_string(font, tag.position + Vector2(10, 22), str(friend.name).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 20, Art.INK)
-	var line := "%s · %s" % [kitchen.players[player].role, "%d free spots" % free if free > 0 else "FULL!"]
-	c.draw_string(Art.ui_font(), tag.position + Vector2(10, 40), line, HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 13,
+	var label := "%s · %s" % [str(friend.name).to_upper(), "%d FREE" % free if free > 0 else "FULL!"]
+	var width := minf(font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x + 16.0, rect.size.x - 12.0)
+	var tag := Rect2(rect.position + Vector2(6, rect.size.y - 30), Vector2(width, 24))
+	c.draw_rect(tag, Color(color.lightened(0.55), 0.7))
+	c.draw_rect(tag, Color(Art.INK, 0.7), false, 2.0)
+	c.draw_string(font, tag.position + Vector2(8, 18), label, HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 12, 16,
 		Art.INK if free > 0 else Art.TOMATO)
 
 
@@ -1130,7 +1362,10 @@ func _draw_customers(c: CanvasItem) -> void:
 	if set_index < 0:
 		return
 	var panel: Rect2 = _panels[set_index].rect
+	_balloon_rects.clear()
 	for order in shift.orders.orders:
+		if _dismissed_balloons.has(int(order.uid)):
+			continue
 		var head := _stage.customer_head(int(order.uid))
 		if head == Vector3.INF:
 			continue
@@ -1143,25 +1378,48 @@ func _draw_customers(c: CanvasItem) -> void:
 		if center.y < tip.y - 20.0:
 			var points := PackedVector2Array([tip, center + Vector2(-8, 18), center + Vector2(8, 18)])
 			c.draw_colored_polygon(points, Art.INK)
+		_balloon_rects[int(order.uid)] = Rect2(center - Vector2(30, 30), Vector2(60, 60))
 		c.draw_circle(center, 27.0, Art.INK)
 		c.draw_circle(center, 24.0, Color.WHITE)
 		if icon:
 			c.draw_texture_rect(icon, Rect2(center - Vector2(19, 19), Vector2(38, 38)), false)
 
 
+## The rival is a small status card, not a 3D scene: what they're cooking
+## right now, how far along it is, and how many dishes they have done.
 func _draw_rival(c: CanvasItem, rect: Rect2) -> void:
 	var rival := shift.rival
 	if rival == null:
 		return
-	var tag := Rect2(rect.position + Vector2(10, rect.size.y - 58), Vector2(rect.size.x - 20, 48))
-	c.draw_rect(tag.grow(3), Art.INK)
-	c.draw_rect(tag, Color("#ff9ad5"))
-	c.draw_string(Art.comic_font(), tag.position + Vector2(10, 22), "RIVAL CHEF", HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 20, Art.INK)
-	c.draw_string(Art.ui_font(), tag.position + Vector2(10, 40), "%d points" % rival.score, HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 13, Art.INK)
+	UiStyle.draw_halftone(c, rect, Color("#c42f5e"), Color("#d4456f"), 12.0)
+	var font := Art.comic_font()
+	var inner := rect.grow(-12)
+	var top := inner.position.y + 50.0
+	c.draw_string(font, Vector2(inner.position.x, top), str(rival.name).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, inner.size.x, 22, Color.WHITE)
+	var dish := rival.current_dish()
+	var icon_size := clampf(inner.size.y - 92.0, 32.0, 72.0)
+	var line_y := top + 10.0
+	if not dish.is_empty():
+		var icon := Art.item(dish)
+		if icon:
+			c.draw_texture_rect(icon, Rect2(inner.position.x, line_y, icon_size, icon_size), false)
+		c.draw_string(Art.ui_font(), Vector2(inner.position.x + icon_size + 8, line_y + icon_size * 0.5 + 6),
+			"cooking %s" % db.item_name(dish), HORIZONTAL_ALIGNMENT_LEFT, inner.size.x - icon_size - 8, 15, Color.WHITE)
+	else:
+		c.draw_string(font, Vector2(inner.position.x, line_y + icon_size * 0.6), "ALL DONE!", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Comic.YELLOW)
+	# The progress bar of the current dish.
+	var bar := Rect2(inner.position.x, inner.end.y - 34.0, inner.size.x, 14.0)
+	c.draw_rect(bar.grow(3), Art.INK)
+	c.draw_rect(bar, Color(1, 1, 1, 0.3))
+	c.draw_rect(Rect2(bar.position, Vector2(bar.size.x * rival.dish_fraction(), bar.size.y)), Comic.YELLOW)
+	var total := rival.dishes.size()
+	c.draw_string(font, Vector2(inner.position.x, inner.end.y), "%d/%d DISHES · %d PTS" % [rival.done_count, total, rival.score],
+		HORIZONTAL_ALIGNMENT_LEFT, inner.size.x, 16, Color.WHITE)
 
 
 func _draw_hint(c: CanvasItem, pulse: float) -> void:
 	if _hint_text.is_empty():
+		_hint_rect = Rect2()
 		return
 	var hot := Color("#ff3fa4")
 	for point in _hint_points:
@@ -1177,13 +1435,16 @@ func _draw_hint(c: CanvasItem, pulse: float) -> void:
 	# A caption box near the step, like a comic narrator box.
 	var font := Art.ui_font()
 	var text := _hint_text
-	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x + 32.0
+	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x + 52.0
 	var anchor: Vector2 = _hint_points.back() if not _hint_points.is_empty() else size * 0.5
 	var pos := Vector2(clampf(anchor.x - width * 0.5, 8.0, size.x - width - 8.0), clampf(anchor.y + 62.0, TOP_BAR_H + 8.0, size.y - 52.0))
 	var rect := Rect2(pos, Vector2(width, 40))
+	_hint_rect = rect.grow(6)
 	c.draw_rect(rect.grow(3), Art.INK)
 	c.draw_rect(rect, Art.SUN)
 	c.draw_string(font, rect.position + Vector2(16, 27), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Art.INK)
+	# A little X: tapping the tip puts it away until the next step.
+	c.draw_string(font, rect.end - Vector2(22, 12), "X", HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(Art.INK, 0.55))
 
 
 func _draw_prologue_banner(c: CanvasItem) -> void:
@@ -1192,9 +1453,11 @@ func _draw_prologue_banner(c: CanvasItem) -> void:
 	var font := Art.comic_font()
 	var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 40.0
 	var rect := Rect2(Vector2((size.x - width) * 0.5, TOP_BAR_H + 10), Vector2(width, 44))
-	c.draw_rect(rect.grow(3), Art.INK)
-	c.draw_rect(rect, Art.SUN)
-	c.draw_string(font, rect.position + Vector2(20, 32), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Art.INK)
+	_banner_rect = Rect2() if _banner_hidden else rect.grow(4)
+	if not _banner_hidden:
+		c.draw_rect(rect.grow(3), Art.INK)
+		c.draw_rect(rect, Art.SUN)
+		c.draw_string(font, rect.position + Vector2(20, 32), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Art.INK)
 	c.draw_rect(_skip_rect.grow(3), Art.INK)
 	c.draw_rect(_skip_rect, Art.PAPER)
 	c.draw_string(font, Vector2(_skip_rect.position.x, _skip_rect.get_center().y + 11), "SKIP ▶▶", HORIZONTAL_ALIGNMENT_CENTER, _skip_rect.size.x, 30, Art.INK)
