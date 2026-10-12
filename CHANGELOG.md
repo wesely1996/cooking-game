@@ -5,6 +5,17 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [0.6.2] - 2026-10-12
+
+### Changed
+- **Fewer kinds of mini-game:** chopping, slicing and grating are tapped now,
+  like kneading. The swipe-down mini-game is gone; tapping, side-to-side
+  rolling and circles stay.
+
+### Fixed
+- Your chef no longer stands between the two rows of a panel, hiding the
+  back row while working at the front: he always stands behind the back row.
+
 ## [0.6.1] - 2026-10-12
 
 Less clunky: bigger things to tap, nothing in the way, clearer mini-games.

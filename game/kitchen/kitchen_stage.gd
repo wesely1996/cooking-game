@@ -367,14 +367,21 @@ func _place_my_chef() -> void:
 	Models.animate(chef, "idle", true)
 
 
-## Shows this phone's chef at a station, doing something.
+## Shows this phone's chef at a station, doing something. The chef always
+## stands behind the back row of the panel, so he never hides a station
+## (with two rows, standing between them would cover the back one).
 func chef_act(station_index: int, animation: String) -> void:
 	if not _chefs.has(_me) or not _anchors.has(station_index):
 		return
 	var chef: Node3D = _chefs[_me]
 	var anchor: Node3D = _anchors[station_index]
+	var back_z := anchor.global_position.z
+	var set_index := set_of_station(station_index)
+	for index in _anchors:
+		if set_of_station(index) == set_index:
+			back_z = minf(back_z, (_anchors[index] as Node3D).global_position.z)
 	chef.visible = true
-	chef.global_position = Vector3(anchor.global_position.x + 0.3, 0, anchor.global_position.z - 0.85)
+	chef.global_position = Vector3(anchor.global_position.x + 0.3, 0, back_z - 0.85)
 	chef.rotation.y = deg_to_rad(-25.0)
 	Models.animate(chef, animation)
 
