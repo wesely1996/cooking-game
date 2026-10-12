@@ -1,0 +1,78 @@
+{
+  "id": "mexican",
+  "name": "Mexican",
+  "items": {
+    "avocado": {"name": "Avocado", "kind": "raw"},
+    "corn": {"name": "Corn", "kind": "raw"},
+    "beef": {"name": "Beef", "kind": "raw"},
+    "chopped_avocado": {"name": "Chopped avocado"},
+    "guac_mix": {"name": "Mashed avocado"},
+    "grilled_corn": {"name": "Grilled corn"},
+    "grilled_beef": {"name": "Grilled beef"},
+    "tortilla": {"name": "Tortilla"},
+    "hot_quesadilla": {"name": "Hot quesadilla"},
+    "guacamole": {"name": "Guacamole", "kind": "dish", "price": 14, "patience": 45},
+    "elote": {"name": "Elote", "kind": "dish", "price": 20, "patience": 55},
+    "quesadilla": {"name": "Quesadilla", "kind": "dish", "price": 26, "patience": 65},
+    "beef_taco": {"name": "Beef Taco", "kind": "dish", "price": 32, "patience": 80}
+  },
+  "stations": {
+    "tortilla_press": {"name": "Tortilla press", "kind": "manual", "capacity": 1}
+  },
+  "recipes": [
+    {"id": "chop_avocado", "station": "board", "inputs": ["avocado"], "action": "chop", "work": 3, "output": "chopped_avocado"},
+    {"id": "mash_guacamole", "station": "bowl", "inputs": ["chopped_avocado", "chopped_tomato"], "action": "mash", "work": 4, "output": "guac_mix"},
+    {"id": "press_tortilla", "station": "tortilla_press", "inputs": ["dough"], "action": "press", "work": 3, "output": "tortilla"},
+    {"id": "grill_corn", "station": "grill", "inputs": ["corn"], "action": "grill", "cook_time": 5, "perfect_window": 4, "burn_time": 9, "output": "grilled_corn"},
+    {"id": "grill_beef", "station": "grill", "inputs": ["beef"], "action": "grill", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "grilled_beef"},
+    {"id": "cook_quesadilla", "station": "pan", "inputs": ["grated_cheese", "tortilla"], "action": "fry", "cook_time": 5, "perfect_window": 4, "burn_time": 9, "output": "hot_quesadilla"}
+  ],
+  "assemblies": [
+    {"output": "guacamole", "base": "plate", "parts": ["guac_mix"]},
+    {"output": "elote", "base": "plate", "parts": ["grilled_corn", "grated_cheese"]},
+    {"output": "quesadilla", "base": "plate", "parts": ["hot_quesadilla"]},
+    {"output": "beef_taco", "base": "plate", "parts": ["tortilla", "grilled_beef", "chopped_tomato", "grated_cheese"]}
+  ],
+  "role_presets": {
+    "antojitos": {
+      "1": [
+        {"name": "Chef", "crates": ["avocado", "tomato", "corn", "cheese", "plate"], "stations": {"counter": 4, "board": 2, "bowl": 1, "grill": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Prep", "crates": ["avocado", "tomato", "corn"], "stations": {"counter": 3, "board": 2, "bowl": 1, "grill": 1}},
+        {"name": "Cheese & Pass", "crates": ["cheese", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Avocados", "crates": ["avocado"], "stations": {"counter": 3, "board": 1, "bowl": 1}},
+        {"name": "Tomatoes & Corn", "crates": ["tomato", "corn"], "stations": {"counter": 3, "board": 1, "grill": 1}},
+        {"name": "Cheese & Pass", "crates": ["cheese", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Avocados", "crates": ["avocado"], "stations": {"counter": 3, "board": 1}},
+        {"name": "Tomatoes & Corn", "crates": ["tomato", "corn"], "stations": {"counter": 3, "board": 1, "grill": 1}},
+        {"name": "Bowl & Cheese", "crates": ["cheese"], "stations": {"counter": 3, "board": 1, "bowl": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    },
+    "taqueria": {
+      "1": [
+        {"name": "Chef", "crates": ["avocado", "tomato", "corn", "cheese", "flour", "water", "beef", "plate"], "stations": {"counter": 4, "board": 2, "bowl": 1, "tortilla_press": 1, "pan": 1, "grill": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Tortillas & Grill", "crates": ["flour", "water", "beef", "corn", "avocado"], "stations": {"counter": 3, "board": 1, "bowl": 1, "tortilla_press": 1, "pan": 1, "grill": 1}},
+        {"name": "Toppings & Pass", "crates": ["tomato", "cheese", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Prep", "crates": ["avocado", "tomato", "cheese"], "stations": {"counter": 3, "board": 2, "bowl": 1}},
+        {"name": "Tortillas & Grill", "crates": ["flour", "water", "beef", "corn"], "stations": {"counter": 3, "bowl": 1, "tortilla_press": 1, "pan": 1, "grill": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Prep", "crates": ["avocado", "tomato"], "stations": {"counter": 3, "board": 2, "bowl": 1}},
+        {"name": "Tortillas", "crates": ["flour", "water", "cheese"], "stations": {"counter": 3, "board": 1, "bowl": 1, "tortilla_press": 1}},
+        {"name": "Stove", "crates": ["beef", "corn"], "stations": {"counter": 3, "pan": 1, "grill": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    }
+  }
+}

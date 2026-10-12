@@ -35,6 +35,76 @@ const ITEMS := {
 	"whole_pizza": {"model": "food/pizza", "size": 0.44},
 	"plate": {"model": "food/plate", "size": 0.48},
 	"burnt_food": {"model": "food/meat-cooked", "size": 0.32, "tint": Color("#3a3030")},
+	# Shared by several cuisines.
+	"egg": {"model": "food/egg", "size": 0.16},
+	"milk": {"model": "food/carton", "size": 0.2},
+	"rice": {"model": "food/bag", "size": 0.3, "tint": Color("#fbf6ea")},
+	"potato": {"proc": "potato", "size": 0.24},
+	"cheese": {"model": "food/cheese", "size": 0.3},
+	"cucumber": {"proc": "cucumber", "size": 0.34, "tint": Color("#5aa64a")},
+	"strawberry": {"model": "food/strawberry", "size": 0.16},
+	"chopped_potato": {"proc": "sticks", "size": 0.28, "tint": Color("#f4dc9a")},
+	"fries": {"model": "food/fries", "size": 0.26},
+	"grated_cheese": {"proc": "shreds", "size": 0.28, "tint": Color("#ffd24a")},
+	"chopped_cucumber": {"proc": "mozzarella_slices", "size": 0.3, "tint": Color("#9ad870")},
+	"cooked_rice": {"model": "food/rice-ball", "size": 0.2, "count": 2},
+	# Mexico
+	"avocado": {"model": "food/avocado", "size": 0.24},
+	"chopped_avocado": {"model": "food/advocado-half", "size": 0.18, "count": 2},
+	"guac_mix": {"model": "food/bowl-soup", "size": 0.32, "tint": Color("#a6dc5a")},
+	"corn": {"model": "food/corn", "size": 0.36},
+	"grilled_corn": {"model": "food/corn", "size": 0.36, "tint": Color("#e0a24a")},
+	"beef": {"model": "food/meat-raw", "size": 0.3},
+	"grilled_beef": {"model": "food/meat-cooked", "size": 0.3},
+	"tortilla": {"proc": "disc", "size": 0.38, "tint": Color("#f3dfa8")},
+	"hot_quesadilla": {"model": "food/taco", "size": 0.36},
+	# USA
+	"ice_cream": {"model": "food/ice-cream-cup", "size": 0.2},
+	"sausage": {"model": "food/sausage", "size": 0.3, "tint": Color("#ffb4a4")},
+	"grilled_sausage": {"model": "food/sausage", "size": 0.3},
+	"bun": {"model": "food/loaf-round", "size": 0.26, "tint": Color("#f6c27a")},
+	"ketchup": {"model": "food/bottle-ketchup", "size": 0.12},
+	"patty": {"model": "food/meat-patty", "size": 0.26, "tint": Color("#ff9a8a")},
+	"grilled_patty": {"model": "food/meat-patty", "size": 0.26},
+	"cheddar": {"model": "food/cheese-cut", "size": 0.22, "tint": Color("#ffc23a")},
+	"lettuce": {"model": "food/cabbage", "size": 0.3, "tint": Color("#a8ec74")},
+	"chopped_lettuce": {"proc": "leaves", "size": 0.3, "tint": Color("#c4ff8a")},
+	"shake": {"model": "food/frappe", "size": 0.18, "tint": Color("#ffa8d0")},
+	"hot_dog": {"model": "food/hot-dog", "size": 0.36, "on_plate": true},
+	"cheeseburger": {"model": "food/burger-cheese", "size": 0.3, "on_plate": true},
+	# Spain
+	"chicken": {"model": "food/turkey", "size": 0.3, "tint": Color("#ffd8c8")},
+	"cold_soup": {"model": "food/bowl-soup", "size": 0.32, "tint": Color("#ff6a4a")},
+	"potato_omelette": {"model": "food/pancakes", "size": 0.34, "tint": Color("#ffd35a")},
+	"paella_rice": {"model": "food/pan-stew", "size": 0.44, "tint": Color("#ffb43a")},
+	# Japan
+	"salmon": {"model": "food/fish", "size": 0.4, "tint": Color("#ff9a6a")},
+	"sliced_salmon": {"proc": "mozzarella_slices", "size": 0.3, "tint": Color("#ff9a6a")},
+	"nori": {"proc": "sheet", "size": 0.3},
+	"noodles": {"proc": "pasta", "size": 0.34, "tint": Color("#fff4c0")},
+	"miso": {"model": "food/honey", "size": 0.16, "tint": Color("#c8955a")},
+	"spring_onion": {"model": "food/leek", "size": 0.36},
+	"chopped_spring_onion": {"proc": "leaves", "size": 0.26, "tint": Color("#b8ff8a")},
+	"maki_roll": {"proc": "roll", "size": 0.32},
+	"cut_maki": {"model": "food/maki-vegetable", "size": 0.14, "count": 3},
+	"noodle_soup": {"model": "food/bowl-broth", "size": 0.32},
+	"boiled_egg": {"model": "food/egg-half", "size": 0.14, "count": 2},
+	"salmon_nigiri": {"model": "food/sushi-salmon", "size": 0.16, "count": 2, "on_plate": true},
+	# France
+	"butter": {"proc": "block", "size": 0.14, "tint": Color("#fff0a0")},
+	"jam": {"model": "food/honey", "size": 0.16, "tint": Color("#ff5a7a")},
+	"onion": {"model": "food/onion", "size": 0.22},
+	"zucchini": {"proc": "cucumber", "size": 0.34, "tint": Color("#3d8a3a")},
+	"eggplant": {"model": "food/eggplant", "size": 0.3},
+	"batter": {"model": "food/bowl-soup", "size": 0.32, "tint": Color("#fff0c8")},
+	"thin_crepe": {"proc": "disc", "size": 0.38, "tint": Color("#f2c77a")},
+	"chopped_strawberry": {"model": "food/strawberry", "size": 0.12, "count": 3},
+	"chopped_onion": {"model": "food/onion-half", "size": 0.16, "count": 2},
+	"onion_broth": {"model": "food/bowl-broth", "size": 0.32, "tint": Color("#d8964e")},
+	"baked_soup": {"model": "food/bowl-soup", "size": 0.32, "tint": Color("#e8a848")},
+	"chopped_zucchini": {"proc": "mozzarella_slices", "size": 0.3, "tint": Color("#6fbf5a")},
+	"chopped_eggplant": {"proc": "cubes", "size": 0.26, "tint": Color("#8a55b0")},
+	"vegetable_stew": {"model": "food/bowl-soup", "size": 0.32, "tint": Color("#d84a2a")},
 }
 
 ## Stations. "floor": stands on the floor instead of on a counter.
@@ -48,6 +118,11 @@ const STATIONS := {
 	"grill": {"proc": "grill", "size": 0.66},
 	"fryer": {"proc": "fryer", "size": 0.6},
 	"pasta_machine": {"proc": "pasta_machine", "size": 0.5},
+	"tortilla_press": {"proc": "tortilla_press", "size": 0.46},
+	"blender": {"model": "furniture/kitchenBlender", "size": 0.34},
+	"paella_pan": {"proc": "paella_pan", "size": 0.7},
+	"sushi_mat": {"proc": "sushi_mat", "size": 0.56},
+	"crepe_pan": {"proc": "crepe_pan", "size": 0.62},
 	"serving_window": {"proc": "window", "size": 1.0, "floor": true},
 }
 
@@ -74,6 +149,12 @@ static func item(db: ContentDB, type: String, contents: Array = []) -> Node3D:
 	var root: Node3D
 	if not contents.is_empty() and ITEMS.has(effective) and effective != type:
 		root = _build(ITEMS[effective])
+		if ITEMS[effective].get("on_plate", false):
+			# A dish with its own model, served on its plate.
+			var dish := root
+			root = _build(ITEMS.get(type, ITEMS.plate))
+			dish.position.y = _height(root) * 0.6
+			root.add_child(dish)
 	else:
 		root = _build(ITEMS.get(type, {"proc": "blob", "size": ITEM_SIZE}))
 		var top := _height(root) * 0.7
@@ -316,6 +397,91 @@ static func _proc(kind: String) -> Node3D:
 				strand.rotation = Vector3(PI / 2.0, i * 0.35, 0.25 * sin(i))
 				strand.position = Vector3(0, 0.02 + (i % 3) * 0.02, (i - 4) * 0.012)
 				root.add_child(strand)
+		"disc":
+			var disc := _cylinder(0.19, 0.19, 0.025, Color.WHITE)
+			disc.position.y = 0.0125
+			root.add_child(disc)
+		"potato":
+			var potato := _sphere(0.24, 0.17, Color("#c8955a"))
+			potato.scale = Vector3(1.0, 1.0, 0.75)
+			potato.position.y = 0.085
+			root.add_child(potato)
+		"cucumber":
+			var body := _cylinder(0.05, 0.05, 0.3, Color.WHITE)
+			body.rotation.z = PI / 2.0
+			body.position.y = 0.05
+			root.add_child(body)
+			for x in [-0.15, 0.15]:
+				var tip := _sphere(0.1, 0.1, Color.WHITE)
+				tip.position = Vector3(x, 0.05, 0)
+				root.add_child(tip)
+		"sticks":
+			for i in 7:
+				var stick := _box(Vector3(0.24, 0.035, 0.035), Color.WHITE)
+				stick.rotation.y = 0.25 * (i - 3)
+				stick.position = Vector3(0, 0.02 + (i % 3) * 0.03, (i - 3) * 0.03)
+				root.add_child(stick)
+		"shreds":
+			for i in 10:
+				var shred := _box(Vector3(0.12, 0.02, 0.02), Color.WHITE)
+				shred.rotation.y = i * 1.7
+				shred.position = Vector3(cos(i * 2.3) * 0.06, 0.01 + (i % 3) * 0.015, sin(i * 2.3) * 0.06)
+				root.add_child(shred)
+		"sheet":
+			var sheet := _box(Vector3(0.28, 0.01, 0.22), Color("#1f3a24"))
+			sheet.position.y = 0.005
+			root.add_child(sheet)
+		"roll":
+			var wrap := _cylinder(0.07, 0.07, 0.3, Color("#1f3a24"))
+			wrap.rotation.z = PI / 2.0
+			wrap.position.y = 0.07
+			root.add_child(wrap)
+			for x in [-0.151, 0.151]:
+				var end := _cylinder(0.06, 0.06, 0.005, Color("#fbf6ea"))
+				end.rotation.z = PI / 2.0
+				end.position = Vector3(x, 0.07, 0)
+				root.add_child(end)
+		"block":
+			var block := _box(Vector3(0.14, 0.07, 0.09), Color.WHITE)
+			block.position.y = 0.035
+			root.add_child(block)
+		"cubes":
+			for i in 6:
+				var cube := _box(Vector3(0.06, 0.06, 0.06), Color.WHITE)
+				cube.rotation.y = i * 0.9
+				cube.position = Vector3(cos(i * 1.1) * 0.07, 0.03 + (i / 4) * 0.05, sin(i * 1.1) * 0.07)
+				root.add_child(cube)
+		"tortilla_press":
+			var base := _cylinder(0.2, 0.2, 0.05, Color("#9aa5b1"))
+			base.position.y = 0.025
+			root.add_child(base)
+			var lid := _cylinder(0.19, 0.19, 0.04, Color("#c5ced8"))
+			lid.position = Vector3(0, 0.16, -0.08)
+			lid.rotation.x = -0.6
+			root.add_child(lid)
+			var lever := _box(Vector3(0.04, 0.04, 0.3), Color("#e5352b"))
+			lever.position = Vector3(0, 0.08, 0.2)
+			root.add_child(lever)
+		"paella_pan":
+			var pan := _cylinder(0.34, 0.3, 0.05, Color("#3c3a40"))
+			pan.position.y = 0.025
+			root.add_child(pan)
+			for x in [-0.38, 0.38]:
+				var handle := _box(Vector3(0.08, 0.03, 0.1), Color("#e5352b"))
+				handle.position = Vector3(x, 0.045, 0)
+				root.add_child(handle)
+		"sushi_mat":
+			for i in 9:
+				var slat := _box(Vector3(0.5, 0.015, 0.045), Color("#d9b36a") if i % 2 == 0 else Color("#c9a35a"))
+				slat.position = Vector3(0, 0.008, -0.2 + i * 0.05)
+				root.add_child(slat)
+		"crepe_pan":
+			var plate := _cylinder(0.28, 0.27, 0.03, Color("#2b2523"))
+			plate.position.y = 0.015
+			root.add_child(plate)
+			var handle := _box(Vector3(0.05, 0.03, 0.26), Color("#7a4a2a"))
+			handle.position = Vector3(0, 0.03, 0.38)
+			root.add_child(handle)
 		"mat":
 			var mat := _cylinder(0.25, 0.25, 0.02, Color("#e2cfae"))
 			mat.position.y = 0.01

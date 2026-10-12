@@ -1,0 +1,13 @@
+{
+  "id": "japan_competition",
+  "name": "Sushi Grand Cup",
+  "description": "The great sushi cup in Tokyo. Master Kenji starts slowly and finishes like a storm.",
+  "pack": "japanese",
+  "type": "competition",
+  "dishes": ["miso_ramen", "cucumber_maki", "salmon_nigiri"],
+  "roles": "izakaya",
+  "judges_orders": ["salmon_nigiri", "cucumber_maki", "miso_ramen", "salmon_nigiri", "miso_ramen", "cucumber_maki", "miso_ramen"],
+  "max_active": 2,
+  "time_limit": 360,
+  "rival": {"name": "Master Kenji", "personality": "perfectionist", "speed": {"1": 0.85, "2": 1.15, "3": 1.35, "4": 1.4}}
+}

@@ -1,0 +1,80 @@
+{
+  "id": "japanese",
+  "name": "Japanese",
+  "items": {
+    "salmon": {"name": "Salmon", "kind": "raw"},
+    "nori": {"name": "Nori", "kind": "raw"},
+    "noodles": {"name": "Noodles", "kind": "raw"},
+    "miso": {"name": "Miso", "kind": "raw"},
+    "spring_onion": {"name": "Spring onion", "kind": "raw"},
+    "sliced_salmon": {"name": "Sliced salmon"},
+    "maki_roll": {"name": "Maki roll"},
+    "cut_maki": {"name": "Cut maki"},
+    "noodle_soup": {"name": "Noodle soup"},
+    "boiled_egg": {"name": "Boiled egg"},
+    "chopped_spring_onion": {"name": "Chopped spring onion"},
+    "salmon_sashimi": {"name": "Salmon Sashimi", "kind": "dish", "price": 14, "patience": 45},
+    "salmon_nigiri": {"name": "Salmon Nigiri", "kind": "dish", "price": 20, "patience": 55},
+    "cucumber_maki": {"name": "Cucumber Maki", "kind": "dish", "price": 26, "patience": 70},
+    "miso_ramen": {"name": "Miso Ramen", "kind": "dish", "price": 32, "patience": 80}
+  },
+  "stations": {
+    "sushi_mat": {"name": "Sushi mat", "kind": "manual", "capacity": 3}
+  },
+  "recipes": [
+    {"id": "slice_salmon", "station": "board", "inputs": ["salmon"], "action": "slice", "work": 3, "output": "sliced_salmon"},
+    {"id": "chop_spring_onion", "station": "board", "inputs": ["spring_onion"], "action": "chop", "work": 3, "output": "chopped_spring_onion"},
+    {"id": "roll_maki", "station": "sushi_mat", "inputs": ["chopped_cucumber", "cooked_rice", "nori"], "action": "roll", "work": 4, "output": "maki_roll"},
+    {"id": "cut_maki_roll", "station": "board", "inputs": ["maki_roll"], "action": "slice", "work": 3, "output": "cut_maki"},
+    {"id": "cook_noodle_soup", "station": "pot", "inputs": ["miso", "noodles", "water"], "action": "boil", "cook_time": 7, "perfect_window": 5, "burn_time": 11, "output": "noodle_soup"},
+    {"id": "boil_egg", "station": "pot", "inputs": ["egg", "water"], "action": "boil", "cook_time": 5, "perfect_window": 5, "burn_time": 10, "output": "boiled_egg"}
+  ],
+  "assemblies": [
+    {"output": "salmon_sashimi", "base": "plate", "parts": ["sliced_salmon", "chopped_cucumber"]},
+    {"output": "salmon_nigiri", "base": "plate", "parts": ["cooked_rice", "sliced_salmon"]},
+    {"output": "cucumber_maki", "base": "plate", "parts": ["cut_maki"]},
+    {"output": "miso_ramen", "base": "plate", "parts": ["noodle_soup", "chopped_spring_onion", "boiled_egg"]}
+  ],
+  "role_presets": {
+    "sushi_bar": {
+      "1": [
+        {"name": "Chef", "crates": ["salmon", "cucumber", "rice", "water", "plate"], "stations": {"counter": 4, "board": 2, "pot": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Fish & Cucumber", "crates": ["salmon", "cucumber"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Rice & Pass", "crates": ["rice", "water", "plate"], "stations": {"counter": 4, "pot": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Fish", "crates": ["salmon"], "stations": {"counter": 3, "board": 1}},
+        {"name": "Cucumber & Rice", "crates": ["cucumber", "rice", "water"], "stations": {"counter": 3, "board": 1, "pot": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Fish", "crates": ["salmon"], "stations": {"counter": 3, "board": 1}},
+        {"name": "Cucumber & Rice", "crates": ["cucumber", "rice", "water"], "stations": {"counter": 3, "board": 1, "pot": 1}},
+        {"name": "Knife", "crates": [], "stations": {"counter": 3, "board": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    },
+    "izakaya": {
+      "1": [
+        {"name": "Chef", "crates": ["salmon", "cucumber", "rice", "water", "nori", "noodles", "miso", "egg", "spring_onion", "plate"], "stations": {"counter": 4, "board": 2, "pot": 2, "sushi_mat": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Rice & Pots", "crates": ["rice", "water", "noodles", "miso", "egg", "cucumber"], "stations": {"counter": 3, "board": 1, "pot": 2, "sushi_mat": 1}},
+        {"name": "Knife & Pass", "crates": ["salmon", "nori", "spring_onion", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Knife", "crates": ["salmon", "cucumber", "spring_onion"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Pots", "crates": ["rice", "water", "noodles", "miso", "egg"], "stations": {"counter": 3, "pot": 2}},
+        {"name": "Rolls & Pass", "crates": ["nori", "plate"], "stations": {"counter": 4, "sushi_mat": 1, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Fish", "crates": ["salmon", "cucumber"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Rice & Rolls", "crates": ["rice", "water", "nori"], "stations": {"counter": 3, "pot": 1, "sushi_mat": 1}},
+        {"name": "Ramen", "crates": ["noodles", "miso", "egg", "spring_onion", "water"], "stations": {"counter": 3, "board": 1, "pot": 2}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    }
+  }
+}

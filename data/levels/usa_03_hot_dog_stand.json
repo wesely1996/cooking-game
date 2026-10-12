@@ -1,0 +1,17 @@
+{
+  "id": "usa_03",
+  "name": "Hot Dog Stand",
+  "description": "Sausages on the grill, buns and ketchup, and a mountain of fries.",
+  "pack": "american",
+  "type": "normal",
+  "dishes": [
+    {"id": "hot_dog", "weight": 1},
+    {"id": "french_fries", "weight": 1}
+  ],
+  "roles": "fair",
+  "duration": 210,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 17, "2": 13, "3": 12, "4": 11},
+  "stars": {"1": [210, 420, 600], "2": [280, 570, 810], "3": [290, 590, 840], "4": [310, 620, 880]}
+}

@@ -1,0 +1,128 @@
+{
+  "id": "french",
+  "name": "French",
+  "items": {
+    "butter": {"name": "Butter", "kind": "raw"},
+    "jam": {"name": "Jam", "kind": "raw"},
+    "onion": {"name": "Onion", "kind": "raw"},
+    "zucchini": {"name": "Zucchini", "kind": "raw"},
+    "eggplant": {"name": "Eggplant", "kind": "raw"},
+    "batter": {"name": "Crêpe batter"},
+    "thin_crepe": {"name": "Crêpe"},
+    "chopped_strawberry": {"name": "Sliced strawberries"},
+    "chopped_onion": {"name": "Chopped onion"},
+    "onion_broth": {"name": "Onion broth"},
+    "soup_to_bake": {"name": "Soup with cheese"},
+    "baked_soup": {"name": "Baked onion soup"},
+    "chopped_zucchini": {"name": "Sliced zucchini"},
+    "chopped_eggplant": {"name": "Diced eggplant"},
+    "vegetable_stew": {"name": "Vegetable stew"},
+    "tartine": {"name": "Tartine", "kind": "dish", "price": 14, "patience": 45},
+    "crepe": {"name": "Crêpe", "kind": "dish", "price": 22, "patience": 60},
+    "onion_soup": {"name": "French Onion Soup", "kind": "dish", "price": 34, "patience": 90},
+    "ratatouille": {"name": "Ratatouille", "kind": "dish", "price": 28, "patience": 70}
+  },
+  "stations": {
+    "crepe_pan": {"name": "Crêpe pan", "kind": "cook", "capacity": 1}
+  },
+  "recipes": [
+    {"id": "whisk_batter", "station": "bowl", "inputs": ["egg", "flour", "milk"], "action": "whisk", "work": 5, "output": "batter"},
+    {"id": "slice_strawberry", "station": "board", "inputs": ["strawberry"], "action": "slice", "work": 3, "output": "chopped_strawberry"},
+    {"id": "chop_onion", "station": "board", "inputs": ["onion"], "action": "chop", "work": 4, "output": "chopped_onion"},
+    {"id": "slice_zucchini", "station": "board", "inputs": ["zucchini"], "action": "slice", "work": 3, "output": "chopped_zucchini"},
+    {"id": "dice_eggplant", "station": "board", "inputs": ["eggplant"], "action": "chop", "work": 3, "output": "chopped_eggplant"},
+    {"id": "cook_crepe", "station": "crepe_pan", "inputs": ["batter"], "action": "fry", "cook_time": 4, "perfect_window": 4, "burn_time": 8, "output": "thin_crepe"},
+    {"id": "simmer_onions", "station": "pot", "inputs": ["chopped_onion", "water"], "action": "simmer", "cook_time": 6, "perfect_window": 5, "burn_time": 11, "output": "onion_broth"},
+    {"id": "bake_soup", "station": "oven", "inputs": ["soup_to_bake"], "action": "bake", "cook_time": 5, "perfect_window": 4, "burn_time": 9, "output": "baked_soup"},
+    {"id": "cook_ratatouille", "station": "pan", "inputs": ["chopped_eggplant", "chopped_tomato", "chopped_zucchini"], "action": "simmer", "cook_time": 7, "perfect_window": 5, "burn_time": 10, "output": "vegetable_stew"}
+  ],
+  "assemblies": [
+    {"output": "tartine", "base": "plate", "parts": ["sliced_bread", "butter", "jam"]},
+    {"output": "crepe", "base": "plate", "parts": ["thin_crepe", "chopped_strawberry"]},
+    {"output": "soup_to_bake", "base": "onion_broth", "parts": ["sliced_bread", "grated_cheese"]},
+    {"output": "onion_soup", "base": "plate", "parts": ["baked_soup"]},
+    {"output": "ratatouille", "base": "plate", "parts": ["vegetable_stew"]}
+  ],
+  "role_presets": {
+    "cafe": {
+      "1": [
+        {"name": "Chef", "crates": ["bread", "butter", "jam", "flour", "egg", "milk", "strawberry", "plate"], "stations": {"counter": 4, "board": 2, "bowl": 1, "crepe_pan": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Bread & Batter", "crates": ["bread", "flour", "egg", "milk"], "stations": {"counter": 3, "board": 1, "bowl": 1, "crepe_pan": 1}},
+        {"name": "Toppings & Pass", "crates": ["butter", "jam", "strawberry", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Bread & Flour", "crates": ["bread", "flour"], "stations": {"counter": 3, "board": 2, "bowl": 1}},
+        {"name": "Crêpes", "crates": ["egg", "milk", "butter"], "stations": {"counter": 3, "crepe_pan": 1}},
+        {"name": "Toppings & Pass", "crates": ["jam", "strawberry", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Bread", "crates": ["bread"], "stations": {"counter": 3, "board": 1}},
+        {"name": "Butter & Batter", "crates": ["butter", "flour"], "stations": {"counter": 3, "bowl": 1}},
+        {"name": "Crêpes", "crates": ["egg", "milk", "jam"], "stations": {"counter": 3, "crepe_pan": 1}},
+        {"name": "Fruit & Pass", "crates": ["strawberry", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ]
+    },
+    "bistro": {
+      "1": [
+        {"name": "Chef", "crates": ["flour", "egg", "milk", "strawberry", "onion", "water", "bread", "cheese", "plate"], "stations": {"counter": 4, "board": 2, "bowl": 1, "crepe_pan": 1, "pot": 1, "oven": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Stove", "crates": ["flour", "egg", "milk", "onion", "water"], "stations": {"counter": 3, "board": 1, "bowl": 1, "crepe_pan": 1, "pot": 1, "oven": 1}},
+        {"name": "Toppings & Pass", "crates": ["strawberry", "bread", "cheese", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Prep", "crates": ["onion", "bread", "cheese", "strawberry"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Stove", "crates": ["flour", "egg", "milk", "water"], "stations": {"counter": 3, "bowl": 1, "crepe_pan": 1, "pot": 1, "oven": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Prep", "crates": ["onion", "bread", "cheese"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Crêpes", "crates": ["flour", "egg", "milk", "strawberry"], "stations": {"counter": 3, "board": 1, "bowl": 1, "crepe_pan": 1}},
+        {"name": "Soup", "crates": ["water"], "stations": {"counter": 3, "pot": 1, "oven": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    },
+    "provence": {
+      "1": [
+        {"name": "Chef", "crates": ["tomato", "zucchini", "eggplant", "onion", "water", "bread", "cheese", "butter", "jam", "plate"], "stations": {"counter": 4, "board": 2, "pan": 1, "pot": 1, "oven": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Vegetables & Stove", "crates": ["tomato", "zucchini", "eggplant", "onion", "water", "bread"], "stations": {"counter": 3, "board": 2, "pan": 1, "pot": 1, "oven": 1}},
+        {"name": "Toppings & Pass", "crates": ["cheese", "butter", "jam", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Vegetables", "crates": ["tomato", "zucchini", "eggplant"], "stations": {"counter": 3, "board": 2, "pan": 1}},
+        {"name": "Soup", "crates": ["onion", "water", "bread", "cheese"], "stations": {"counter": 3, "board": 1, "pot": 1, "oven": 1}},
+        {"name": "Toppings & Pass", "crates": ["butter", "jam", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Vegetables", "crates": ["tomato", "zucchini", "eggplant"], "stations": {"counter": 3, "board": 2, "pan": 1}},
+        {"name": "Soup", "crates": ["onion", "water"], "stations": {"counter": 3, "board": 1, "pot": 1, "oven": 1}},
+        {"name": "Bread & Cheese", "crates": ["bread", "cheese"], "stations": {"counter": 3, "board": 1}},
+        {"name": "Toppings & Pass", "crates": ["butter", "jam", "plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    },
+    "grand_restaurant": {
+      "1": [
+        {"name": "Chef", "crates": ["flour", "egg", "milk", "strawberry", "onion", "water", "bread", "cheese", "tomato", "zucchini", "eggplant", "plate"], "stations": {"counter": 4, "board": 2, "bowl": 1, "crepe_pan": 1, "pot": 1, "oven": 1, "pan": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Stove", "crates": ["flour", "egg", "milk", "onion", "water", "tomato", "zucchini", "eggplant"], "stations": {"counter": 3, "board": 1, "bowl": 1, "crepe_pan": 1, "pot": 1, "oven": 1, "pan": 1}},
+        {"name": "Toppings & Pass", "crates": ["strawberry", "bread", "cheese", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Prep", "crates": ["onion", "tomato", "zucchini", "eggplant", "bread", "cheese"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Stove", "crates": ["flour", "egg", "milk", "water"], "stations": {"counter": 3, "bowl": 1, "crepe_pan": 1, "pot": 1, "oven": 1, "pan": 1}},
+        {"name": "Fruit & Pass", "crates": ["strawberry", "plate"], "stations": {"counter": 4, "board": 1, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Vegetables", "crates": ["tomato", "zucchini", "eggplant", "onion"], "stations": {"counter": 3, "board": 2, "pan": 1}},
+        {"name": "Crêpes", "crates": ["flour", "egg", "milk", "strawberry"], "stations": {"counter": 3, "board": 1, "bowl": 1, "crepe_pan": 1}},
+        {"name": "Soup", "crates": ["water", "bread", "cheese"], "stations": {"counter": 3, "board": 1, "pot": 1, "oven": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    }
+  }
+}

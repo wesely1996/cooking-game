@@ -28,8 +28,17 @@ with it; 0.5.0 was never released on its own.
   festival and the *Gran Premio* competition.
 - **The kitchen screen is a comic page** with panels for the pantry, prep,
   stove, the pass, your teammates and (in competitions) the rival.
-- Mexico, USA, Spain, Japan and France are paused while they move to the new
-  rules (kept in `data/legacy/`).
+- **All six cuisines on the new rules**, each with four dishes (the first
+  needs no stove), one signature gadget, four shifts, a festival, a
+  competition and an arcade kitchen:
+  - Mexico (tortilla press): guacamole, elote, quesadilla, beef taco.
+  - USA (blender): milkshake, fries, hot dog, cheeseburger.
+  - Spain (paella pan): gazpacho, patatas bravas, tortilla española, paella.
+  - Japan (sushi mat): salmon sashimi, salmon nigiri, cucumber maki, miso
+    ramen.
+  - France (crêpe pan): tartine, crêpe, French onion soup, ratatouille.
+- Chicken mole, yakitori, miso soup, buffalo wings, churros, croissants and
+  pain perdu are gone from the menus.
 
 ### Added
 - **A 3D comic kitchen:** every panel is a live 3D view with a comic-book

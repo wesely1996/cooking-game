@@ -1,0 +1,70 @@
+{
+  "id": "spanish",
+  "name": "Spanish",
+  "items": {
+    "chicken": {"name": "Chicken", "kind": "raw"},
+    "cold_soup": {"name": "Cold tomato soup"},
+    "potato_omelette": {"name": "Potato omelette"},
+    "paella_rice": {"name": "Paella rice"},
+    "gazpacho": {"name": "Gazpacho", "kind": "dish", "price": 14, "patience": 45},
+    "patatas_bravas": {"name": "Patatas Bravas", "kind": "dish", "price": 20, "patience": 55},
+    "tortilla_espanola": {"name": "Tortilla Española", "kind": "dish", "price": 26, "patience": 65},
+    "paella": {"name": "Paella", "kind": "dish", "price": 32, "patience": 80}
+  },
+  "stations": {
+    "paella_pan": {"name": "Paella pan", "kind": "cook", "capacity": 3}
+  },
+  "recipes": [
+    {"id": "stir_gazpacho", "station": "bowl", "inputs": ["chopped_cucumber", "chopped_tomato", "sliced_bread"], "action": "stir", "work": 5, "output": "cold_soup"},
+    {"id": "cook_omelette", "station": "pan", "inputs": ["chopped_potato", "egg"], "action": "fry", "cook_time": 6, "perfect_window": 4, "burn_time": 9, "output": "potato_omelette"},
+    {"id": "cook_paella", "station": "paella_pan", "inputs": ["chicken", "chopped_tomato", "rice"], "action": "simmer", "cook_time": 9, "perfect_window": 5, "burn_time": 11, "output": "paella_rice"}
+  ],
+  "assemblies": [
+    {"output": "gazpacho", "base": "plate", "parts": ["cold_soup"]},
+    {"output": "patatas_bravas", "base": "plate", "parts": ["fries", "tomato_sauce"]},
+    {"output": "tortilla_espanola", "base": "plate", "parts": ["potato_omelette"]},
+    {"output": "paella", "base": "plate", "parts": ["paella_rice"]}
+  ],
+  "role_presets": {
+    "tapas": {
+      "1": [
+        {"name": "Chef", "crates": ["tomato", "cucumber", "bread", "potato", "plate"], "stations": {"counter": 4, "board": 2, "bowl": 1, "fryer": 1, "pan": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Prep & Stove", "crates": ["tomato", "cucumber", "potato"], "stations": {"counter": 3, "board": 2, "fryer": 1, "pan": 1}},
+        {"name": "Bread & Pass", "crates": ["bread", "plate"], "stations": {"counter": 4, "board": 1, "bowl": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Vegetables", "crates": ["tomato", "cucumber"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Stove", "crates": ["potato"], "stations": {"counter": 3, "board": 1, "fryer": 1, "pan": 1}},
+        {"name": "Bread & Pass", "crates": ["bread", "plate"], "stations": {"counter": 4, "board": 1, "bowl": 1, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Tomatoes", "crates": ["tomato"], "stations": {"counter": 3, "board": 1}},
+        {"name": "Cucumber & Bread", "crates": ["cucumber", "bread"], "stations": {"counter": 3, "board": 2}},
+        {"name": "Stove", "crates": ["potato"], "stations": {"counter": 3, "board": 1, "fryer": 1, "pan": 1}},
+        {"name": "Bowl & Pass", "crates": ["plate"], "stations": {"counter": 4, "bowl": 1, "serving_window": 1}}
+      ]
+    },
+    "bodega": {
+      "1": [
+        {"name": "Chef", "crates": ["tomato", "cucumber", "bread", "potato", "egg", "rice", "chicken", "plate"], "stations": {"counter": 4, "board": 2, "bowl": 1, "fryer": 1, "pan": 2, "paella_pan": 1, "serving_window": 1}}
+      ],
+      "2": [
+        {"name": "Prep & Stove", "crates": ["tomato", "cucumber", "potato", "rice", "chicken"], "stations": {"counter": 3, "board": 2, "fryer": 1, "pan": 2, "paella_pan": 1}},
+        {"name": "Bread, Eggs & Pass", "crates": ["bread", "egg", "plate"], "stations": {"counter": 4, "board": 1, "bowl": 1, "serving_window": 1}}
+      ],
+      "3": [
+        {"name": "Prep", "crates": ["tomato", "cucumber", "potato", "bread"], "stations": {"counter": 3, "board": 2, "bowl": 1}},
+        {"name": "Stove", "crates": ["egg", "rice", "chicken"], "stations": {"counter": 3, "fryer": 1, "pan": 2, "paella_pan": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ],
+      "4": [
+        {"name": "Vegetables", "crates": ["tomato", "cucumber", "bread"], "stations": {"counter": 3, "board": 2, "bowl": 1}},
+        {"name": "Potatoes", "crates": ["potato", "egg"], "stations": {"counter": 3, "board": 1, "fryer": 1, "pan": 1}},
+        {"name": "Paella", "crates": ["rice", "chicken"], "stations": {"counter": 3, "pan": 1, "paella_pan": 1}},
+        {"name": "Plating & Pass", "crates": ["plate"], "stations": {"counter": 4, "serving_window": 1}}
+      ]
+    }
+  }
+}

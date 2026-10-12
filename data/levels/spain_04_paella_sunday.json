@@ -1,0 +1,18 @@
+{
+  "id": "spain_04",
+  "name": "Paella Sunday",
+  "description": "Sunday in Valencia: a big pan of paella, tortilla and cold gazpacho until midnight.",
+  "pack": "spanish",
+  "type": "normal",
+  "dishes": [
+    {"id": "paella", "weight": 2},
+    {"id": "tortilla_espanola", "weight": 1.5},
+    {"id": "gazpacho", "weight": 1}
+  ],
+  "roles": "bodega",
+  "duration": 240,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 16, "2": 13, "3": 12, "4": 11},
+  "stars": {"1": [210, 420, 600], "2": [240, 480, 680], "3": [300, 610, 870], "4": [320, 630, 900]}
+}

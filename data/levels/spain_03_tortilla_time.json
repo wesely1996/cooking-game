@@ -1,0 +1,17 @@
+{
+  "id": "spain_03",
+  "name": "Tortilla Time",
+  "description": "Madrid! Fry potatoes and eggs into a golden tortilla, with bravas on the side.",
+  "pack": "spanish",
+  "type": "normal",
+  "dishes": [
+    {"id": "tortilla_espanola", "weight": 1},
+    {"id": "patatas_bravas", "weight": 1}
+  ],
+  "roles": "bodega",
+  "duration": 210,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 4, "3": 4, "4": 5},
+  "spawn_interval": {"1": 17, "2": 13, "3": 12, "4": 11},
+  "stars": {"1": [190, 380, 550], "2": [230, 450, 650], "3": [240, 480, 680], "4": [280, 560, 800]}
+}

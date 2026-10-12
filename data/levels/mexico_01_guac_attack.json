@@ -1,0 +1,16 @@
+{
+  "id": "mexico_01",
+  "name": "Guac Attack",
+  "description": "Welcome to Mexico City! Everybody wants guacamole: chop avocado and tomato, then mash them in the bowl.",
+  "pack": "mexican",
+  "type": "normal",
+  "dishes": [
+    {"id": "guacamole", "weight": 1}
+  ],
+  "roles": "antojitos",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 3, "3": 4, "4": 4},
+  "spawn_interval": {"1": 14, "2": 11, "3": 10, "4": 9},
+  "stars": {"1": [90, 190, 270], "2": [110, 220, 310], "3": [120, 240, 340], "4": [130, 260, 370]}
+}

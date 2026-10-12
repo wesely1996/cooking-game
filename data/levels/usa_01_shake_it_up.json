@@ -1,0 +1,16 @@
+{
+  "id": "usa_01",
+  "name": "Shake It Up",
+  "description": "New York! Ice cream, milk and strawberries in the blender: the diner's famous milkshakes.",
+  "pack": "american",
+  "type": "normal",
+  "dishes": [
+    {"id": "milkshake", "weight": 1}
+  ],
+  "roles": "diner_counter",
+  "duration": 180,
+  "first_spawn": 2,
+  "max_active": {"1": 3, "2": 3, "3": 4, "4": 4},
+  "spawn_interval": {"1": 14, "2": 11, "3": 10, "4": 9},
+  "stars": {"1": [140, 290, 410], "2": [150, 310, 440], "3": [180, 360, 520], "4": [190, 380, 550]}
+}
