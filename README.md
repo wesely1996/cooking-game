@@ -49,7 +49,8 @@ tools/             test runner script, balancing report
 game/              the playable game: kitchen screen, mini-games, effects, sound,
                    net/net.gd (ENet transport, handshake, LAN discovery)
 ui/                menus: title, world map, lobby, recipe book, results
-art/               fonts and the generated SVG pictures (tools/art/generate_art.py)
+art/               fonts, CC0 3D models, comic shaders, icons rendered from the
+                   models (tools/art/render_icons.gd)
 ```
 
 ## Menus

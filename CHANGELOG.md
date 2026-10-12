@@ -27,11 +27,25 @@ with it; 0.5.0 was never released on its own.
   pomodoro and pizza margherita, in four new shifts, the *Sagra in Piazza*
   festival and the *Gran Premio* competition.
 - **The kitchen screen is a comic page** with panels for the pantry, prep,
-  stove, the pass and your teammates (a stand-in look until the 3D kitchen).
+  stove, the pass, your teammates and (in competitions) the rival.
 - Mexico, USA, Spain, Japan and France are paused while they move to the new
   rules (kept in `data/legacy/`).
 
 ### Added
+- **A 3D comic kitchen:** every panel is a live 3D view with a comic-book
+  look: ink outlines, halftone shading and Spider-Verse colours. The
+  background stays muted while food, chefs and the station you can use right
+  now pop out. Models are Kenney's CC0 packs.
+- **Chefs, customers and a rival on stage:** your chef walks to the station
+  you use and works it, teammates react in the team panel, customers queue at
+  the pass with speech balloons and cheer or storm off, and the rival cooks
+  in their own panel.
+- **Food flies across the panel gutters** when it moves between panels or
+  is thrown to a teammate.
+- **Splash-panel mini-games:** chopping, kneading and stirring open a tilted
+  comic splash panel with a close-up of the station.
+- Food and station pictures (order cards, recipe book) are rendered from the
+  3D models, so they match the kitchen.
 - **New-dish tutorial:** before the clock starts, each dish you've never made
   is cooked once with tips, scoring nothing, then the real shift starts. In
   LAN games it runs when either chef is new to a dish. SKIP jumps straight

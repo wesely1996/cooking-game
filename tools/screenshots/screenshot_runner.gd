@@ -153,6 +153,9 @@ func _run() -> void:
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
 	await _shot("10_busy_kitchen")
+	# Two chefs: the teammate's chef in the team panel; then the rival panel.
+	await _play_a_bit("italy_03", 2, "10b_team_kitchen")
+	await _play_a_bit("italy_competition", 1, "10c_rival_kitchen")
 	Game.current_level = Game.levels["italy_01"]
 	Game.finish_level({"type": "normal", "failed": false, "stars": 2, "score": 312}, {"served": 4, "lost": 1, "perfect": 2, "score": 312})
 	await _wait(1.6)
@@ -170,6 +173,23 @@ func _run() -> void:
 	book._show_mystery({"cuisine": "Mexican", "region": "Mexico"})
 	await _wait(0.2)
 	await _shot("14_recipe_coming_soon")
+
+
+## Starts a level without a prologue, lets the bot cook all kitchens for a
+## while at 4x speed and takes a screenshot.
+func _play_a_bit(level_id: String, players: int, shot: String) -> void:
+	var none: Array[String] = []
+	Game.start_level(level_id, players, 7, none)
+	await _wait(2.0)
+	var screen := get_tree().current_scene
+	var shift: Shift = screen.shift
+	var bot := KitchenBot.new()
+	Engine.time_scale = 4.0
+	while shift.time < 25.0:
+		bot.step(shift)
+		await get_tree().process_frame
+	Engine.time_scale = 1.0
+	await _shot(shot)
 
 
 func _check_input(screen: Node, shift: Shift) -> void:
@@ -191,11 +211,11 @@ func _check_input(screen: Node, shift: Shift) -> void:
 	_check(k.item_at(0, board) != null and k.item_at(0, board).type == "tomato", "dragging a crate onto a board")
 	await _tap(screen.station_center(board))
 	_check(screen._minigame.visible, "tapping a full board opens the mini-game")
-	var center: Vector2 = screen._minigame.position + screen._minigame.size * 0.5
+	var center: Vector2 = screen._minigame.get_transform() * (screen._minigame.size * 0.5)
 	for i in 2:
 		await _drag(center + Vector2(0, -60), center + Vector2(0, 10))
 	# Pause with LATER: the board keeps the two chops.
-	await _tap(screen._minigame.position + screen._minigame.close_rect().get_center())
+	await _tap(screen._minigame.get_transform() * screen._minigame.close_rect().get_center())
 	_check(not screen._minigame.visible, "LATER closes the mini-game")
 	_check(k.station(0, board).progress == 2.0, "paused work keeps its progress")
 	await _wait(0.3)

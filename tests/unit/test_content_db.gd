@@ -109,7 +109,8 @@ func test_italy_is_the_template() -> void:
 func test_every_item_and_station_has_a_picture() -> void:
 	var db := ContentDB.load_dir()
 	for id in db.items:
-		assert_true(ResourceLoader.exists("res://art/items/%s.svg" % id), "picture for " + id)
+		assert_true(Art.item(id) != null, "picture for " + id)
+		assert_true(Models.ITEMS.has(id) or db.assemblies.has(id), "3D model for " + id)
 	for id in db.stations:
-		if not db.station_kind(id) in [ContentDB.STATION_PASS, ContentDB.STATION_COUNTER]:
-			assert_true(ResourceLoader.exists("res://art/equipment/%s.svg" % id), "picture for " + id)
+		assert_true(Art.equipment(id) != null, "picture for " + id)
+		assert_true(Models.STATIONS.has(id), "3D model for " + id)
