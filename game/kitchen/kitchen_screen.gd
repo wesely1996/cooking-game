@@ -16,8 +16,11 @@ extends Control
 ## - work can be paused (LATER, or a tap anywhere else) and picked up again
 ##   by tapping the station.
 ##
-## The look is a placeholder: v0.6 replaces the drawing with the 3D comic
-## kitchen, but keeps this layout and these controls.
+## Each panel is a window into a 3D comic kitchen (KitchenStage): its own
+## camera looking at its own set. Taps and drags are matched against where
+## the stations show up on screen; timers, tips and speech balloons are drawn
+## over the panels in 2D. Food moving to another panel flies over the
+## gutter, across the page.
 
 const TOP_BAR_H := 118.0
 const MARGIN := 10.0
@@ -31,9 +34,15 @@ const PANEL_PREP := "prep"
 const PANEL_STOVE := "stove"
 const PANEL_PASS := "pass"
 const PANEL_TEAM := "team"
-const PANEL_TITLES := {PANEL_PANTRY: "PANTRY", PANEL_PREP: "PREP", PANEL_STOVE: "STOVE", PANEL_PASS: "PASS", PANEL_TEAM: "TEAM"}
-const PANEL_COLORS := {PANEL_PANTRY: Color("#efe6d2"), PANEL_PREP: Color("#f6ecd8"), PANEL_STOVE: Color("#f2e0d0"),
-	PANEL_PASS: Color("#e3eef2"), PANEL_TEAM: Color("#ece4f4")}
+const PANEL_RIVAL := "rival"
+const PANEL_TITLES := {PANEL_PANTRY: "PANTRY", PANEL_PREP: "PREP", PANEL_STOVE: "STOVE", PANEL_PASS: "PASS",
+	PANEL_TEAM: "TEAM · THROW HERE", PANEL_RIVAL: "THE RIVAL"}
+const PANEL_COLORS := {PANEL_PANTRY: Color("#efe2c8"), PANEL_PREP: Color("#f4e6cc"), PANEL_STOVE: Color("#f0dcc8"),
+	PANEL_PASS: Color("#dfe9ee"), PANEL_TEAM: Color("#e8def2"), PANEL_RIVAL: Color("#f2d8e6")}
+const FLY_SECONDS := 0.28
+## What a teammate's chef does (in the team panel) when they act.
+const MATE_ANIMATIONS := {"item_added": "pick-up", "item_moved": "interact-right", "item_worked": "interact-right",
+	"item_processed": "emote-yes", "item_served": "pick-up"}
 
 const ACTION_SOUNDS := {"chop": "chop", "slice": "slice", "knead": "squish", "roll": "roll", "stir": "swirl", "crank": "swirl",
 	"press": "thud", "mash": "squish", "grate": "slice", "whisk": "swirl", "blend": "swirl"}
@@ -51,15 +60,18 @@ var _session  # HostSession or ClientSession
 
 var _backdrop: Control
 var _dynamic: Control
-var _items_layer: Node2D
+var _stage: KitchenStage
+var _world: World3D
+var _stage_holder: SubViewport
+var _views: Array[Dictionary] = []  # one per panel: {container, viewport, camera}
+var _views_layer: Control
 var _fx_layer: Node2D
 var _order_bar: OrderBar
 var _minigame: Minigame
 var _overlay: Control
 var _ghost: Sprite2D
 
-var _item_views := {}  # uid -> ItemView
-var _spawn_from := {}  # uid -> start position for new item views
+var _popped := {}  # "s<index>" / "i<uid>" / "c<crate>" -> true: highlighted right now
 
 # Layout, rebuilt when the screen size changes.
 var _panels: Array[Dictionary] = []  # {kind, rect, title, player (team insets)}
@@ -74,7 +86,7 @@ var _skip_rect := Rect2()
 var _press: Dictionary = {}  # what was under the finger when it went down
 var _press_pos := Vector2.ZERO
 var _dragging := false
-var _drag_view: ItemView
+var _drag_uid := 0
 var _selected := -1  # station index of the selected food
 var _work: Dictionary = {}  # what the open mini-game works on: {station, recipe}
 var _start_timer := START_DELAY
@@ -108,10 +120,20 @@ func _ready() -> void:
 
 	_backdrop = _layer_control()
 	_backdrop.draw.connect(_draw_backdrop)
+	# The 3D kitchen: one world, held by an invisible viewport; every panel
+	# gets its own viewport with a camera into that world.
+	_world = World3D.new()
+	_stage_holder = SubViewport.new()
+	_stage_holder.size = Vector2i(2, 2)
+	_stage_holder.world_3d = _world
+	_stage_holder.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	add_child(_stage_holder)
+	_stage = KitchenStage.new()
+	_stage.setup(db, kitchen, _me)
+	_stage_holder.add_child(_stage)
+	_views_layer = _layer_control()
 	_dynamic = _layer_control()
 	_dynamic.draw.connect(_draw_dynamic)
-	_items_layer = Node2D.new()
-	add_child(_items_layer)
 	_fx_layer = Node2D.new()
 	add_child(_fx_layer)
 	_order_bar = OrderBar.new()
@@ -179,6 +201,8 @@ func _panel_kinds() -> Array[String]:
 		kinds.append(PANEL_PASS)
 	if kitchen.players.size() > 1:
 		kinds.append(PANEL_TEAM)
+	if shift.level.type == LevelDef.TYPE_COMPETITION:
+		kinds.append(PANEL_RIVAL)
 	return kinds
 
 
@@ -199,12 +223,14 @@ func _panel_of(st: KitchenState.Station, counters_seen: int, counters_total: int
 func _layout() -> void:
 	var w := size.x
 	var h := size.y
+	if w < 10.0 or h < 10.0:
+		return
 	var pk := kitchen.players[_me]
 	_order_bar.position = Vector2.ZERO
 	_order_bar.size = Vector2(w, TOP_BAR_H)
 
 	# The page: a narrow pantry on the left; on the right a top row (prep and
-	# stove) and a bottom row (pass and team).
+	# stove) and a bottom row (pass, team, rival).
 	var page := Rect2(MARGIN, TOP_BAR_H + MARGIN, w - MARGIN * 2.0, h - TOP_BAR_H - MARGIN * 2.0)
 	var kinds := _panel_kinds()
 	var pantry_w := clampf(page.size.x * 0.17, 150.0, 230.0)
@@ -223,16 +249,7 @@ func _layout() -> void:
 	if not bottom_row.is_empty():
 		_add_row(bottom_row, Rect2(right.position + Vector2(0, top_h + GUTTER), Vector2(right.size.x, right.size.y - top_h - GUTTER)), [0.5, 0.5])
 
-	# Crates in the pantry.
-	_crates.clear()
-	var pantry: Rect2 = _panel_rect(PANEL_PANTRY).grow(-10)
-	pantry.position.y += 34
-	pantry.size.y -= 34
-	var crate_cells := _grid(pk.crates.size(), pantry, 2)
-	for i in pk.crates.size():
-		_crates.append({"id": pk.crates[i], "rect": crate_cells[i]})
-
-	# Stations in their panels.
+	# Which panel each station is in.
 	var has_pass := pk.serves
 	var counters_total := pk.stations.filter(func(st): return db.station_kind(st.type) == ContentDB.STATION_COUNTER).size()
 	var by_panel := {}
@@ -244,37 +261,69 @@ func _layout() -> void:
 		if not by_panel.has(kind):
 			by_panel[kind] = []
 		by_panel[kind].append(st.index)
+	var others: Array[int] = []
+	for p in kitchen.players.size():
+		if p != _me:
+			others.append(p)
+
+	# Build the 3D sets and a viewport per panel.
+	var plan := []
+	for panel in _panels:
+		var rect: Rect2 = panel.rect
+		plan.append({"kind": panel.kind, "stations": by_panel.get(panel.kind, []), "crates": pk.crates,
+			"mates": others, "aspect": rect.size.x / maxf(rect.size.y, 1.0)})
+	_stage.build(plan)
+	for view in _views:
+		view.container.queue_free()
+	_views.clear()
+	for i in _panels.size():
+		var rect: Rect2 = _panels[i].rect
+		var container := SubViewportContainer.new()
+		container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		container.position = rect.position
+		container.size = rect.size
+		var viewport := SubViewport.new()
+		viewport.size = Vector2i(rect.size)
+		viewport.world_3d = _world
+		viewport.transparent_bg = true
+		viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+		container.add_child(viewport)
+		var camera: Camera3D = _stage.sets[i].camera
+		viewport.add_child(camera)
+		camera.current = true
+		_views_layer.add_child(container)
+		_views.append({"container": container, "viewport": viewport, "camera": camera})
+
+	# Where the stations, crates and bin show up on screen (for taps and drags).
 	_spots.clear()
 	_spots.resize(pk.stations.size())
-	for kind in by_panel:
-		var area: Rect2 = _panel_rect(kind).grow(-10)
-		area.position.y += 34
-		area.size.y -= 34
-		if kind == PANEL_PREP:
-			area.size.x -= 86  # room for the bin
-		var indices: Array = by_panel[kind]
-		var cells := _grid(indices.size(), area, 0)
-		for i in indices.size():
-			var cell: Rect2 = cells[i]
-			var side := minf(cell.size.x, cell.size.y)
-			_spots[indices[i]] = {"index": indices[i], "rect": cell, "center": cell.get_center(), "scale": clampf(side / 120.0, 0.45, 1.15)}
-	var prep := _panel_rect(PANEL_PREP)
-	_bin_rect = Rect2(prep.end - Vector2(90, 100), Vector2(80, 90))
+	for st in pk.stations:
+		var set_index := _stage.set_of_station(st.index)
+		if set_index < 0:
+			continue
+		var world := _stage.station_position(st.index)
+		var center := _project(set_index, world)
+		var reach := absf(_project(set_index, world + Vector3(0.5, 0, 0)).x - center.x)
+		var rect := Rect2(center - Vector2(reach, reach * 1.25), Vector2(reach * 2.0, reach * 2.1))
+		_spots[st.index] = {"index": st.index, "rect": rect, "center": center, "scale": reach / 60.0}
+	_crates.clear()
+	var pantry_set := _stage.set_index(PANEL_PANTRY)
+	for id in pk.crates:
+		var world := _stage.crate_position(id)
+		var center := _project(pantry_set, world)
+		var reach := absf(_project(pantry_set, world + Vector3(0.38, 0, 0)).x - center.x)
+		_crates.append({"id": id, "center": center, "rect": Rect2(center - Vector2(reach, reach * 1.7), Vector2(reach * 2.0, reach * 1.9))})
+	var prep_set := _stage.set_index(PANEL_PREP)
+	var bin_center := _project(prep_set, _stage.bin_position())
+	_bin_rect = Rect2(bin_center - Vector2(46, 56), Vector2(92, 112))
 
-	# Teammates, stacked in the team panel.
+	# Teammates: side by side in the team panel.
 	_mates.clear()
 	var team := _panel_rect(PANEL_TEAM)
 	if team.has_area():
-		var others: Array[int] = []
-		for p in kitchen.players.size():
-			if p != _me:
-				others.append(p)
-		var inner := team.grow(-8)
-		inner.position.y += 30
-		inner.size.y -= 30
-		var each := (inner.size.y - GUTTER * (others.size() - 1)) / others.size()
+		var each := team.size.x / others.size()
 		for i in others.size():
-			_mates.append({"player": others[i], "rect": Rect2(inner.position + Vector2(0, i * (each + GUTTER)), Vector2(inner.size.x, each))})
+			_mates.append({"player": others[i], "rect": Rect2(team.position + Vector2(i * each, 0), Vector2(each, team.size.y)).grow(-4)})
 
 	_pause_rect = Rect2(w - 66, TOP_BAR_H + MARGIN + 4, 54, 54)
 	_skip_rect = Rect2(w * 0.5 - 90, TOP_BAR_H + 62, 180, 52)
@@ -282,6 +331,14 @@ func _layout() -> void:
 	_minigame.size = mini_size
 	_minigame.position = Vector2((w - mini_size.x) * 0.5, TOP_BAR_H + 40)
 	_backdrop.queue_redraw()
+
+
+## Where a point of the 3D kitchen shows up on the page.
+func _project(set_index: int, world: Vector3) -> Vector2:
+	if set_index < 0 or set_index >= _views.size() or world == Vector3.INF:
+		return Vector2(-1000, -1000)
+	var camera: Camera3D = _views[set_index].camera
+	return _panels[set_index].rect.position + camera.unproject_position(world)
 
 
 func _add_row(kinds: Array[String], rect: Rect2, shares: Array) -> void:
@@ -294,24 +351,6 @@ func _add_row(kinds: Array[String], rect: Rect2, shares: Array) -> void:
 		var width := total * share if i < kinds.size() - 1 else rect.end.x - x
 		_panels.append({"kind": kinds[i], "rect": Rect2(x, rect.position.y, width, rect.size.y)})
 		x += width + GUTTER
-
-
-## Splits an area into `count` square-ish cells (`columns` 0 = automatic).
-func _grid(count: int, area: Rect2, columns: int) -> Array[Rect2]:
-	var cells: Array[Rect2] = []
-	if count <= 0:
-		return cells
-	var cols := columns
-	if cols <= 0:
-		cols = 1
-		while cols < count and area.size.x / cols > area.size.y / ceili(float(count) / cols) * 1.15:
-			cols += 1
-	var rows := ceili(float(count) / cols)
-	var cell := Vector2(area.size.x / cols, area.size.y / rows)
-	for i in count:
-		var r := Rect2(area.position + Vector2((i % cols) * cell.x, (i / cols) * cell.y), cell)
-		cells.append(r.grow(-4))
-	return cells
 
 
 func _panel_rect(kind: String) -> Rect2:
@@ -340,7 +379,7 @@ func _process(delta: float) -> void:
 				return
 	_handle_events(_session.drain_events())
 	_check_work_done()
-	_sync_views()
+	_sync_stage(delta)
 	_hint_timer -= delta
 	if _hint_timer <= 0.0:
 		_hint_timer = 0.25
@@ -349,43 +388,79 @@ func _process(delta: float) -> void:
 	_overlay.queue_redraw()
 
 
-func _sync_views() -> void:
-	var seen := {}
+func _sync_stage(delta: float) -> void:
+	_stage.sync(delta)
+	for jump in _stage.jumps:
+		var item := _find_item(int(jump.uid))
+		var texture := Art.item(kitchen.effective_id(item) if item else "")
+		_fly(texture, _project(jump.from_set, jump.from), _project(jump.to_set, jump.to))
+	_stage.jumps.clear()
+	var pass_index := kitchen.players[_me].pass_station(db)
+	if pass_index >= 0:
+		_stage.sync_customers(shift.orders.orders, pass_index, delta)
+	_update_pops()
+
+
+## Highlights ("pop") what needs the player: where the selected food can go,
+## boards and bowls ready to work, food that is done or about to burn.
+func _update_pops() -> void:
+	var wanted := {}
+	var targets := _valid_targets()
+	for index in targets.stations:
+		wanted["s%d" % index] = 1.0
 	for st in kitchen.players[_me].stations:
-		var spot: Dictionary = _spots[st.index]
-		var n := st.contents.size()
-		for i in n:
-			var item: KitchenItem = st.contents[i]
-			seen[item.uid] = true
-			var view := _view_for(item, spot.center)
-			var offset := Vector2.ZERO
-			var scale_factor := 1.0
-			if n > 1:
-				# Several things in a bowl or pot: side by side, smaller.
-				scale_factor = 0.62
-				offset = Vector2((i - (n - 1) * 0.5) * 46.0 * spot.scale, 6.0 * spot.scale)
-			if not view.held:
-				view.target = spot.center + offset
-			view.display_scale = spot.scale * scale_factor
-			view.selected = st.index == _selected and n == 1
-			view.update_item(item)
-	for uid in _item_views.keys():
-		if not seen.has(uid):
-			_item_views[uid].queue_free()
-			_item_views.erase(uid)
-	if _selected >= 0 and kitchen.item_at(_me, _selected) == null:
-		_selected = -1
+		if st.recipe.is_empty() and not st.burnt:
+			continue
+		if st.burnt or (db.station_kind(st.type) == ContentDB.STATION_MANUAL) or st.done:
+			wanted["s%d" % st.index] = 0.8
+			if st.item():
+				wanted["i%d" % st.item().uid] = 0.8
+	var selected := kitchen.item_at(_me, _selected) if _selected >= 0 else null
+	if selected:
+		wanted["i%d" % selected.uid] = 1.0
+	for key in _popped.keys():
+		if not wanted.has(key):
+			_set_pop(key, 0.0)
+	for key in wanted:
+		_set_pop(key, wanted[key])
+	_popped = wanted
 
 
-func _view_for(item: KitchenItem, fallback: Vector2) -> ItemView:
-	if _item_views.has(item.uid):
-		return _item_views[item.uid]
-	var view := ItemView.new()
-	view.setup(db, item, _spawn_from.get(item.uid, fallback))
-	_spawn_from.erase(item.uid)
-	_items_layer.add_child(view)
-	_item_views[item.uid] = view
-	return view
+func _set_pop(key: String, amount: float) -> void:
+	var id := key.substr(1)
+	match key[0]:
+		"s":
+			_stage.pop_station(int(id), amount)
+		"i":
+			_stage.pop_item(int(id), amount)
+		"c":
+			_stage.pop_crate(id, amount)
+
+
+func _find_item(uid: int) -> KitchenItem:
+	for st in kitchen.players[_me].stations:
+		for item in st.contents:
+			if item.uid == uid:
+				return item
+	return null
+
+
+## A picture of the food flies over the page, across the panel gutters.
+func _fly(texture: Texture2D, from: Vector2, to: Vector2, seconds: float = FLY_SECONDS) -> void:
+	if texture == null:
+		return
+	var sprite := Sprite2D.new()
+	sprite.texture = texture
+	sprite.position = from
+	sprite.scale = Vector2(0.45, 0.45)
+	sprite.z_index = 50
+	_fx_layer.add_child(sprite)
+	var tween := sprite.create_tween()
+	var lift := Vector2(0, -minf(from.distance_to(to) * 0.35, 160.0))
+	tween.tween_method(func(t: float):
+		sprite.position = from.lerp(to, t) + lift * sin(t * PI)
+		sprite.rotation = sin(t * PI) * 0.4, 0.0, 1.0, seconds)
+	tween.tween_callback(sprite.queue_free)
 
 
 # --- Events from the game rules ----------------------------------------------
@@ -395,16 +470,21 @@ func _handle_events(events: Array[Dictionary]) -> void:
 		if event.type == "item_thrown":
 			_on_item_thrown(event)
 			continue
-		# Other chefs' kitchens aren't on this screen.
+		# Other chefs' kitchens aren't on this screen, but their chefs are.
 		if int(event.get("player", _me)) != _me:
+			if event.type in MATE_ANIMATIONS:
+				_stage.mate_act(int(event.player), MATE_ANIMATIONS[event.type])
 			continue
 		match event.type:
 			"item_added":
 				var crate := _crate_rect(str(event.item.get("type", "")))
 				if crate.has_area() and event.item.has("uid"):
-					_spawn_from[int(event.item.uid)] = crate.get_center()
+					_stage.hide_item(int(event.item.uid), FLY_SECONDS)
+					_fly(Art.item(str(event.item.type)), crate.get_center(), station_center(event.station))
+				_stage.chef_act(event.station, "pick-up")
 				Sfx.play("pop")
 			"item_moved":
+				_stage.chef_act(event.to, "interact-right")
 				if event.get("combined", false):
 					Sfx.play("thud")
 					_bubble(station_center(event.to) + Vector2(0, -70), _pick(["SPLAT!", "PLOP!", "TA-DA!"]), Color.WHITE, 30)
@@ -412,7 +492,10 @@ func _handle_events(events: Array[Dictionary]) -> void:
 					Sfx.play("pop", 0.2)
 				if event.item.get("perfect", false) and not event.get("combined", false):
 					_bubble(station_center(event.to) + Vector2(0, -80), "PERFECT!", Art.SUN, 36)
+			"item_worked":
+				_stage.chef_act(event.station, "interact-right")
 			"item_processed":
+				_stage.chef_act(event.station, "interact-right")
 				Sfx.play("pop")
 				Game.vibrate(40)
 				_bubble(station_center(event.station) + Vector2(0, -80), "DONE!", Art.LEAF, 34)
@@ -429,9 +512,12 @@ func _handle_events(events: Array[Dictionary]) -> void:
 				Game.vibrate(200)
 				_bubble(station_center(event.station) + Vector2(0, -80), "BURNT!", Color("#555"), 40)
 			"item_served":
-				_fly_away(int(event.item.uid), _pass_center())
+				_stage.set_item_visible(int(event.item.uid), false)
+				_fly(_item_texture(event.item), station_center(event.station), _pass_center())
+				_stage.chef_act(event.station, "pick-up")
 				Sfx.play("bell", 0.0)
 			"order_served":
+				_stage.customer_leaves(int(event.order.uid), true)
 				Sfx.play("coin")
 				Game.vibrate(30)
 				_bubble(_pass_center() + Vector2(-20, -90), "+%d" % event.points, Art.SUN, 46)
@@ -447,11 +533,13 @@ func _handle_events(events: Array[Dictionary]) -> void:
 					Sfx.play("bell")
 			"item_trashed":
 				for item in event.get("items", []):
-					_fly_away(int(item.uid), _bin_rect.get_center())
+					_stage.set_item_visible(int(item.uid), false)
+					_fly(_item_texture(item), station_center(event.station), _bin_rect.get_center())
 				Sfx.play("thud")
 			"order_added":
 				Sfx.play("pop", 0.2)
 			"order_lost":
+				_stage.customer_leaves(int(event.order.uid), false)
 				Sfx.play("angry")
 				Game.vibrate(120)
 				_bubble(Vector2(110, TOP_BAR_H + 10), _pick(["HMPF!", "GRR!", "BYE!"]), Art.TOMATO, 40)
@@ -463,7 +551,10 @@ func _handle_events(events: Array[Dictionary]) -> void:
 			"rival_taunt":
 				var line := "TOO SLOW!" if event.taunt == "too_slow" else "OOPS, BURNT!"
 				_bubble(Vector2(size.x - 220, TOP_BAR_H + 40), line, Color("#b48ce0"), 30)
+			"rival_dish_started":
+				_stage.rival_act("interact-right")
 			"rival_dish_done":
+				_stage.rival_act("emote-yes")
 				Sfx.play("pop", 0.3)
 			"shift_ended":
 				_end_shift()
@@ -479,15 +570,22 @@ func _discovered(dish: String) -> void:
 
 func _on_item_thrown(event: Dictionary) -> void:
 	var uid := int(event.item.uid)
+	var texture := _item_texture(event.item)
 	if event.player == _me:
-		_fly_away(uid, mate_center(event.target))
+		_stage.set_item_visible(uid, false)
+		_fly(texture, station_center(event.station), mate_center(event.target))
+		_stage.chef_act(event.station, "attack-melee-right")
 		Sfx.play("whoosh")
 		_bubble(mate_center(event.target) + Vector2(-40, -70), "WHOOSH!", Color.WHITE, 34)
 	elif event.target == _me:
-		_spawn_from[uid] = mate_center(event.player)
+		_stage.hide_item(uid, FLY_SECONDS)
+		_fly(texture, mate_center(event.player), station_center(event.target_station))
+		_stage.mate_act(int(event.player), "attack-melee-right")
 		Sfx.play("thud")
 		Game.vibrate(40)
 		_bubble(station_center(event.target_station) + Vector2(0, -80), _pick(["THWACK!", "CATCH!", "PLOP!"]), Art.SUN, 36)
+	else:
+		_stage.mate_act(int(event.player), "attack-melee-right")
 
 
 func _end_shift() -> void:
@@ -505,16 +603,9 @@ func _end_shift() -> void:
 	Sfx.play("cheer" if not outcome.get("failed", false) else "angry")
 
 
-func _fly_away(uid: int, to: Vector2) -> void:
-	if not _item_views.has(uid):
-		return
-	var view: ItemView = _item_views[uid]
-	_item_views.erase(uid)
-	view.set_process(false)
-	var tween := view.create_tween()
-	tween.tween_property(view, "position", to, 0.25).set_trans(Tween.TRANS_QUAD)
-	tween.parallel().tween_property(view, "scale", Vector2(0.2, 0.2), 0.25)
-	tween.tween_callback(view.queue_free)
+func _item_texture(item_data: Dictionary) -> Texture2D:
+	var id := db.effective_id(str(item_data.get("type", "")), item_data.get("contents", []))
+	return Art.item(id if not id.is_empty() else str(item_data.get("type", "")))
 
 
 # --- Input -------------------------------------------------------------------
@@ -553,8 +644,6 @@ func _gui_input(event: InputEvent) -> void:
 		if not _dragging and pos.distance_to(_press_pos) > TAP_DISTANCE:
 			_start_drag()
 		if _dragging:
-			if _drag_view:
-				_drag_view.position = pos
 			_ghost.position = pos
 
 
@@ -563,9 +652,10 @@ func _start_drag() -> void:
 	match _press.kind:
 		"station":
 			var item := kitchen.item_at(_me, _press.index)
-			if item and kitchen.can_take(kitchen.station(_me, _press.index)) and _item_views.has(item.uid):
-				_drag_view = _item_views[item.uid]
-				_drag_view.held = true
+			if item and kitchen.can_take(kitchen.station(_me, _press.index)):
+				_drag_uid = item.uid
+				_stage.set_item_visible(item.uid, false)
+				_show_ghost(Art.item(kitchen.effective_id(item) if not kitchen.effective_id(item).is_empty() else item.type))
 				_selected = _press.index
 		"crate":
 			_show_ghost(Art.item(_press.id))
@@ -582,9 +672,9 @@ func _release(pos: Vector2) -> void:
 	var press := _press
 	_press = {}
 	_ghost.visible = false
-	if _drag_view:
-		_drag_view.held = false
-		_drag_view = null
+	if _drag_uid:
+		_stage.set_item_visible(_drag_uid, true)
+		_drag_uid = 0
 	if press.is_empty():
 		return
 	if not _dragging:
@@ -928,76 +1018,44 @@ func _pick(options: Array) -> String:
 
 func _draw_backdrop() -> void:
 	var c := _backdrop
-	# The page between the panels: dark ink with halftone dots.
+	# The page between the panels: dark ink with halftone dots. The panels
+	# themselves are 3D viewports drawn on top.
 	UiStyle.draw_halftone(c, Rect2(0, TOP_BAR_H, size.x, size.y - TOP_BAR_H), Color("#262038"), Color("#2f2846"), 16.0)
 	for panel in _panels:
-		var rect: Rect2 = panel.rect
-		c.draw_rect(rect, PANEL_COLORS.get(panel.kind, Art.PAPER))
-		c.draw_rect(rect, Art.INK, false, 6.0)
-		var title: String = PANEL_TITLES.get(panel.kind, "")
-		if panel.kind == PANEL_TEAM:
-			title = "TEAM · THROW HERE"
-		_draw_caption(c, rect.position + Vector2(8, 8), title)
-	# Crates.
-	for crate in _crates:
-		var rect: Rect2 = crate.rect
-		var box := Art.equipment("crate") if crate.id != ContentDB.PLATE else null
-		if box:
-			c.draw_texture_rect(box, _square(rect, 0.9), false)
-		var icon := Art.item(crate.id)
-		if icon:
-			c.draw_texture_rect(icon, _square(rect, 0.62).grow(-2), false)
-		_draw_label(c, db.item_name(crate.id).to_upper(), Vector2(rect.position.x - 4, rect.end.y - 2), rect.size.x + 8, 13, Art.INK)
-	# Stations.
-	var pk := kitchen.players[_me]
-	for spot in _spots:
-		if not (spot is Dictionary) or spot.is_empty():
-			continue
-		var st: KitchenState.Station = pk.stations[spot.index]
-		var rect: Rect2 = spot.rect
-		match db.station_kind(st.type):
-			ContentDB.STATION_COUNTER:
-				_draw_ellipse(c, spot.center + Vector2(0, 26 * spot.scale), Vector2(52, 18) * spot.scale, Color("#e2cfae"), 3.0)
-			ContentDB.STATION_PASS:
-				var window := _square(rect, 0.92)
-				c.draw_rect(window, Color("#7fc8f8"))
-				c.draw_rect(Rect2(window.position, Vector2(window.size.x, 22)), Art.TOMATO)
-				c.draw_rect(window, Art.INK, false, 5.0)
-				var bell := Art.equipment("serving_window")
-				if bell:
-					c.draw_texture_rect(bell, _square(window, 0.55), false)
-				_draw_label(c, "SERVE", Vector2(window.position.x, window.end.y - 8), window.size.x, 22)
-			_:
-				var art := Art.equipment(st.type)
-				if art:
-					c.draw_texture_rect(art, _square(rect, 0.95, 150.0), false, Color(1, 1, 1, 0.85))
-				_draw_label(c, db.station_name(st.type).to_upper(), Vector2(rect.position.x, rect.end.y - 2), rect.size.x, 13)
-	# Bin.
-	if _bin_rect.has_area():
-		var bin := Art.equipment("trash")
-		if bin:
-			c.draw_texture_rect(bin, _square(_bin_rect, 0.85), false)
-		_draw_label(c, "BIN", Vector2(_bin_rect.position.x, _bin_rect.end.y - 2), _bin_rect.size.x, 16)
+		c.draw_rect(panel.rect, PANEL_COLORS.get(panel.kind, Art.PAPER))
 
 
 func _draw_dynamic() -> void:
 	var c := _dynamic
 	var pulse := 0.5 + 0.5 * sin(_time * 7.0)
 	var glow := Color(1.0, 0.25, 0.75, 0.3 + 0.35 * pulse)  # hot magenta: things that need you
+	# Panel frames and their caption boxes, over the 3D views.
+	for panel in _panels:
+		var rect: Rect2 = panel.rect
+		c.draw_rect(rect, Art.INK, false, 6.0)
+		var title: String = PANEL_TITLES.get(panel.kind, "")
+		if panel.kind == PANEL_TEAM:
+			title = "TEAM · THROW HERE"
+		_draw_caption(c, rect.position + Vector2(8, 8), title)
+	for crate in _crates:
+		var rect: Rect2 = crate.rect
+		_draw_label(c, db.item_name(crate.id).to_upper(), Vector2(rect.position.x - 10, crate.center.y + 15), rect.size.x + 20, 14, Color.WHITE, true)
 	var targets := _valid_targets()
-	for index in targets.stations:
-		c.draw_rect(_spots[index].rect.grow(2), glow, false, 8.0)
 	if targets.bin:
 		c.draw_rect(_bin_rect.grow(2), glow, false, 6.0)
 	for mate in _mates:
 		if targets.mates.has(mate.player):
 			c.draw_rect(mate.rect.grow(4), glow, false, 10.0)
 		_draw_mate(c, mate)
+	_draw_customers(c)
+	if _panel_rect(PANEL_RIVAL).has_area():
+		_draw_rival(c, _panel_rect(PANEL_RIVAL))
 	# Station timers and progress.
 	for st in kitchen.players[_me].stations:
 		if st.recipe.is_empty() and not st.burnt:
 			continue
-		_draw_station_timer(c, st, _spots[st.index], pulse)
+		if _spots[st.index] is Dictionary and not _spots[st.index].is_empty():
+			_draw_station_timer(c, st, _spots[st.index], pulse)
 	_draw_hint(c, pulse)
 	# Pause button.
 	c.draw_rect(_pause_rect, Art.PAPER)
@@ -1041,22 +1099,60 @@ func _draw_station_timer(c: CanvasItem, st: KitchenState.Station, spot: Dictiona
 		_draw_label(c, label, center + Vector2(-80, -radius - 8), 160, 16, Color.WHITE, true)
 
 
+## A teammate's name tag under their 3D chef in the team panel.
 func _draw_mate(c: CanvasItem, mate: Dictionary) -> void:
 	var rect: Rect2 = mate.rect
 	var player: int = mate.player
 	var friend := Net.profile_of(player)
 	var color: Color = Art.PLAYER_COLORS[player % Art.PLAYER_COLORS.size()]
-	c.draw_rect(rect, color.lightened(0.6))
-	c.draw_rect(rect, Art.INK, false, 4.0)
 	var free := kitchen.players[player].free_counter_count(db)
-	var portrait := minf(rect.size.y * 0.8, 90.0)
-	ChefLook.draw(c, rect.position + Vector2(portrait * 0.55, rect.size.y * 0.45), portrait, friend.look, 1.0 if free > 0 else 0.2)
-	var x := portrait * 1.1 + 8.0
+	var tag := Rect2(rect.position + Vector2(10, rect.size.y - 58), Vector2(rect.size.x - 20, 48))
+	c.draw_rect(tag.grow(3), Art.INK)
+	c.draw_rect(tag, color.lightened(0.55))
 	var font := Art.comic_font()
-	c.draw_string(font, rect.position + Vector2(x, 30), str(friend.name).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - x - 6, 22, Art.INK)
-	c.draw_string(Art.ui_font(), rect.position + Vector2(x, 52), kitchen.players[player].role, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - x - 6, 14, Art.INK)
-	c.draw_string(Art.ui_font(), rect.position + Vector2(x, 74), "%d free spots" % free if free > 0 else "FULL!", HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - x - 6, 14,
+	c.draw_string(font, tag.position + Vector2(10, 22), str(friend.name).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 20, Art.INK)
+	var line := "%s · %s" % [kitchen.players[player].role, "%d free spots" % free if free > 0 else "FULL!"]
+	c.draw_string(Art.ui_font(), tag.position + Vector2(10, 40), line, HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 13,
 		Art.INK if free > 0 else Art.TOMATO)
+
+
+## Speech balloons over the customers at the window: what they're waiting for.
+func _draw_customers(c: CanvasItem) -> void:
+	var pass_index := kitchen.players[_me].pass_station(db)
+	if pass_index < 0:
+		return
+	var set_index := _stage.set_of_station(pass_index)
+	if set_index < 0:
+		return
+	var panel: Rect2 = _panels[set_index].rect
+	for order in shift.orders.orders:
+		var head := _stage.customer_head(int(order.uid))
+		if head == Vector3.INF:
+			continue
+		var tip := _project(set_index, head)
+		if not panel.has_point(tip):
+			continue
+		var icon := Art.item(str(order.dish))
+		# Balloons stay inside the panel, like in a real comic.
+		var center := Vector2(tip.x, maxf(tip.y - 34.0, panel.position.y + 32.0))
+		if center.y < tip.y - 20.0:
+			var points := PackedVector2Array([tip, center + Vector2(-8, 18), center + Vector2(8, 18)])
+			c.draw_colored_polygon(points, Art.INK)
+		c.draw_circle(center, 27.0, Art.INK)
+		c.draw_circle(center, 24.0, Color.WHITE)
+		if icon:
+			c.draw_texture_rect(icon, Rect2(center - Vector2(19, 19), Vector2(38, 38)), false)
+
+
+func _draw_rival(c: CanvasItem, rect: Rect2) -> void:
+	var rival := shift.rival
+	if rival == null:
+		return
+	var tag := Rect2(rect.position + Vector2(10, rect.size.y - 58), Vector2(rect.size.x - 20, 48))
+	c.draw_rect(tag.grow(3), Art.INK)
+	c.draw_rect(tag, Color("#ff9ad5"))
+	c.draw_string(Art.comic_font(), tag.position + Vector2(10, 22), "RIVAL CHEF", HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 20, Art.INK)
+	c.draw_string(Art.ui_font(), tag.position + Vector2(10, 40), "%d points" % rival.score, HORIZONTAL_ALIGNMENT_LEFT, tag.size.x - 20, 13, Art.INK)
 
 
 func _draw_hint(c: CanvasItem, pulse: float) -> void:
@@ -1145,19 +1241,3 @@ func _draw_label(c: CanvasItem, text: String, pos: Vector2, width: float, font_s
 	if outline:
 		c.draw_string_outline(font, pos, text, HORIZONTAL_ALIGNMENT_CENTER, width, font_size, 6, Art.INK)
 	c.draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_CENTER, width, font_size, color)
-
-
-func _draw_ellipse(c: CanvasItem, center: Vector2, radii: Vector2, fill: Color, outline_width: float) -> void:
-	var points := PackedVector2Array()
-	for i in 32:
-		var a := TAU * i / 32.0
-		points.append(center + Vector2(cos(a) * radii.x, sin(a) * radii.y))
-	c.draw_colored_polygon(points, fill)
-	if outline_width > 0.0:
-		points.append(points[0])
-		c.draw_polyline(points, Art.INK, outline_width, true)
-
-
-static func _square(rect: Rect2, fraction: float, max_side: float = INF) -> Rect2:
-	var side := minf(minf(rect.size.x, rect.size.y) * fraction, max_side)
-	return Rect2(rect.get_center() - Vector2(side, side) * 0.5, Vector2(side, side))
