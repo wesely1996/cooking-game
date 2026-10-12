@@ -5,6 +5,24 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [Unreleased]
+
+### Added
+- **Recipes on the orders:** tap an order to pop its recipe out in a comic
+  speech bubble, in short steps ("Chop TOMATO", "Bake RAW PIZZA in OVEN").
+  It goes away after 5 seconds, or when you tap it.
+
+### Changed
+- Order tickets show the dish's raw ingredients along the bottom, and the
+  whole dish name.
+- Tips while learning a dish fit how you play: alone, they tell you when
+  your food is cooking instead of asking you to wait for a teammate; with
+  friends, they say whose turn it is and who is throwing you what.
+
+### Fixed
+- Food in the pantry is no taller than its shelf (the flour and the water
+  no longer poke through the shelf above).
+
 ## [0.6.2] - 2026-10-12
 
 ### Changed

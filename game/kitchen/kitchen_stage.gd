@@ -160,6 +160,13 @@ static func best_rows(n: int, aspect: float, with_window: bool = false) -> int:
 	return 2 if n > 1 and fit_two > fit_one * 1.05 else 1
 
 
+## How much a food model is scaled up on the pantry shelf: big, but never
+## taller than its shelf or wider than its spot.
+static func pantry_scale(box: AABB) -> float:
+	var room := Vector2(SHELF_WIDTH * 0.85, SHELF_HEIGHT - 0.07 - 0.06)
+	return minf(1.5, minf(room.x / maxf(box.size.x, 0.01), room.y / maxf(box.end.y, 0.01)))
+
+
 ## How big the pantry shelf looks for n crates (see _build_pantry).
 static func pantry_extent(n: int, aspect: float) -> Vector2:
 	var best := Vector2(1, 1)
@@ -200,7 +207,7 @@ func _build_pantry(root: Node3D, entry: Dictionary) -> void:
 		var pos := Vector3(((i % cols) - (in_row - 1) * 0.5) * SHELF_WIDTH, row * SHELF_HEIGHT + 0.035, 0.05)
 		var food := Models.item(_db, crates[i])
 		food.position = pos
-		food.scale = Vector3.ONE * 1.5
+		food.scale = Vector3.ONE * pantry_scale(Models._aabb(food))
 		root.add_child(food)
 		_crate_nodes[crates[i]] = food
 	entry.pitch = deg_to_rad(12.0)

@@ -48,6 +48,29 @@ static func instructions(db: ContentDB, dish: String) -> Array[String]:
 	return lines
 
 
+## The steps of a dish in a few words each, for the speech bubble that pops
+## out of an order, e.g. "Chop TOMATO", "Bake RAW PIZZA in OVEN".
+static func short_steps(db: ContentDB, dish: String) -> Array[String]:
+	var lines: Array[String] = []
+	for step in db.recipe_steps(dish):
+		lines.append(short_text(db, step))
+	lines.append("Serve it!")
+	return lines
+
+
+static func short_text(db: ContentDB, step: Dictionary) -> String:
+	if step.kind == "assembly":
+		var parts: Array = step.parts.map(func(p): return _name(db, p))
+		if step.base == ContentDB.PLATE:
+			return "Put %s on a PLATE" % " + ".join(parts)
+		return "Put %s on %s" % [" + ".join(parts), _name(db, step.base)]
+	var inputs: String = " + ".join(step.inputs.map(func(i): return _name(db, i)))
+	var verb: String = VERBS.get(step.action, step.action.capitalize())
+	if float(step.cook_time) > 0.0:
+		return "%s %s in %s" % [verb, inputs, _name_station(db, step.station)]
+	return "%s %s" % [verb, inputs]
+
+
 static func _name(db: ContentDB, id: String) -> String:
 	return db.item_name(id).to_upper()
 

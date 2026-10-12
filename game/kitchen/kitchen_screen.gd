@@ -812,7 +812,7 @@ func _gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			if _dismiss_overlay(pos):
+			if _dismiss_overlay(pos) or _order_bar.tap(pos):
 				_press = {}
 				return
 			_press = _hit(pos)
@@ -1081,12 +1081,41 @@ func _find_hint() -> void:
 	_hint_points.clear()
 	if _start_timer > 0.0 or shift.finished or _minigame.visible or not shift.in_prologue():
 		return
-	for action in _hint_bot.plan(shift):
+	var plan := _hint_bot.plan(shift)
+	for action in plan:
 		if action.player == _me:
 			_describe(action)
 			return
-	if not shift.orders.orders.is_empty():
+	if shift.orders.orders.is_empty():
+		return
+	# Nothing for you to do: something of yours is cooking, or (with
+	# friends) it's someone else's turn.
+	for st in kitchen.players[_me].stations:
+		if db.is_cook_recipe(st.recipe) and not st.done and not st.burnt and st.item():
+			_hint_text = "The %s is cooking in the %s. Take it out when the ring turns green!" % [_item_name(st.item()),
+				db.station_name(st.type).to_upper()]
+			_hint_points = [station_center(st.index)]
+			return
+	if kitchen.players.size() == 1:
+		_hint_text = "Wait a moment..."
+		return
+	for action in plan:
+		if action.type == "throw" and action.target == _me:
+			_hint_text = "%s is throwing you the %s" % [_mate_name(action.player), _item_name(kitchen.item_at(action.player, action.station))]
+			_hint_points = [mate_center(action.player)]
+			return
+	if not plan.is_empty():
+		_hint_text = "Wait for %s..." % _mate_name(plan[0].player)
+		_hint_points = [mate_center(plan[0].player)]
+	else:
 		_hint_text = "Wait for your teammate..."
+
+
+func _item_name(item: KitchenItem) -> String:
+	if item == null:
+		return "FOOD"
+	var id := kitchen.effective_id(item)
+	return db.item_name(id if not id.is_empty() else item.type).to_upper()
 
 
 func _describe(action: Dictionary) -> void:
