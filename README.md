@@ -58,7 +58,7 @@ art/               fonts, CC0 3D models, comic shaders, icons rendered from the
   Italy, Mexico, USA, Spain, Japan and France), *Play with a
   friend* (LAN) or *Arcade* (pick a cuisine you have reached).
 - **Profile**: your name and chef, favourite and best cuisine, stats.
-- **Recipe book**: every dish you have served, step by step.
+- **Recipe book**: every dish you have served, as a comic strip of its steps.
 - **Settings**: sound, vibration, tips, easy mini-games, reset progress.
 
 ## How to play (solo)

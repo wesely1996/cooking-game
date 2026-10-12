@@ -54,7 +54,7 @@ func _ready() -> void:
 	for line in [
 		"Made with the Godot Engine (MIT licence).",
 		"Fonts: Bangers and Fredoka, SIL Open Font License.",
-		"Food art and sounds made for this game.",
+		"3D food, furniture and chefs by Kenney (kenney.nl, CC0). Sounds made for this game.",
 		"LAN play uses ports 24568 and 24569 on your Wi-Fi.",
 	]:
 		about_list.add_child(UiStyle.text(line, 16))
@@ -108,4 +108,4 @@ func _notification(what: int) -> void:
 
 
 func _draw() -> void:
-	UiStyle.draw_halftone(self, Rect2(Vector2.ZERO, size), Color("#4d5966"), Color("#5c6977"), 22.0)
+	UiStyle.draw_page(self, Rect2(Vector2.ZERO, size))

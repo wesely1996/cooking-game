@@ -51,6 +51,16 @@ with it; 0.5.0 was never released on its own.
   in their own panel.
 - **Food flies across the panel gutters** when it moves between panels or
   is thrown to a teammate.
+- **Menus are comic pages:** the title screen is a cover starring your
+  chef in 3D; the World Tour is a series of issues (#1 Italy ... #6 France)
+  whose levels are the panels of a page, locked ones covered; results are
+  the issue's last panel with a star splash and "TO BE CONTINUED...";
+  profile, settings, the play menu, the lobby and the recipe book are inner
+  pages. Every screen change turns the page.
+- **Recipes are comic strips:** one panel per step (what goes in, the tool,
+  the gesture or cooking time, what comes out), ending with the plated dish.
+  Undiscovered dishes are covered panels; future cuisines are "coming soon
+  in issue #7".
 - **Splash-panel mini-games:** chopping, kneading and stirring open a tilted
   comic splash panel with a close-up of the station.
 - Food and station pictures (order cards, recipe book) are rendered from the

@@ -87,8 +87,9 @@ mode per cuisine; 2-player LAN (3–4 players later); and the settings.
   oven, fryer, grill, an unlimited plate stack, bin and serving window.
 - **Signature gadgets:** Italy pasta machine (crank: circles), Mexico
   tortilla press (tap), Japan sushi mat (roll: side to side), USA blender
-  (circles). Spain and France have none. The other old gadgets go (comal,
-  molcajete, grater, rice cooker, griddle, paella pan, crêpe pan, frying pan).
+  (circles), Spain paella pan and France crêpe pan (both cook on their own).
+  The other old gadgets go (comal, molcajete, grater, rice cooker, griddle,
+  frying pan). The approved menus (PR 4) gave Spain and France their pans.
 - **Gestures** only for the board, the mixing bowl and signature gadgets.
 - **Cookware is hands-off:** it cooks on a timer, has a "perfect" window,
   then burns. Burnt food is binned and frees the cookware. No fire.
