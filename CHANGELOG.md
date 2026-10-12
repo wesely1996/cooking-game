@@ -5,6 +5,14 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
+## [Unreleased]
+
+### Fixed
+- Your chef is bigger than life in the kitchen and stands just behind the
+  counters, so their face (and usually the hat) shows above them instead of
+  only the top of the head. Picking food up is a reach, not a bend, so the
+  chef's head never covers the counters.
+
 ## [0.6.3] - 2026-10-12
 
 ### Added

@@ -17,6 +17,12 @@ const ROW_DEPTH := 1.25
 const COUNTER_HEIGHT := 1.0
 const CAMERA_PITCH := deg_to_rad(44.0)
 const TOP_CROP := 0.15  # how much of the cabinet fronts shows below the tops
+## How high a counter set is framed: room above the tops for the chef's face.
+const SET_TOP := 1.75
+## The chef in the kitchen is a little bigger than life, so they stand head
+## and shoulders above the counters, just behind the back row.
+const CHEF_SCALE := 1.3
+const CHEF_BEHIND := 0.95
 const CAMERA_FOV := 34.0
 const FRAME_MARGIN := 1.02
 const SHELF_HEIGHT := 0.6
@@ -44,6 +50,8 @@ var _items := {}  # uid -> {node, signature, set}
 var _hidden := {}  # uid -> seconds to stay hidden (flying across a gutter)
 var _bin: Node3D
 var _chefs := {}  # player -> Node3D
+var _chef_set := -1  # the set this phone's chef is working in
+var _chef_edge := Vector3.INF  # the back edge of the counters in front of them
 var _customers := {}  # order uid -> Node3D
 var _rival: Node3D
 
@@ -136,7 +144,7 @@ func _build_counters(root: Node3D, entry: Dictionary, set_index: int) -> void:
 	for index in stations:
 		if _anchors.has(index):
 			floor_y = minf(floor_y, (_anchors[index] as Node3D).position.y - TOP_CROP)
-	entry.bounds = AABB(lo + Vector3(-SLOT * 0.52, floor_y, -0.45), (hi - lo) + Vector3(SLOT * 1.04, 1.4 - floor_y, 0.95))
+	entry.bounds = AABB(lo + Vector3(-SLOT * 0.52, floor_y, -0.45), (hi - lo) + Vector3(SLOT * 1.04, SET_TOP - floor_y, 0.95))
 
 
 ## The pantry: the food on a shelf, read top to bottom. The number of
@@ -146,7 +154,7 @@ func _build_counters(root: Node3D, entry: Dictionary, set_index: int) -> void:
 ## A set with the serving window shows more height (its shelf sits low).
 static func counter_extent(n: int, rows: int, with_window: bool = false) -> Vector2:
 	var cols := ceili(float(maxi(n, 1)) / rows)
-	var height := (1.4 if with_window else 0.7) * cos(CAMERA_PITCH) + ((rows - 1) * ROW_DEPTH + 0.95) * sin(CAMERA_PITCH)
+	var height := (SET_TOP if with_window else SET_TOP - 0.7) * cos(CAMERA_PITCH) + ((rows - 1) * ROW_DEPTH + 0.95) * sin(CAMERA_PITCH)
 	return Vector2(cols * SLOT * 1.04 + 0.1, height)
 
 
@@ -368,6 +376,7 @@ func pop_crate(id: String, amount: float) -> void:
 
 func _place_my_chef() -> void:
 	var chef := Models.chef(Game.profile.look if is_instance_valid(Game) else {})
+	chef.scale = Vector3.ONE * CHEF_SCALE
 	add_child(chef)
 	_chefs[_me] = chef
 	chef.visible = false
@@ -375,8 +384,9 @@ func _place_my_chef() -> void:
 
 
 ## Shows this phone's chef at a station, doing something. The chef always
-## stands behind the back row of the panel, so he never hides a station
-## (with two rows, standing between them would cover the back one).
+## stands behind the back row of the panel, so they never hide a station
+## (with two rows, standing between them would cover the back one), and
+## they're big enough that their face shows above the counters.
 func chef_act(station_index: int, animation: String) -> void:
 	if not _chefs.has(_me) or not _anchors.has(station_index):
 		return
@@ -388,7 +398,9 @@ func chef_act(station_index: int, animation: String) -> void:
 		if set_of_station(index) == set_index:
 			back_z = minf(back_z, (_anchors[index] as Node3D).global_position.z)
 	chef.visible = true
-	chef.global_position = Vector3(anchor.global_position.x + 0.3, 0, back_z - 0.85)
+	_chef_set = set_index
+	_chef_edge = Vector3(anchor.global_position.x + 0.3, anchor.global_position.y + 0.1, back_z - 0.45)
+	chef.global_position = Vector3(anchor.global_position.x + 0.3, 0, back_z - CHEF_BEHIND)
 	chef.rotation.y = deg_to_rad(-25.0)
 	Models.animate(chef, animation)
 
@@ -449,6 +461,25 @@ func customer_leaves(order_uid: int, happy: bool) -> void:
 	tween.tween_interval(0.9)
 	tween.tween_property(node, "position", node.position + Vector3(-3.0, 0, -0.5), 1.0)
 	tween.tween_callback(node.queue_free)
+
+
+## Where this phone's chef's face is while they're working (the screen tests
+## check it shows in the panel), or INF while they're off.
+func chef_face() -> Vector3:
+	if not _chefs.has(_me) or not (_chefs[_me] as Node3D).visible:
+		return Vector3.INF
+	return (_chefs[_me] as Node3D).global_position + Vector3(0, Models.CHARACTER_HEIGHT * CHEF_SCALE * 0.75, 0)
+
+
+## The set the chef is working in, or -1.
+func chef_set() -> int:
+	return _chef_set
+
+
+## The top of the back edge of the counters in front of the chef: the face
+## should show above it.
+func chef_counter_edge() -> Vector3:
+	return _chef_edge
 
 
 func customer_head(order_uid: int) -> Vector3:

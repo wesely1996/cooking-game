@@ -663,7 +663,7 @@ func _handle_events(events: Array[Dictionary]) -> void:
 				if crate.has_area() and event.item.has("uid"):
 					_stage.hide_item(int(event.item.uid), FLY_SECONDS)
 					_fly(Art.item(str(event.item.type)), crate.get_center(), station_center(event.station))
-				_stage.chef_act(event.station, "pick-up")
+				_stage.chef_act(event.station, "interact-left")
 				Sfx.play("pop")
 			"item_moved":
 				_stage.chef_act(event.to, "interact-right")
@@ -696,7 +696,7 @@ func _handle_events(events: Array[Dictionary]) -> void:
 			"item_served":
 				_stage.set_item_visible(int(event.item.uid), false)
 				_fly(_item_texture(event.item), station_center(event.station), _pass_center())
-				_stage.chef_act(event.station, "pick-up")
+				_stage.chef_act(event.station, "interact-left")
 				Sfx.play("bell", 0.0)
 			"order_served":
 				_stage.customer_leaves(int(event.order.uid), true)

@@ -176,6 +176,7 @@ func _run() -> void:
 		bot.step(shift)
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
+	_check_chef_face(screen, "italy_04")
 	await _shot("10_busy_kitchen")
 	if not shift.orders.orders.is_empty():
 		screen._order_bar.show_recipe(int(shift.orders.orders[0].uid))
@@ -221,7 +222,21 @@ func _play_a_bit(level_id: String, players: int, shot: String) -> void:
 		bot.step(shift)
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
+	_check_chef_face(screen, level_id)
 	await _shot(shot)
+
+
+## The chef stands behind the counters, but their face shows above them.
+func _check_chef_face(screen: Node, level_id: String) -> void:
+	var stage: KitchenStage = screen._stage
+	var set_index := stage.chef_set()
+	if set_index < 0:
+		return
+	var face: Vector2 = screen._project(set_index, stage.chef_face())
+	var panel: Rect2 = screen._panels[set_index].rect
+	var edge: Vector2 = screen._project(set_index, stage.chef_counter_edge())
+	_check(panel.has_point(face) and face.y < edge.y - 10.0,
+		"%s: the chef's face shows above the counters in the %s panel" % [level_id, screen._panels[set_index].kind])
 
 
 ## Tapping an order pops its recipe out in a speech bubble, which goes
