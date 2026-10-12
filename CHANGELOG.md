@@ -5,7 +5,7 @@ All notable changes to Pass the Plate! are listed here. Versions follow
 section here, set `config/version` in `project.godot`, and push a tag
 `v<version>` (see docs/RELEASING.md).
 
-## [Unreleased] - 0.6.0
+## [0.6.0] - 2026-10-12
 
 v0.6 rebuilds the kitchen as a 3D comic page with Overcooked-style recipes
 (see docs/V06_DESIGN.md). The changes below were finished first and ship
