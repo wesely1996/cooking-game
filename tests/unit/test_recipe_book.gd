@@ -72,3 +72,32 @@ func test_star_thresholds_rise_with_levels_and_players() -> void:
 		for id in story:
 			for n in [2, 3, 4]:
 				assert_true(int(levels[id].value("stars", n)[2]) > int(levels[id].value("stars", n - 1)[2]), "%s: more players need more points" % id)
+
+
+func test_order_ticket_ingredients() -> void:
+	var db := ContentDB.load_dir()
+	assert_eq(OrderBar.ingredients(db, "pizza_margherita"), ["flour", "water", "tomato", "mozzarella"], "in recipe order")
+	assert_eq(OrderBar.ingredients(db, "caprese_salad"), ["tomato", "mozzarella", "basil"])
+	for dish in db.items.keys().filter(func(id): return db.is_dish(id)):
+		var raw: Array = db.raw_requirements(dish).filter(func(id): return id != ContentDB.PLATE)
+		var shown := OrderBar.ingredients(db, dish)
+		shown.sort()
+		assert_eq(shown, raw, dish + ": every raw ingredient, nothing else")
+
+
+func test_short_steps_for_the_order_bubble() -> void:
+	var db := ContentDB.load_dir()
+	var lines := RecipeText.short_steps(db, "pizza_margherita")
+	assert_eq(lines.size(), 7, "6 steps + serve")
+	assert_eq(lines[0], "Knead FLOUR + WATER")
+	assert_eq(lines[1], "Chop TOMATO")
+	assert_true(lines.has("Put CHOPPED TOMATO + SLICED MOZZARELLA on DOUGH"))
+	assert_eq(lines[4], "Bake RAW PIZZA in OVEN")
+	assert_eq(lines[5], "Put BAKED PIZZA on a PLATE")
+	assert_eq(lines.back(), "Serve it!")
+
+
+func test_pantry_food_fits_under_the_next_shelf() -> void:
+	assert_eq(KitchenStage.pantry_scale(AABB(Vector3(-0.1, 0, -0.1), Vector3(0.2, 0.2, 0.2))), 1.5, "small food is shown big")
+	var scale := KitchenStage.pantry_scale(AABB(Vector3(-0.1, 0, -0.1), Vector3(0.2, 0.6, 0.2)))
+	assert_true(0.6 * scale <= KitchenStage.SHELF_HEIGHT - 0.07, "a tall bottle is shrunk to fit its shelf")

@@ -98,6 +98,7 @@ func _run() -> void:
 	# a display): taps, drags, the chopping mini-game, LATER and resuming.
 	if DisplayServer.get_name() != "headless":
 		await _check_dismiss(screen)
+		await _check_recipe_bubble(screen, shift)
 		await _check_input(screen, shift)
 
 	# Make the caprese the way a player would, through intents.
@@ -149,6 +150,24 @@ func _run() -> void:
 	screen = get_tree().current_scene
 	shift = screen.shift
 	_check(shift.in_prologue(), "pizza and pasta are new")
+	# Solo, while the pizza bakes, the tip says so (there's no teammate).
+	var learner := KitchenBot.new()
+	learner.max_orders = 1
+	learner.order_filter = func(order: Dictionary) -> bool: return order.get("tutorial", false)
+	var cooking := func() -> bool:
+		return shift.kitchen.players[0].stations.any(func(st): return shift.db.is_cook_recipe(st.recipe) and not st.done)
+	Engine.time_scale = 4.0
+	var tries := 0
+	while not cooking.call() and tries < 2000:
+		learner.step(shift)
+		tries += 1
+		await get_tree().process_frame
+	Engine.time_scale = 1.0
+	await _wait(0.3)
+	_check(cooking.call(), "the tutorial gets something into the oven")
+	_check(str(screen._hint_text).contains("cooking") and not str(screen._hint_text).contains("teammate"),
+		"solo, the tip says the food is cooking: " + str(screen._hint_text))
+	await _shot("09b_solo_cooking_tip")
 	screen._intent({"type": "skip_prologue"})
 	_check(not shift.in_prologue(), "SKIP starts the shift")
 	var bot := KitchenBot.new()
@@ -158,6 +177,11 @@ func _run() -> void:
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
 	await _shot("10_busy_kitchen")
+	if not shift.orders.orders.is_empty():
+		screen._order_bar.show_recipe(int(shift.orders.orders[0].uid))
+		await _wait(0.4)
+		await _shot("10a_recipe_bubble")
+		screen._order_bar.hide_recipe()
 	# Two chefs: the teammate's chef in the team panel; then the rival panel.
 	await _play_a_bit("mexico_04", 2, "10b_team_kitchen")
 	await _play_a_bit("japan_competition", 1, "10c_rival_kitchen")
@@ -198,6 +222,25 @@ func _play_a_bit(level_id: String, players: int, shot: String) -> void:
 		await get_tree().process_frame
 	Engine.time_scale = 1.0
 	await _shot(shot)
+
+
+## Tapping an order pops its recipe out in a speech bubble, which goes
+## away by itself after a few seconds, or when tapped.
+func _check_recipe_bubble(screen: Node, shift: Shift) -> void:
+	var bar: OrderBar = screen._order_bar
+	var order: Dictionary = shift.orders.orders[0]
+	var ticket: Rect2 = bar._ticket_rect(order)
+	await _tap(ticket.get_center())
+	_check(bar.recipe_shown() == int(order.uid), "tapping an order shows its recipe")
+	await _wait(0.5)
+	_check(bar.bubble_rect().has_area(), "the recipe bubble is on screen")
+	await _shot("03c_recipe_bubble")
+	await _wait(OrderBar.RECIPE_SECONDS)
+	_check(bar.recipe_shown() < 0, "the recipe goes away by itself")
+	await _tap(ticket.get_center())
+	await _wait(0.3)
+	await _tap(bar.bubble_rect().get_center())
+	_check(bar.recipe_shown() < 0 and screen._selected < 0, "tapping the bubble puts it away, and nothing else happens")
 
 
 ## Tips and the prologue banner go away when tapped, and the tap does
