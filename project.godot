@@ -8,10 +8,13 @@ config_version=5
 config/name="Pass the Plate!"
 config/description="Cooperative 1-4 player cooking game."
 config/version="0.6.3"
-run/main_scene="res://ui/main_menu.tscn"
+run/main_scene="res://ui/studio_intro.tscn"
 config/quit_on_go_back=false
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0.0392157, 0.0588235, 0.117647, 1)
+boot_splash/image="res://art/brand/night_forge_logo.png"
+boot_splash/stretch_mode=0
 
 [autoload]
 

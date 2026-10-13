@@ -58,7 +58,34 @@ func _ready() -> void:
 		"LAN play uses ports 24568 and 24569 on your Wi-Fi.",
 	]:
 		about_list.add_child(UiStyle.text(line, 16))
+	about_list.add_child(_made_by())
 	body.add_child(about)
+
+
+## The studio's signature: the Night Forge logo on its night sky.
+func _made_by() -> Control:
+	var box := PanelContainer.new()
+	box.name = "MadeBy"
+	var style := UiStyle.panel_box(Brand.NIGHT, 4)
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	box.add_theme_stylebox_override("panel", style)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+	var logo := TextureRect.new()
+	logo.texture = Brand.logo()
+	logo.custom_minimum_size = Vector2(96, 96)
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	row.add_child(logo)
+	var texts := VBoxContainer.new()
+	texts.alignment = BoxContainer.ALIGNMENT_CENTER
+	texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	texts.add_child(UiStyle.left_text("MADE BY", 15, Brand.GLOW))
+	texts.add_child(UiStyle.left_text(Brand.NAME, 20, Color.WHITE))
+	row.add_child(texts)
+	return box
 
 
 func _toggle_row(key: String, label: String, help: String) -> Control:

@@ -31,6 +31,13 @@ func _ready() -> void:
 
 
 func _run() -> void:
+	# The bootup screen: the studio's logo, then the cover by itself.
+	Game.goto(Game.SCENE_INTRO)
+	await _wait(0.8)
+	await _shot("00a_studio_intro")
+	_check(get_tree().current_scene.scene_file_path == Game.SCENE_INTRO, "the game opens on the studio logo")
+	await _wait(1.8)
+	_check(get_tree().current_scene.scene_file_path == Game.SCENE_MENU, "then the cover follows by itself")
 	# As if an old save had just been reset for the new kitchen.
 	Game.show_makeover_note = true
 	Game.goto(Game.SCENE_MENU)
@@ -76,6 +83,7 @@ func _run() -> void:
 	Game.goto(Game.SCENE_SETTINGS)
 	await _wait(0.4)
 	await _shot("02f_settings")
+	_check(get_tree().current_scene.find_child("MadeBy", true, false) != null, "the credits are signed by Night Forge")
 	var tips_toggle: Button = get_tree().current_scene.find_child("Toggle_tips", true, false)
 	tips_toggle.pressed.emit()
 	_check(not Game.settings.tips and tips_toggle.text == "OFF", "settings toggle turns tips off")

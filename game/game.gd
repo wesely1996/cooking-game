@@ -6,6 +6,7 @@ const SAVE_PATH := "user://save.json"
 ## Bumped when saved progress no longer fits the game (v0.6: new recipes and
 ## levels). Older saves keep only the name, chef look and settings.
 const SAVE_VERSION := 2
+const SCENE_INTRO := "res://ui/studio_intro.tscn"
 const SCENE_MENU := "res://ui/main_menu.tscn"
 const SCENE_LEVEL_SELECT := "res://ui/level_select.tscn"
 const SCENE_KITCHEN := "res://game/kitchen/kitchen_screen.tscn"

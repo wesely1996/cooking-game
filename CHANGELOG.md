@@ -7,6 +7,11 @@ section here, set `config/version` in `project.godot`, and push a tag
 
 ## [Unreleased]
 
+### Added
+- **Night Forge Software Company:** the studio's logo is the app's bootup
+  screen, and the credits in Settings are signed "Made by Night Forge
+  Software Company".
+
 ### Fixed
 - Your chef is bigger than life in the kitchen and stands just behind the
   counters, so their face (and usually the hat) shows above them instead of

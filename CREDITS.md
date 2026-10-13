@@ -1,5 +1,9 @@
 # Credits
 
+Pass the Plate! is made by **Night Forge Software Company**. The Night Forge
+logo (`art/brand/night_forge_logo.png`) belongs to Night Forge and is not
+covered by the asset licences below (see docs/BRANDING.md).
+
 ## Engine
 - [Godot Engine](https://godotengine.org) 4.7.2, MIT license.
 
